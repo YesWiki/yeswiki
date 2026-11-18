@@ -13,10 +13,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * `./yeswicli sign-in:enable local` and `sign-in:disable`: the way back in when the provider in charge is down and local accounts are off. The providers
- * live in the wiki's database (replicas 04), where editing the configuration file cannot reach them, so a command must.
- */
+/** `./yeswicli sign-in:enable` and `sign-in:disable`. */
 class SignInCommandsTest extends YesWikiTestCase
 {
     /** @var array<string, mixed> */
@@ -40,7 +37,6 @@ class SignInCommandsTest extends YesWikiTestCase
         $settings = self::getWiki()->services->get(WikiSettings::class);
         $settings->startNewRequest();
         $this->storedWas = $settings->all();
-        // as the upgrade leaves a wiki LDAP signed in on: the directory in charge, local accounts off
         $settings->store(['sso_providers' => [
             'local' => ['type' => 'local', 'enabled' => false],
             'ldap' => ['type' => 'ldap', 'label' => 'LDAP', 'enabled' => true, 'connection' => ['uri' => 'ldap://down.example:389', 'bind_dn_template' => 'uid={login},dc=x']],

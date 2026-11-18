@@ -4,10 +4,7 @@ namespace YesWiki\Identity\SignIn;
 
 use YesWiki\Identity\Service\SignIn\ProvidersEditor;
 
-/**
- * The attributes a provider sent, one row each, as the test screen and the sign-in detail of the logs show them.
- * Every value comes from the provider: the templates escape all of it.
- */
+/** The attributes a provider sent, one row each, as the test screen and the sign-in detail of the logs show them. */
 final class AttributeRows
 {
     /**
@@ -28,7 +25,6 @@ final class AttributeRows
             }
             $rows[] = [
                 'name' => (string)$name,
-                // a list is one value per line; an object (ZITADEL's roles: {role: {org id: domain}}) is one value, its keys kept
                 'values' => array_map(
                     fn (mixed $one): string => is_string($one) ? $one : (string)json_encode($one, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                     is_array($value) && array_is_list($value) ? $value : [$value]

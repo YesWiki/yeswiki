@@ -1,14 +1,7 @@
 import { readFileSync } from 'fs'
 import { mockExpect, mockPut } from './mockserver'
 
-/**
- * The identity provider of the sign-in specs: MockServer's own OpenID Connect and SAML providers, and plain expectations for
- * CAS. There is no login form: a spec says who the provider signs in before the browser goes there, then the provider sends
- * the browser straight back to the wiki, signing what it sends with the keys of tests/fixtures/idp.
- *
- * auth.yeswiki.test is the mock's name for the wiki and the browser (docker/docker-compose.yml): it shares a site with
- * wiki.yeswiki.test, so SAML's POST callback carries the wiki's Lax cookie.
- */
+/** The identity provider of the sign-in specs, played by MockServer. */
 export const IDP = 'http://auth.yeswiki.test'
 
 /** The wiki as the identity provider knows it: CI serves it on a port, the development stack on the bare name. */
@@ -103,7 +96,6 @@ export const samlSignsIn = async (
     nameIdFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified',
     signingCertificatePem: key('saml.crt'),
     signingPrivateKeyPem: key('saml.key'),
-    // MockServer's SAML attributes take one value each: only the first group is sent
     attributes: defined({
       uid: person.login,
       mail: person.email,
@@ -130,10 +122,7 @@ export const CAS_VALIDATE = '/cas/(p3/)?serviceValidate'
 /** What a CAS server answers to a ticket it does not know. */
 export const CAS_UNKNOWN_TICKET = `<cas:serviceResponse xmlns:cas="${CAS}"><cas:authenticationFailure code="INVALID_TICKET">unknown ticket</cas:authenticationFailure></cas:serviceResponse>`
 
-/**
- * A CAS server signing the person in: the login page sends the browser back to the service with a ticket, and the validation
- * of that ticket names the person. It also releases `name`, the user ID of the logincas servers Doryphore spoke to.
- */
+/** A CAS server signing the person in. */
 export const casSignsIn = async (person: Person): Promise<void> => {
   const ticket = `ST-${person.login}`
   const attributes = Object.entries(
@@ -158,7 +147,6 @@ export const casSignsIn = async (person: Person): Promise<void> => {
       httpRequest: { method: 'GET', path: '/cas/login' },
       httpResponseTemplate: {
         templateType: 'VELOCITY',
-        // the wiki's service address already has a query (?user/sign-in/cas/callback&sso_callback=cas): the ticket follows it with &
         template: `#set($s = $request.queryStringParameters.service[0])#set($sep = "?")#if($s.contains("?"))#set($sep = "&")#end{"statusCode":302,"headers":{"Location":["$s\${sep}ticket=${ticket}"]}}`,
       },
     },
@@ -206,12 +194,7 @@ export type EndpointFailure = { status: number; body?: string } | 'drop'
 /** A failure that wins once over what the mock answers, then lets it answer again. */
 const once = { priority: 10, times: { remainingTimes: 1 } }
 
-/**
- * Makes requests to `path` (a MockServer path, which may be a regular expression) fail, winning over what the mock answers:
- * the next one only, or every one until the mock is reset. A server that is down keeps failing: an HTTP client kept between
- * requests, as a FrankenPHP worker keeps it, sends a GET again on a fresh connection when a reused one is dropped, and would
- * meet the mock's answer on its second try.
- */
+/** Makes requests to `path` (a MockServer path, which may be a regular expression) fail, winning over what the mock answers: the next one only, or every one until the mock is reset. */
 export const idpEndpointFails = async (
   path: string,
   failure: EndpointFailure,
@@ -247,7 +230,6 @@ const samlRefusal = (callback: string): string => {
 export const idpDenies = async (
   type: RedirectType,
   providerId = 'saml-a',
-  // authentik appends its OIDC errors to the redirect_uri with a second `?`, whatever query the redirect_uri already has
   oidcSeparator: '&' | '?' = '&',
 ): Promise<void> => {
   if (type === 'oidc') {
@@ -257,7 +239,6 @@ export const idpDenies = async (
       httpRequest: { method: 'GET', path: '/authorize' },
       httpResponseTemplate: {
         templateType: 'VELOCITY',
-        // the wiki's callback always has a query (?user/sign-in/<id>/callback&sso_callback=<id>): the error follows it with &
         template: `{"statusCode":302,"headers":{"Location":["$!request.queryStringParameters.redirect_uri[0]${oidcSeparator}error=access_denied&error_description=refused&state=$!request.queryStringParameters.state[0]"]}}`,
       },
     })

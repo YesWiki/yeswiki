@@ -9,11 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use YesWiki\Identity\Service\SignIn\ProvidersEditor;
 
-/**
- * What `sign-in:enable` and `sign-in:disable` share -- a trait, since the console instantiates every class it finds in a Command/
- * directory. The providers are a setting kept in the wiki's database, where editing the configuration file cannot reach them: this
- * is the way to switch one from a shell, local accounts above all when the provider in charge is down.
- */
+/** What `sign-in:enable` and `sign-in:disable` share. */
 trait SwitchesAProvider
 {
     private ContainerInterface $services;
@@ -32,7 +28,6 @@ trait SwitchesAProvider
     private function switchTo(bool $on, InputInterface $input, OutputInterface $output): int
     {
         $id = trim((string)$input->getArgument('id'));
-        // nobody signed in acts: the screen's guard against locking its own user out does not apply
         $refused = $this->services->get(ProvidersEditor::class)->setEnabled($id, $on, null);
         if ($refused !== null) {
             $output->writeln("<error>{$id}: {$refused}</error>");

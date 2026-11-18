@@ -484,7 +484,6 @@ class YesWikiRuntime
         ob_start();
         try {
             $attributes = $matcher->match($context->getPathInfo());
-            // read before the method is cleared: a route open to other sites is known by it
             $crossOriginWrite = $this->service(ApiService::class)->isCrossOriginWrite();
             $pageContext->setMethod('');
             if ($crossOriginWrite) {
@@ -887,8 +886,7 @@ class YesWikiRuntime
     }
 
     /**
-     * Those parameters, with the sign-in providers of the configuration this process read: the container never compiles them,
-     * since they hold their secrets deep in their entries (ConfigurationSecrets::withPlaceholders).
+     * Those parameters, with the sign-in providers of the configuration this process read.
      *
      * @param array<string, mixed> $parameters
      *

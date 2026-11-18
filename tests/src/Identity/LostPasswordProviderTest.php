@@ -26,8 +26,7 @@ class LostPasswordProviderTest extends YesWikiTestCase
     private const LOCAL = 'LostPwLocal';
     private const LINKED = 'LostPwLinked';
 
-    /** @var mixed */
-    private $sectionWas;
+    private mixed $sectionWas = null;
     private Request $requestWas;
 
     protected function setUp(): void
@@ -105,7 +104,6 @@ class LostPasswordProviderTest extends YesWikiTestCase
         ] as $property => $service) {
             $reflection->getProperty($property)->setValue($action, $services->get($service));
         }
-        // filter_input() reads the SAPI's input, which a CLI test run has none of: read the request that was posted instead.
         $posted = $services->get(CurrentRequest::class)->get()->request;
         $reflection->getProperty('inputFilter')->setValue($action, new class($posted) extends InputFilter {
             public function __construct(private ParameterBag $posted)
@@ -117,7 +115,6 @@ class LostPasswordProviderTest extends YesWikiTestCase
                 return $this->posted->get($varName);
             }
         });
-        // the bot guard stands aside for an administrator; what is tested here is not the guard.
         self::actAs($subStep === 1 ? self::adminName() : null);
         try {
             $reflection->getMethod('manageSubStep')->invoke($action, $subStep);

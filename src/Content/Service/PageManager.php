@@ -12,7 +12,7 @@ use YesWiki\Content\Exception\TrashedTagException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
-use YesWiki\Identity\Service\SignIn\AccountLinks;
+use YesWiki\Identity\Service\SignIn\AccountLinkGuard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CachesTheDatabase;
@@ -64,7 +64,8 @@ class PageManager implements CachesTheDatabase
         HibernationService $hibernationService,
         TripleStore $tripleStore,
         UserManager $userManager,
-        ContainerInterface $container
+        ContainerInterface $container,
+        private readonly AccountLinkGuard $accountLinkGuard
     ) {
         $this->aclService = $aclService;
         $this->container = $container;
@@ -642,8 +643,7 @@ class PageManager implements CachesTheDatabase
     }
 
     /**
-     * Saves an account page with the provider link its body carries: the one write that may set or change it (AccountLinks).
-     * Every other write of a user page keeps the link already stored, whatever its body says.
+     * Saves an account page with the provider link its body carries, the one write allowed to change it.
      *
      * @param array<array-key, mixed> $body
      */
@@ -772,7 +772,7 @@ class PageManager implements CachesTheDatabase
             return $body;
         }
 
-        return $this->container->get(AccountLinks::class)->guardBody($tag, $body);
+        return $this->accountLinkGuard->guardBody($tag, $body);
     }
 
     /**

@@ -236,12 +236,7 @@ class YesWikiTestCase extends TestCase
         self::getWiki()->services->get(\YesWiki\Identity\Service\AuthenticationService::class)->actAs($name);
     }
 
-    /**
-     * The name of an administrator this wiki already has.
-     *
-     * Never a literal: the admin is whoever installed the wiki under test -- `WikiAdmin` for the
-     * e2e reset, `ActionTest` for CI -- and acting as a name that does not exist acts as nobody.
-     */
+    /** The name of an administrator this wiki already has. */
     protected static function adminName(): string
     {
         return self::getWiki()->services->get(\YesWiki\Identity\Service\UserOperationsService::class)->getFirstAdmin();

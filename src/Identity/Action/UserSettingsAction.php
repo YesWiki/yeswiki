@@ -258,7 +258,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         return (string)$this->asAccountPage($user, function () use ($entry, $managed) {
             $rendered = '';
             foreach ($this->profileFields() as $field) {
-                // the provider's to write: shown, not offered.
                 $rendered .= in_array($field->getPropertyName(), $managed, true)
                     ? (string)$field->renderStaticIfPermitted($entry)
                     : (string)$field->renderInputIfPermitted($entry);
@@ -392,7 +391,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     array_merge($sanitizedPost, $this->postedProfileValues($post, $user))
                 );
 
-                // by name: a linked account posts no email, its own is not ours to ask for again.
                 $user = $this->userManager->getOneByName((string)$user['name']);
 
                 if (!empty($user)) {
@@ -428,8 +426,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     private function changePassword(?User $user, array $post): void
     {
         if ($this->userLoggedIn && $user !== null) {
-            // said before the old password is checked: a linked account has none, so it would only be said to be wrong.
-            // setPassword() refuses it anyway.
             if ($user->provider() !== null) {
                 $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . _t('USERSETTINGS_MANAGED_BY_PROVIDER', ['provider' => (string)$this->providerLabelOf($user)]);
 

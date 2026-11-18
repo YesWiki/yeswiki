@@ -1,5 +1,4 @@
-# The dev stack: php-fpm on the checkout behind nginx, MySQL and PostgreSQL, SeaweedFS for S3, phpMyAdmin, a mail catcher,
-# and an HTTP mock for the tests.
+# The dev stack: php-fpm on the checkout behind nginx, MySQL and PostgreSQL, SeaweedFS for S3, phpMyAdmin, a mail catcher and an HTTP mock.
 # COMPOSE_PROJECT_NAME and the YESWIKI_*_PORT variables in docker/.env let several checkouts run a stack side by side;
 # the service names stay the same in every stack, since nginx.conf and tests/e2e reach each other by them.
 name: ${COMPOSE_PROJECT_NAME:-yeswiki}
@@ -66,9 +65,6 @@ services:
     ports:
       - "127.0.0.1:${YESWIKI_S3_PORT:-8333}:8333"
 
-  # An HTTP mock for the tests: each spec configures what it answers (tests/e2e/helpers/mockserver.ts).
-  # auth.yeswiki.test is the identity provider of the sign-in specs, same-site with the wiki.
-  # A request no expectation matches answers 404, as a real server would, rather than being forwarded.
   yeswiki-mock:
     image: mockserver/mockserver:9.2.0
     container_name: ${COMPOSE_PROJECT_NAME:-yeswiki}-mock

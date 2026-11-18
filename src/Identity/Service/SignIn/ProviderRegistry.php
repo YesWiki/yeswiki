@@ -10,12 +10,7 @@ use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderType;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
-/**
- * The sign-in providers of `sso_providers`, in the order of the section.
- * The types (a lazy iterator, since the local type depends on the service that depends on this registry) are resolved when first
- * needed, then kept: they cannot change for the container's lifetime. The section is parsed again only when it differs from the one
- * parsed last, so an edit made through ProvidersEditor is seen at once. Providers are never kept: they are built on each call.
- */
+/** The sign-in providers of `sso_providers`, in the order of the section. */
 class ProviderRegistry
 {
     public const SECTION = 'sso_providers';
@@ -30,7 +25,8 @@ class ProviderRegistry
 
     /** @param iterable<ProviderType> $types */
     public function __construct(
-        #[AutowireIterator('yeswiki.sign_in_provider_type')] private readonly iterable $types,
+        #[AutowireIterator('yeswiki.sign_in_provider_type')]
+        private readonly iterable $types,
         private readonly RuntimeConfig $config,
     ) {
     }
@@ -78,10 +74,7 @@ class ProviderRegistry
         return $providers;
     }
 
-    /**
-     * The provider's name as people read it: the provider's own label (local's is translated), or, when the entry gives none, the
-     * label of its type. The identifier is used only when the type is not installed.
-     */
+    /** The provider's name as people read it. */
     public function labelOf(ProviderConfig $config): string
     {
         $types = $this->types();
@@ -108,10 +101,7 @@ class ProviderRegistry
         return $config !== null && $config->enabled && isset($this->types()[$config->type]);
     }
 
-    /**
-     * Whether the type named $type signs in the wiki's own accounts (ChecksTheWikisOwnAccounts); false when it is not installed.
-     * Only core's types are believed: an extension adds a protocol and cannot change the account rules (ADR-0031).
-     */
+    /** Whether the type named $type signs in the wiki's own accounts (ChecksTheWikisOwnAccounts); false when it is not installed. */
     public function checksTheWikisOwnAccounts(string $type): bool
     {
         $found = $this->types()[$type] ?? null;
@@ -139,8 +129,7 @@ class ProviderRegistry
     }
 
     /**
-     * The provider of $config, or null when its type is not installed or throws while building it: a type an extension supplies
-     * must not take the sign-in page down with it, and problems() names it.
+     * The provider of $config, or null when its type is missing or fails to build it.
      *
      * @param array<string, ProviderType> $types
      */

@@ -74,13 +74,13 @@ class SignInHealthChecksTest extends YesWikiTestCase
     }
 
     /**
-     * @param array<string, mixed> $section
-     * @param array<string, int> $counts
+     * @param array<string, mixed>    $section
+     * @param array<string, int>      $counts
      * @param list<ProviderType>|null $types
      */
     private function checks(array $section, array $counts = [], bool $ldapLoaded = true, ?array $types = null): SignInHealthChecks
     {
-        self::getWiki(); // loads _t()
+        self::getWiki();
         $values = ['sso_providers' => $section];
         $config = new RuntimeConfig();
         $config->bind($values);
@@ -102,9 +102,9 @@ class SignInHealthChecksTest extends YesWikiTestCase
     }
 
     /**
-     * @param array<string, mixed>   $section
-     * @param array<string, int>     $counts
-     * @param ?list<ProviderType>    $types
+     * @param array<string, mixed> $section
+     * @param array<string, int>   $counts
+     * @param ?list<ProviderType>  $types
      */
     private function check(string $id, array $section, array $counts = [], bool $ldapLoaded = true, ?array $types = null): HealthCheck
     {

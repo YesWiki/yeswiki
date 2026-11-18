@@ -24,12 +24,7 @@ import {
   throughProvider,
 } from '../helpers/sso'
 
-/**
- * The upgrade from Doryphore, for each login extension (spec section 13): a wiki that signed in through loginsso, loginldap or
- * logincas is put back as Doryphore left it, upgraded again, and its people sign in against the mock identity provider. Marie
- * reaches the account she had, nobody gets a second one, and loginsso's provider keeps the callback registered at it. There is
- * no directory to sign in against: for loginldap, the conversion is checked here, and the sign-in by PHPUnit against a stub.
- */
+/** The upgrade from Doryphore, for each login extension. */
 
 /** The address the converted provider sends, which UPGRADE.md asks to register at the provider before upgrading. */
 const PROVIDER_CALLBACK = `${WIKI}/?user/sign-in/acme-sso/callback&sso_callback=acme-sso`
@@ -157,7 +152,6 @@ test.beforeAll(mockReady)
 test.describe('the upgrade from Doryphore', () => {
   test.beforeEach(async () => {
     await mockReset()
-    // what an earlier run left: the account logincas's test signs Marie in to has her email, which another test's must have
     forgetAccounts(PEOPLE.marie.email, PEOPLE.jean.email)
   })
 
@@ -204,7 +198,6 @@ test.describe('the upgrade from Doryphore', () => {
         },
       },
       accounts: [
-        // an email of her own on Doryphore: only the user ID loginsso stored can find her account
         {
           name: tag,
           email: 'marie@doryphore.example',
@@ -247,7 +240,6 @@ test.describe('the upgrade from Doryphore', () => {
     const page = await (await browser.newContext()).newPage()
     const sentBack: string[] = []
     page.on('request', (request) => {
-      // the first key of the query, whether a provider sends its slashes as they are or escaped (`?user%2Fsign-in%2F…`)
       const url = new URL(request.url())
       if (
         url.origin === new URL(WIKI).origin &&
@@ -281,7 +273,6 @@ test.describe('the upgrade from Doryphore', () => {
       'Editors',
     )
 
-    // the pages loginsso seeded link to the account screens now
     await page.goto('/?PageMenuUser')
     const profile = page.locator('.page a[href$="?user"]', {
       hasText: 'Consulter mon profil',
@@ -309,7 +300,6 @@ test.describe('the upgrade from Doryphore', () => {
         ldap_base: PEOPLE_BASE,
       },
       accounts: [
-        // loginldap kept an md5 of the directory password in the account
         {
           name: tag,
           email: PEOPLE.marie.email,
@@ -355,7 +345,6 @@ test.describe('the upgrade from Doryphore', () => {
         cas_server_ca_cert_path: '',
       },
       accounts: [
-        // logincas named the account after the CAS `name` attribute, and gave it a random md5 password
         {
           name: tag,
           email: PEOPLE.marie.email,
@@ -379,9 +368,6 @@ test.describe('the upgrade from Doryphore', () => {
     )
     const everyone = accounts()
 
-    // NOT EXERCISED: the converted server URL. logincas's phpCAS only spoke https, so the conversion writes
-    // https://<cas_host>:<cas_port>/<cas_context> (checked above), but the mock serves CAS on plain http only.
-    // That one value is replaced by the mock's http address; every other converted setting, the `name` user ID included, is used unchanged.
     const section = converted().providers
     setProviders({
       ...section,

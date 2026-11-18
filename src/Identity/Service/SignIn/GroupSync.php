@@ -5,7 +5,7 @@ namespace YesWiki\Identity\Service\SignIn;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\GroupManager;
 
-/** Moves an account between the wiki groups a provider's mapping names. A failure is a warning, never a refusal. */
+/** Moves an account between the wiki groups a provider's mapping names. */
 class GroupSync
 {
     /** What is said when the guard keeps an account in "admins", by the plan and by apply() alike. */
@@ -40,7 +40,6 @@ class GroupSync
 
         foreach ($remove as $group) {
             try {
-                // a plan can be stale: the guard is asked again here.
                 if ($group === ADMIN_GROUP && $this->isLastAdmin($name)) {
                     $warnings[] = self::LAST_ADMIN;
                     continue;

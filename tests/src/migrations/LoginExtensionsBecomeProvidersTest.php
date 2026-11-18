@@ -13,10 +13,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A Doryphore wiki signing in through loginsso, loginldap or logincas keeps signing its people in: providers in the configuration, links in the accounts, no revision added.
- * Only the accounts the test creates are walked, and the configuration is a temporary file.
- */
+/** A Doryphore wiki signing in through a login extension keeps signing its people in. */
 class LoginExtensionsBecomeProvidersTest extends YesWikiTestCase
 {
     private const ACCOUNTS = ['TestLoginExtMarie', 'TestLoginExtPaul', 'TestLoginExtLinked'];
@@ -172,10 +169,7 @@ class LoginExtensionsBecomeProvidersTest extends YesWikiTestCase
         $this->assertArrayNotHasKey('sso_provider', $this->latest('TestLoginExtPaul'), 'an account loginsso never saw stays local');
     }
 
-    /**
-     * loginsso's own migration filled `loginsso_id` with every existing account's email: that copy names nobody at the provider,
-     * so linking on it would lock out every account that never signed in through loginsso (their password goes with the link).
-     */
+    /** The email loginsso copied into `loginsso_id` is not a link. */
     public function testAStoredIdThatIsOnlyTheAccountsEmailLinksNothing(): void
     {
         $this->writeConfig(['sso_config' => ['providers' => [$this->ssoEntry()]]]);

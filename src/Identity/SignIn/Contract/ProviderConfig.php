@@ -6,10 +6,10 @@ namespace YesWiki\Identity\SignIn\Contract;
 final class ProviderConfig
 {
     /**
-     * @param array<string, mixed>            $connection
-     * @param array<string, string>           $attributes
-     * @param list<array<string, string>>     $groupMapping
-     * @param array<string, string>           $extraFields
+     * @param array<string, mixed>        $connection
+     * @param array<string, string>       $attributes
+     * @param list<array<string, string>> $groupMapping
+     * @param array<string, string>       $extraFields
      */
     public function __construct(
         public readonly string $id,
@@ -24,7 +24,6 @@ final class ProviderConfig
         public readonly array $extraFields,
         public readonly ?string $accountNameTemplate,
         public readonly bool $matchByName,
-        // the account name made into a WikiName (loginsso), or kept as the provider sent it (loginldap, logincas)
         public readonly bool $accountNamePascalCase = true,
     ) {
     }
@@ -60,10 +59,7 @@ final class ProviderConfig
         return $this->connection[$key] ?? $default;
     }
 
-    /**
-     * A flag as the administration screen reads it: "false", "0", "no", "off" and anything else that is not a yes are false, so a
-     * hand-written value never switches on what it meant to keep off. Absent, it is the default.
-     */
+    /** A flag as the administration screen reads it: anything but a yes is false. */
     private static function flag(mixed $value, bool $default): bool
     {
         return $value === null ? $default : filter_var($value, FILTER_VALIDATE_BOOLEAN);

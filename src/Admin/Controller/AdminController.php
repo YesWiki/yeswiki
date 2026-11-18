@@ -66,7 +66,6 @@ class AdminController extends YesWikiController
 
         return $this->page('@core/admin/logs.twig', 'admin/logs', [
             'levels' => AdminLogsApiController::levels(),
-            // a link from elsewhere (the sign-in screen) narrows the stream before it loads
             'preset' => [
                 'action' => trim((string)$request->query->get('action', '')),
                 'target' => trim((string)$request->query->get('target', '')),

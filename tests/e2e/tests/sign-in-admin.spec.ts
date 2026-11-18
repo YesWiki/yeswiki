@@ -91,7 +91,6 @@ test.describe('the sign-in administration screen', () => {
     const id = (await row.locator('small.yw-form-hint').innerText()).trim()
     expect(id).toBe(PROVIDER_IDS.oidc)
 
-    // edited with the secret left blank: the field announces the stored one, and saving keeps it
     await page.locator(`a[href*="admin/sign-in/${id}/edit"]`).click()
     const secret = page.locator('#sign-in-connection-client_secret')
     await expect(secret).toHaveValue('')
@@ -105,7 +104,6 @@ test.describe('the sign-in administration screen', () => {
       /The provider was saved|Le fournisseur a été enregistré/,
     )
 
-    // the proof is a real sign-in: the mock identity provider refuses a client that does not present the stored secret
     const context: BrowserContext = await browser.newContext()
     try {
       const visitor = await context.newPage()
@@ -133,7 +131,6 @@ test.describe('the sign-in administration screen', () => {
     const local = rowOf(page, 'local')
     await expect(local.locator('.yw-badge--success')).toBeVisible()
 
-    // the administrator is a wiki account, which switching local off would sign out: the toggle asks first
     await local.locator('button[type="submit"]').click()
     await confirmSigningOut(page)
 
@@ -148,7 +145,6 @@ test.describe('the sign-in administration screen', () => {
   test('local cannot be switched off by an administrator it would lock out', async ({
     page,
   }) => {
-    // OIDC is on, but does not connect to the existing account with the same email
     setProviders(sectionFor('oidc'))
     await asAdmin(page)
     await page.goto('/?admin/sign-in')
@@ -202,7 +198,6 @@ test.describe('the sign-in administration screen', () => {
     await byName.check()
     await expect(warning('name')).toBeVisible()
     await expect(warning('email')).toBeHidden()
-    // the warning sits in the same group as the box, not at the foot of the section
     await expect(
       byName.locator(
         'xpath=ancestor::div[contains(@class,"yw-form-group")]//*[@data-yw-sign-in-takeover="name"]',

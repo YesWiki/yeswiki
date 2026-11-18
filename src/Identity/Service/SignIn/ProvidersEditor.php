@@ -9,10 +9,7 @@ use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 
-/**
- * Writes the `sso_providers` section of the configuration file for the administration screen (spec 5.5, 5.6, 7, 8.3).
- * The file is read and written whole on every call: nothing is kept between calls, and what the screen does not show survives a save.
- */
+/** Writes the `sso_providers` section of the configuration file for the administration screen (spec 5.5, 5.6, 7, 8.3). */
 class ProvidersEditor
 {
     /** The attribute names the screen offers, whatever the type. */
@@ -31,7 +28,7 @@ class ProvidersEditor
     }
 
     /**
-     * The entries as the file holds them, in sign-in page order. With no section, local is there: it is enabled, and the first save writes it.
+     * The entries as the file holds them, in sign-in page order.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -95,7 +92,6 @@ class ProvidersEditor
         if ($type === null) {
             return [_t('SIGN_IN_ADMIN_UNAVAILABLE_NOT_EDITABLE')];
         }
-        // the type is fixed once created, and so is the entry's place in the section.
         unset($posted['type']);
 
         [$entry, $errors] = $this->apply($entries[$id], $type->connectionSettings(), $posted);
@@ -162,9 +158,9 @@ class ProvidersEditor
     /**
      * What a posted form changes of an entry: only the keys the screen shows.
      *
-     * @param array<string, mixed>  $entry
-     * @param list<Setting>         $settings
-     * @param array<string, mixed>  $posted
+     * @param array<string, mixed> $entry
+     * @param list<Setting>        $settings
+     * @param array<string, mixed> $posted
      *
      * @return array{0: array<string, mixed>, 1: list<string>}
      */
@@ -186,7 +182,6 @@ class ProvidersEditor
         }
 
         $postedConnection = is_array($posted['connection'] ?? null) ? $posted['connection'] : [];
-        // a secret is never shown, so a blank one keeps what is stored: its "remove" box is how it is taken out
         $clearedSecrets = is_array($posted['clear_secrets'] ?? null) ? $posted['clear_secrets'] : [];
         $connection = is_array($entry['connection'] ?? null) ? $entry['connection'] : [];
         foreach ($settings as $setting) {
@@ -199,7 +194,6 @@ class ProvidersEditor
             if (array_key_exists($name, $postedConnection)) {
                 $value = $postedConnection[$name];
                 if (!empty($declared['multiline']) && is_string($value)) {
-                    // a textarea posts CRLF: the value is stored with the line breaks it was typed with
                     $value = trim(str_replace("\r\n", "\n", $value));
                 }
                 if ($type === 'checkbox') {
@@ -219,7 +213,6 @@ class ProvidersEditor
                     }
                 }
             }
-            // a value typed beside a ticked box replaces the secret, as it would alone
             $typed = is_string($postedConnection[$name] ?? null) && trim($postedConnection[$name]) !== '';
             if ($type === 'secret' && !$typed && self::flag($clearedSecrets[$name] ?? false)) {
                 unset($connection[$name]);
@@ -263,7 +256,6 @@ class ProvidersEditor
             }
         }
 
-        // a table emptied in the browser posts no row at all: its presence flag says the table was there.
         if (is_array($posted['group_mapping'] ?? null) || array_key_exists('group_mapping_present', $posted)) {
             $rows = [];
             foreach (is_array($posted['group_mapping'] ?? null) ? $posted['group_mapping'] : [] as $row) {
@@ -310,8 +302,7 @@ class ProvidersEditor
     }
 
     /**
-     * Whether $entries, once saved, leave the administrator acting with no way back in: they are signed in with a local account,
-     * local is off, which signs them out, and no switched-on provider of an installed type attaches an existing account by its name or by its email.
+     * Whether saving $entries would leave the signed-in administrator with no way back in.
      *
      * @param array<string, array<string, mixed>> $entries
      */
@@ -344,7 +335,7 @@ class ProvidersEditor
         $slug = strtolower(trim((string)preg_replace('/[^a-zA-Z0-9]+/', '-', self::asciiOf($label)), '-'));
         $base = $slug === '' ? $type : $slug;
         $id = $base;
-        for ($n = 2; isset($entries[$id]) || in_array($id, self::RESERVED_IDENTIFIERS, true); ++$n) {
+        for ($n = 2; isset($entries[$id]) || in_array($id, self::RESERVED_IDENTIFIERS, true); $n++) {
             $id = $base . '-' . $n;
         }
 

@@ -4,23 +4,13 @@ namespace YesWiki\Identity\SignIn;
 
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * The address a provider sends the person back to, the one built for every type: OIDC's redirect_uri, SAML's ACS URL, CAS's service.
- * The callback's route, then the pair that names it again for a server that drops a query key without a value (PARAMETER):
- * `https://wiki.example/?user/sign-in/<id>/callback&sso_callback=<id>`.
- */
+/** The address a provider sends the person back to, the one built for every type: OIDC's redirect_uri, SAML's ACS URL, CAS's service. */
 final class SignInCallback
 {
-    /**
-     * The pair the callback's address carries after its key: it names the callback again for a server that rebuilds the query and
-     * drops a key without a value (authentik, LemonLDAP::NG 2.21 and 2.16).
-     */
+    /** The pair that names the callback again after its key. */
     public const PARAMETER = 'sso_callback';
 
-    /**
-     * The callback's key as a server may send it back in the query: the page name in any case, an identifier without the `&`, `?`
-     * or `=` that would end the key, and the empty value a form adds.
-     */
+    /** The callback's key as a server may send it back in the query. */
     private const KEY = '#^(?i:user)/sign-in/[^/&?=]+/callback=?$#D';
 
     public static function url(UrlFormatter $urls, string $providerId): string
@@ -29,13 +19,9 @@ final class SignInCallback
     }
 
     /**
-     * The address YesWikiInit routes instead of $relativeUri when an identity server sent the callback back without its key first:
-     * `/?<the callback's key>`, or null to leave the address alone.
-     * Only at the root (`/?…`, not `/index.php?…` nor a path), without a `wiki` parameter, and when the query starts with an answer
-     * (`?code=…`): a page named first without a value (`?Page&…`, `?Page=&…`) and an empty first key (`?=x&…`) keep their route.
-     * A page given a value (`?Page=x&…`) gives way to the callback: harmless, the callback refuses whatever has no sign-in in progress.
+     * The address YesWikiInit routes instead of $relativeUri, or null to leave it alone.
      *
-     * @param string $relativeUri the request URI, without the script's location
+     * @param string $relativeUri   the request URI, without the script's location
      * @param mixed  $wikiParameter the `wiki` query parameter
      */
     public static function routeIn(string $relativeUri, mixed $wikiParameter): ?string
@@ -53,9 +39,7 @@ final class SignInCallback
     }
 
     /**
-     * The callback's key (percent-encoded or not, without a value), when the server rebuilt the query as a form and put its answer
-     * first: Pocket ID sorts the keys (`?code=…&state=…&user%2Fsign-in%2F<id>%2Fcallback=`). RFC 6749 only asks a server to keep
-     * the query, not its order.
+     * The callback's key, when the server rebuilt the query and put its answer first.
      *
      * @param list<string> $pieces the query split on `&`
      */
@@ -70,9 +54,7 @@ final class SignInCallback
     }
 
     /**
-     * The callback's key, when the server dropped it but kept the `sso_callback=<id>` pair (authentik's parse_qs:
-     * `?sso_callback=<id>&code=…&state=…`). The query holds that pair once, its identifier with the characters a callback key's may
-     * have (no `/`, `&`, `?` or `=`, once decoded).
+     * The callback's key, when the server dropped it but kept the `sso_callback=<id>` pair.
      *
      * @param list<string> $pieces the query split on `&`
      */

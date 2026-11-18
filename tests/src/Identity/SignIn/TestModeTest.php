@@ -152,10 +152,7 @@ final class TestModeFakePassword implements PasswordProvider
     public const LOCAL = 'TestModeLocal';
 }
 
-/**
- * An administrator tries a provider out (spec 8.3, "Test"): the real protocol runs, only plan() is called,
- * and nobody is signed in, nothing is written, nothing is counted.
- */
+/** Testing a provider runs the real protocol and plan() only. */
 class TestModeTest extends YesWikiTestCase
 {
     use FakeProviderTypes;
@@ -472,7 +469,6 @@ class TestModeTest extends YesWikiTestCase
 
     public function testATestWritesNothingToTheJournal(): void
     {
-        // a linked account whose new email another account holds: a real sign-in would write a warning.
         $services = self::getWiki()->services;
         $users = $services->get(UserManager::class);
         $linked = $users->create(self::LINKED, 'testmode-linked@example.com', 'a-long-enough-password');
@@ -726,7 +722,6 @@ class TestModeTest extends YesWikiTestCase
 
     public function testTheWikisOwnAccountsAreNotTested(): void
     {
-        // checking a local password can rewrite its hash: a test would change something.
         $outcome = $this->flow->password('local', 'testmode', 'good', false, HandshakeMode::Test);
 
         $this->assertSame('tested', $outcome->kind);
@@ -803,7 +798,6 @@ class TestModeTest extends YesWikiTestCase
 
     public function testAnAttributeSentAsAnObjectIsShownWithItsKeys(): void
     {
-        // ZITADEL's project roles: each role is a key, its value the organisations that granted it
         $roles = ['staff' => ['100000000000000001' => 'acme.idp.example'], 'wiki-editors' => ['100000000000000001' => 'acme.idp.example']];
 
         $html = $this->renderTested($this->outcome($this->flow->callback($this->testCallback(['sub' => 's', 'email' => 'testmode-new@example.com', 'urn:example:roles' => $roles, 'groups' => ['g1', 'g2']]), 'fake')));
@@ -812,10 +806,7 @@ class TestModeTest extends YesWikiTestCase
         $this->assertStringContainsString('<div>g1</div><div>g2</div>', $html, 'a list still shows one value per line');
     }
 
-    /**
-     * Active Directory's objectGUID is 16 raw bytes: chosen as the user ID it comes, but cannot be used. The summary and the
-     * line under the attributes must say it came and why it cannot be used, as the raw error does, not that it was not sent.
-     */
+    /** Active Directory's objectGUID is 16 raw bytes: chosen as the user ID it comes, but cannot be used. */
     public function testAUserIdSentWithABinaryValueIsSaidToHaveComeButNotAsText(): void
     {
         $this->flow = $this->flowFor(['fake' => ['type' => 'fake-redirect', 'label' => 'Fake SSO', 'attributes' => ['id' => 'objectGUID']]]);
@@ -885,7 +876,6 @@ class TestModeTest extends YesWikiTestCase
         $flow = new SignInFlow($services->get(ProviderRegistry::class), $this->service, $services->get(SignInJournal::class), $services->get(HandshakeCookie::class), $services->get(AuthenticationService::class), $services->get(UrlFormatter::class), $services->get(AclService::class));
         $this->swap(SignInFlow::class, $flow);
         if ($tokenAccepted) {
-            // filter_input() reads the SAPI's input, which a CLI run has none of: the token is not what is tested here.
             $this->swap(CsrfTokenChecker::class, $this->createStub(CsrfTokenChecker::class));
         }
         self::actAs(self::adminName());

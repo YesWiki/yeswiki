@@ -28,8 +28,7 @@ class LinkedProfileTest extends YesWikiTestCase
     private UserManager $users;
     private UserOperationsService $ops;
     private User $linked;
-    /** @var mixed */
-    private $sectionWas;
+    private mixed $sectionWas = null;
     private Request $requestWas;
 
     protected function setUp(): void
@@ -44,7 +43,6 @@ class LinkedProfileTest extends YesWikiTestCase
         $config['sso_providers'] = ['acme' => [
             'type' => 'oidc',
             'label' => 'Acme SSO',
-            // the field of the user form, then the attribute that fills it
             'extra_fields' => ['bf_service' => 'department'],
         ]];
         $this->cleanUp();
@@ -139,7 +137,6 @@ class LinkedProfileTest extends YesWikiTestCase
     /** The field an extra attribute fills is the provider's: a sign-in writes it, an edit on the wiki does not. */
     public function testTheFieldAnExtraAttributeFillsCannotBeEdited(): void
     {
-        // motto: a field every account holds, here filled from the provider's `department`
         $this->services->get(RuntimeConfig::class)['sso_providers'] = ['acme' => ['type' => 'oidc', 'extra_fields' => ['motto' => 'department']]];
         $this->services->get(ProfileSync::class)->apply($this->linked, ['motto' => 'R&D']);
 
@@ -194,7 +191,6 @@ class LinkedProfileTest extends YesWikiTestCase
         $reflection->getProperty('userLoggedIn')->setValue($action, $loggedIn);
         $reflection->getProperty('adminIsActing')->setValue($action, $adminActing);
         $reflection->getProperty('wantedUserName')->setValue($action, self::LINKED);
-        // filter_input() reads the SAPI's input, which a CLI run has none of: the token is not what is tested here.
         $reflection->getProperty('csrfTokenChecker')->setValue($action, $this->createStub(\YesWiki\Identity\Service\CsrfTokenChecker::class));
 
         return [$action, $reflection];
@@ -232,10 +228,9 @@ class LinkedProfileTest extends YesWikiTestCase
         [$action, $reflection] = $this->actionFor($loggedIn, $adminActing);
         $exited = false;
         try {
-            // the disabled email input posts nothing: the other fields are what arrives.
             $reflection->getMethod('update')->invoke($action, ['motto' => 'from the form', 'usersettings_action' => 'update'], $this->linked);
         } catch (\YesWiki\Kernel\Exception\ExitException $e) {
-            $exited = true; // the redirect after a save
+            $exited = true;
         }
 
         $this->assertSame('', $reflection->getProperty('errorUpdate')->getValue($action));

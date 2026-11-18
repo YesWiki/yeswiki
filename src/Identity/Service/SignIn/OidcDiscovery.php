@@ -10,10 +10,7 @@ use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderFailure;
 use YesWiki\Identity\SignIn\ServerDown;
 
-/**
- * Where an OpenID Connect or OAuth2 provider answers: read from its discovery document, or from the endpoints written in the configuration, which win over discovered ones.
- * The document is fetched each time it is needed, twice per sign-in: nothing is kept between requests.
- */
+/** The endpoints of an OpenID Connect or OAuth2 provider, configured or discovered. */
 class OidcDiscovery
 {
     private const TIMEOUT = 10;

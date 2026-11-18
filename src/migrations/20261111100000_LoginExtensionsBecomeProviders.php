@@ -13,16 +13,7 @@ use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DoryphoreLeftovers;
 
-/**
- * Doryphore's loginsso, loginldap and logincas settings become `sso_providers`, and the accounts follow (spec section 11):
- * a lone loginsso provider turns `loginsso_id` into the account's link (unless it is only the email loginsso copied there when it was
- * installed), and a wiki LDAP signed in loses its md5 hashes, every revision included.
- * Bodies are rewritten in place, so no revision is added. The accounts and the configuration are one unit: the account rewrites
- * run in a transaction that commits only once the configuration is written, so a failure leaves the old keys for the next run to convert.
- * On a wiki running on its own `yeswiki.config.php`, the configuration is written to the database (replicas 04), and the old keys --
- * `sso_config` holds client secrets -- are then taken out of the file too, the one write to it the running wiki makes.
- * Neither the hashes nor `loginsso_id` nor the link keys reach the search index (the User form's password field contributes nothing), so no page is reindexed.
- */
+/** Doryphore's loginsso, loginldap and logincas settings become `sso_providers`, and the accounts follow. */
 class LoginExtensionsBecomeProviders extends YesWikiMigration
 {
     private const LEGACY_SUBJECT = 'loginsso_id';
@@ -103,7 +94,6 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
             unset($onDisk[$key]);
         }
 
-        // built by hand, a ConfigurationService writes the file itself rather than the database
         return (new ConfigurationService())->write($onDisk, $file);
     }
 
@@ -133,7 +123,6 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
         $counts = ['linked' => 0, 'unlinked' => 0, 'cleared' => 0, 'copied' => 0];
         $linkTo = $this->linkTarget($result);
         $subjectIsTheEmail = $linkTo !== null && $this->identifiesByEmail($result->providers[$linkTo]);
-        // who signed people in on Doryphore, not who is on now: the hashes may be the directory's unsalted passwords either way
         $clearMd5 = $result->doryphoreInCharge === DoryphoreSsoConversion::LOGINLDAP;
         if (($result->loginssoIds === [] && !$clearMd5) || $onlyAccounts === []) {
             return $counts;
@@ -164,12 +153,10 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
                 $alreadyLinked = is_string($body[AccountLinks::PROVIDER_KEY] ?? null) && $body[AccountLinks::PROVIDER_KEY] !== '';
                 $email = is_string($body['email'] ?? null) ? trim($body['email']) : '';
                 if ($subject !== '' && !$alreadyLinked && !$subjectIsTheEmail && strcasecmp($subject, $email) === 0) {
-                    // loginsso's own migration copied every existing account's email here: nobody at the provider has that subject
                     $counts['copied']++;
                 } elseif ($linkTo !== null && $subject !== '' && !$alreadyLinked && !isset($linked[$subject])) {
                     $body[AccountLinks::PROVIDER_KEY] = $linkTo;
                     $body[AccountLinks::SUBJECT_KEY] = $subject;
-                    // as AccountLinks::link(): a linked account signs in through its provider only
                     $body['password'] = '';
                     $linked[$subject] = true;
                 } elseif ($subject !== '' && !$alreadyLinked) {
@@ -187,8 +174,7 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
     }
 
     /**
-     * Whether the provider's user ID is the email itself, as with a loginsso `id_sso_field` naming the email's field: an ID equal to
-     * the account's email is then a real subject, and not the copy loginsso made when it was installed.
+     * Whether the provider's user ID is the email itself.
      *
      * @param array<string, mixed> $provider
      */

@@ -23,7 +23,6 @@ class AttributeReaderTest extends TestCase
         $this->assertSame([], AttributeReader::many([], 'g'));
     }
 
-    // Review Focus: binary and oversized attributes.
     public function testBinaryValuesAreDescribedNotCopied(): void
     {
         $logged = AttributeReader::forLog(['jpegPhoto' => "\xFF\xD8\xFF\xE0binary", 'mail' => 'a@x']);

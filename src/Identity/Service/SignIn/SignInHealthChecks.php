@@ -19,7 +19,6 @@ class SignInHealthChecks implements ProvidesHealthChecks
     public function healthChecks(): array
     {
         return [
-            // Nobody can sign in, whether the section disables every entry or leaves only broken or unavailable ones.
             HealthCheck::named('sign-in-no-provider')
                 ->label(_t('HEALTH_SIGN_IN_NO_PROVIDER'))
                 ->says(_t('HEALTH_SIGN_IN_NO_PROVIDER_SAYS'))
@@ -72,7 +71,6 @@ class SignInHealthChecks implements ProvidesHealthChecks
                     return $ids === [] ? null : _t('HEALTH_SIGN_IN_LDAP_MISSING', ['providers' => implode(', ', $ids)]);
                 }),
 
-            // Accepted, since development and test servers run on http, but never silently: what crosses it can be read and changed on the way.
             HealthCheck::named('sign-in-plain-http')
                 ->label(_t('HEALTH_SIGN_IN_PLAIN_HTTP'))
                 ->says(_t('HEALTH_SIGN_IN_PLAIN_HTTP_SAYS'))
@@ -88,7 +86,6 @@ class SignInHealthChecks implements ProvidesHealthChecks
 
     /**
      * Every enabled provider with an address setting of its type written in http://, as "id (setting, setting)".
-     * Read from each type's own settings, so an extension's type is covered as the core's are.
      *
      * @return list<string>
      */

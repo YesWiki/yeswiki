@@ -1,23 +1,6 @@
 <?php
 
-/**
- * Turns the wiki under test back into a Doryphore wiki that signed in through one login extension, then upgrades it again
- * (spec section 13). Run from the wiki's folder, by sign-in-upgrade.spec.ts:
- *   load '<fixture as JSON>'   {tools, config, accounts, pages, groups}: see below; prints what the migrations said, as JSON
- *   account <tag>              the account's body as the spec checks it, and its revisions' hashes, as JSON (null when none)
- *   accounts                   the tags of every account, sorted, as JSON
- *   providers                  the `sso_providers` section the wiki reads, client secrets left out, and the Doryphore keys still in
- *                              the file, as JSON
- *   reset                      takes the Doryphore keys and `sso_providers` out of the configuration, from the file and the database.
- *
- * `load` puts back what Doryphore had and the upgrade reads: the extension's folder among the tools set aside, its keys in the
- * configuration, a `users` table holding the accounts (loginsso's `loginsso_id` column included), pages calling loginsso's actions,
- * and groups. It then forgets that the five migrations concerned ran, and runs the migrations: MigrateUsersToPages, DropUsersTable,
- * LoginExtensionsBecomeProviders and LoginssoActionsBecomeLinks do what an upgrade would.
- *
- * It refuses any wiki but the one tests/e2e/reset.sh installed for the run: the configured base_url must be YESWIKI_TEST_BASE_URL,
- * and the database the test one.
- */
+/** Turns the wiki under test back into a Doryphore wiki, then upgrades it again. */
 
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
@@ -62,8 +45,6 @@ $configService = new ConfigurationService();
 $configuration = $configService->getConfiguration($configFile);
 $configuration->load();
 
-// Only the wiki installed for this run: the developer's own wiki lives in the same folder under php-fpm.
-// Its address and database are the host's settings, in private/.env since replicas 20, not in the file loaded above.
 $host = (new InstanceConfiguration(YESWIKI_INSTANCE_DIR))->hostSettings();
 $expectedBase = (string)getenv('YESWIKI_TEST_BASE_URL');
 $base = (string)($host['base_url'] ?? '');
@@ -89,15 +70,11 @@ function writeConfiguration(ConfigurationService $service, mixed $configuration,
     }
 }
 
-/**
- * Forgets what the database holds over the file for the keys the upgrade touches: the `sso_providers` it and the administration
- * screen save, and the Doryphore keys it takes out, which the database then keeps as removed and would hide when they are back.
- */
+/** Forgets the database overrides of the keys the upgrade touches. */
 function forgetStoredProviders(): void
 {
     $wiki = YesWikiLoader::getWiki(true);
     $wiki->services->get(WikiSettings::class)->store([], [...DORYPHORE_KEYS, ProviderRegistry::SECTION]);
-    // the wiki was started to reach the database: it reads its settings again, so what follows sees them gone
     $wiki->followStoredSettings();
 }
 
@@ -140,7 +117,6 @@ if ($command === 'providers') {
 $fixture = $command === 'load' ? json_decode($argv[2] ?? '', true, 512, JSON_THROW_ON_ERROR) : null;
 
 if ($fixture !== null) {
-    // A clean slate before the services read the configuration: what an earlier spec or extension left, then Doryphore's keys.
     withoutDoryphore($configuration);
     foreach ($fixture['config'] as $key => $value) {
         $configuration[$key] = $value;
@@ -202,7 +178,6 @@ switch ($command) {
         exit(1);
 }
 
-// The accounts of an earlier load, or of an earlier spec under the same emails, would stand in for the ones Doryphore had.
 foreach ($fixture['accounts'] as $legacy) {
     foreach ([$users->getOneByName($legacy['name']), $users->getOneByEmail($legacy['email'])] as $user) {
         if ($user !== null) {
@@ -214,7 +189,6 @@ foreach (array_keys($fixture['pages']) as $tag) {
     $pages->deleteOrphaned($tag);
 }
 
-// Doryphore's users table, with the column loginsso added to it.
 $table = $db->prefixTable('users');
 $db->query("DROP TABLE IF EXISTS {$table}");
 $db->query("CREATE TABLE {$table} (name VARCHAR(80) NOT NULL, password VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, motto TEXT, "
@@ -228,12 +202,10 @@ foreach ($fixture['accounts'] as $legacy) {
     );
 }
 
-// Pages as Doryphore's markup migration left them, still calling loginsso's actions.
 foreach ($fixture['pages'] as $tag => $content) {
     $pages->save($tag, [PageBody::CONTENT => $content], '', true);
 }
 
-// The extension's folder, among the tools the move to Ectoplasme set aside.
 $aside = YESWIKI_INSTANCE_DIR . '/' . DoryphoreLeftovers::ASIDE;
 $hadAside = is_dir($aside);
 $made = [];
@@ -252,7 +224,6 @@ try {
     }
     $messages = $services->get(MigrationService::class)->run();
 } finally {
-    // under php-fpm the wiki under test is the developer's checkout: leave no Doryphore folder behind
     foreach ($made as $folder) {
         rmdir($folder);
     }
@@ -261,7 +232,6 @@ try {
     }
 }
 
-// Groups made by hand on Doryphore, once their members are accounts again.
 $groups = $services->get(GroupManager::class);
 foreach ($fixture['groups'] as $group => $members) {
     if ($groups->groupExists($group)) {

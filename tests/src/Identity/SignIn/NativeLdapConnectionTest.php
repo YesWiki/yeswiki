@@ -8,12 +8,7 @@ use YesWiki\Identity\SignIn\Provider\LdapConnection\NativeLdapConnection;
 
 require_once __DIR__ . '/LdapStubServer.php';
 
-/**
- * NativeLdapConnection through ext-ldap and libldap, against a directory that answers what each test tells it to (LdapStubServer):
- * what goes on the wire, and how the directory's answers come back. What the provider makes of them is LdapProviderTest's.
- * The certificate of an ldaps:// directory is checked against a TLS server with a self-signed certificate, run by a child PHP
- * process: the handshake is all that test needs.
- */
+/** NativeLdapConnection against LdapStubServer. */
 #[RequiresPhpExtension('ldap')]
 class NativeLdapConnectionTest extends TestCase
 {
@@ -34,7 +29,6 @@ class NativeLdapConnectionTest extends TestCase
         if ($this->pem !== '' && is_file($this->pem)) {
             unlink($this->pem);
         }
-        // libldap's own default, which ext-ldap can set but not read
         ldap_set_option(null, LDAP_OPT_X_TLS_REQUIRE_CERT, LDAP_OPT_X_TLS_DEMAND);
     }
 
@@ -150,7 +144,6 @@ class NativeLdapConnectionTest extends TestCase
         ]);
         $connection->bind(self::MARIE_DN, 'TestPassword1');
 
-        // the directory compares DNs itself: the entry comes back under the DN it stores
         $entry = $connection->read('uid=marie, ou=people, dc=acme, dc=example');
 
         $this->assertSame(['dn' => self::MARIE_DN, 'attributes' => ['uid' => ['marie'], 'sn' => ['Dupont']]], $entry);
@@ -242,10 +235,7 @@ class NativeLdapConnectionTest extends TestCase
         (new NativeLdapConnection())->connect('http://directory.acme.example', false);
     }
 
-    /**
-     * TLS_REQCERT never in ldap.conf, or LDAPTLS_REQCERT=never in the server's environment, would let any certificate through, and
-     * the docs promise the directory's certificate is checked.
-     */
+    /** The directory's certificate is checked whatever ldap.conf or LDAPTLS_REQCERT say. */
     #[RequiresPhpExtension('openssl')]
     public function testACertificateNobodyVouchesForIsRefused(): void
     {

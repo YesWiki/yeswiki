@@ -21,10 +21,7 @@ use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * The responses under tests/fixtures/saml/ are signed with its idp.key, and name the addresses below:
- * tests/fixtures/saml/generate.php writes them again when they must change.
- */
+/** The fixtures under tests/fixtures/saml/ are signed with its idp.key. */
 class SamlProviderTest extends TestCase
 {
     private const FIXTURES = __DIR__ . '/../../../fixtures/saml/';
@@ -41,9 +38,7 @@ class SamlProviderTest extends TestCase
 
     protected function setUp(): void
     {
-        // its file defines _t(), which the labels of copyableValues() use
         class_exists(LanguageService::class);
-        // php-saml compares where a response was sent with the address of the request it reads
         $this->server = $_SERVER;
         $_SERVER['HTTP_HOST'] = 'wiki.yeswiki.test';
         $_SERVER['REQUEST_URI'] = '/?user/sign-in/saml-a/callback';
@@ -241,7 +236,6 @@ class SamlProviderTest extends TestCase
 
     public function testAResponseNobodyAskedForIsRefused(): void
     {
-        // without the request ID, php-saml would not check InResponseTo at all
         $failure = $this->failure(fn () => $this->provider()->complete(self::posted('response-valid.xml'), self::handshake(null)));
 
         $this->assertSame(FailureReason::InvalidResponse, $failure->reason);
@@ -262,10 +256,7 @@ class SamlProviderTest extends TestCase
         $this->assertStringContainsString('Responder', $failure->adminDetail);
     }
 
-    /**
-     * The fixture is a valid signed response with a document type put in front after signing: the document type is all that is
-     * wrong with it, so only the refusal of document types can refuse it.
-     */
+    /** A valid signed response with a document type put in front. */
     public function testAnXxePayloadIsRefused(): void
     {
         $failure = $this->failure(fn () => $this->provider()->complete(self::posted('response-xxe.xml'), self::handshake()));

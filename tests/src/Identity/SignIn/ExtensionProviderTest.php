@@ -10,7 +10,6 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\LoginCookie;
 use YesWiki\Identity\Service\PasswordHasherFactory;
-use YesWiki\Identity\Service\SignIn\AccountLinks;
 use YesWiki\Identity\Service\SignIn\HandshakeCookie;
 use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\SignIn\SignInFlow;
@@ -92,7 +91,7 @@ class ExtensionProviderTest extends YesWikiTestCase
         $script = sys_get_temp_dir() . '/ext-provider-' . bin2hex(random_bytes(4)) . '.run.php';
         $extensions = array_values(array_unique([...(self::getWiki()->config['active_extensions'] ?? []), 'helloworld']));
         file_put_contents($script, "<?php\nchdir(" . var_export($root, true) . ");\nrequire 'src/YesWikiLoader.php';\n\$wiki = \\YesWiki\\Core\\YesWikiLoader::getWiki(true);\n"
-            . "\$registry = \$wiki->services->get(" . var_export(ProviderRegistry::class, true) . ");\n"
+            . '$registry = $wiki->services->get(' . var_export(ProviderRegistry::class, true) . ");\n"
             . "echo json_encode(['types' => array_map(fn (\$t) => \$t::class, \$registry->types())]);\n");
         try {
             $output = [];

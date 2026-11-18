@@ -11,11 +11,7 @@ import {
   signInAtWikiForm,
 } from '../helpers/sso'
 
-/**
- * A sign-in provider type added by an extension (spec section 13): the helloworld extension's `hello-password` type shows
- * on the administration screen once the extension is on, draws its own settings, is held to the account rules and the
- * Journal like a core type, and turns unavailable when the extension goes.
- */
+/** A sign-in provider type added by the helloworld extension. */
 const TOAST = '[role="alert"], .toast-message .alert'
 const TYPE = 'hello-password'
 const SHARED_PASSWORD = 'hello-shared-secret'
@@ -36,7 +32,6 @@ const addHelloProvider = async (page: Page, name: string): Promise<string> => {
   await page.goto('/?admin/sign-in')
   await page.locator(`a[href*="admin/sign-in/new/${TYPE}"]`).click()
   await page.locator('#sign-in-label').fill(name)
-  // the one setting the type declares, drawn as a secret field
   const secret = page.locator('#sign-in-connection-password')
   await expect(secret).toHaveAttribute('type', 'password')
   await secret.fill(SHARED_PASSWORD)
@@ -62,14 +57,12 @@ test.describe('a provider type added by an extension', () => {
   })
 
   test.afterAll(() => {
-    // the suite finds the extension as it left it, whatever happened above
     forgetAccounts(PERSON_EMAIL)
     if (wasOn && !helloworldIsOn()) {
       yeswicli('extension:enable', 'helloworld')
     } else if (!wasOn && helloworldIsOn()) {
       yeswicli('extension:disable', 'helloworld')
     }
-    // last: it waits until the web server reads the configuration, which the extension switch above changed too
     setProviders({ local: { type: 'local' } })
   })
 
@@ -82,18 +75,15 @@ test.describe('a provider type added by an extension', () => {
     expect(second).not.toBe(first)
     await page.context().clearCookies()
 
-    // the first sign-in creates the account, linked to the first provider
     await page.goto('/?user')
     await signInAtWikiForm(page, first, PERSON, SHARED_PASSWORD)
     await page.goto('/?user')
     await expect(page.locator('.yw-account-guest__card')).toHaveCount(0)
-    // the account is named as core names one (a NomWiki by default: `BoB`), not as the person typed it
     const account = accountWithEmail(PERSON_EMAIL)
     expect(account, 'the first sign-in created the account').not.toBeNull()
     await expect(page.locator('body')).toContainText(account!)
     await page.context().clearCookies()
 
-    // the same email through the second provider is a conflict, which core refuses and records
     const before = Math.max(0, ...journal('%').map((row) => Number(row.id)))
     await page.goto('/?user')
     await signInAtWikiForm(page, second, PERSON, SHARED_PASSWORD)
@@ -112,10 +102,8 @@ test.describe('a provider type added by an extension', () => {
     ])
     expect(JSON.stringify(refusals)).not.toContain(SHARED_PASSWORD)
 
-    // without the extension the type is gone: its providers stay listed, unavailable and not editable
     yeswicli('extension:disable', 'helloworld')
     await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
-    // the web server reads the configuration again within a couple of seconds
     await expect(async () => {
       await page.goto('/?admin/sign-in')
       await expect(

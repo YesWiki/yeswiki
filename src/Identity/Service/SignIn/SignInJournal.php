@@ -9,10 +9,7 @@ use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\SignInTrace;
 use YesWiki\Kernel\Service\Journal;
 
-/**
- * What a refused sign-in leaves behind: one audit row per refusal, and a diagnostic that collapses per provider and reason.
- * The Journal is best-effort here: writing to it never blocks a sign-in.
- */
+/** What a refused sign-in leaves behind: one audit row per refusal, and a diagnostic that collapses per provider and reason. */
 class SignInJournal
 {
     private const SECRET_KEY = '/secret|password|private_key/i';
@@ -47,7 +44,6 @@ class SignInJournal
                 'error' => self::cut($this->scrub($trace->error, $config)),
             ]);
         } catch (\Throwable $unavailable) {
-            // The Journal never stands between an employee and the wiki.
         }
     }
 
@@ -62,7 +58,7 @@ class SignInJournal
         }
     }
 
-    /** The first ERROR_BYTES of $error, cut between two characters, and marked when cut. Scrubbed first, so no secret is cut in two. */
+    /** The first ERROR_BYTES of $error, cut between two characters, and marked when cut. */
     private static function cut(string $error): string
     {
         if (strlen($error) <= self::ERROR_BYTES) {

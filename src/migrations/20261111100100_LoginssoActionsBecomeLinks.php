@@ -6,16 +6,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Service\SearchIndexer;
 
-/**
- * loginsso's `{{linktouserprofil}}` and `{{userentries}}`, which it seeded into PageMenuUser and UserEntries, become links to `/user` and
- * `/user/entries` (spec section 11). The links are written as Markdown, `[label](target)`: the form LegacyMarkupBecomesMarkdown gave
- * loginsso's own `[[target label]]`, which Ectoplasme no longer renders. The labels are translated now, in the wiki's language.
- *
- * Only the latest revision is read, and each page it changes gets one new revision, written with SQL rather than PageManager::save():
- * the older revisions stay as history, the change shows in the page's history like any edit and can be reverted, and nothing else
- * happens -- save() would also write a `content.update` to the Journal, where a migration writes only `migration.applied` (README),
- * and tell webhooks the page was edited.
- */
+/** loginsso's `{{linktouserprofil}}` and `{{userentries}}` become links to `/user` and `/user/entries`. */
 class LoginssoActionsBecomeLinks extends YesWikiMigration
 {
     /** One call, with its parameters, spelt any way: `{{ UserEntries template="…" }}` too. */
@@ -98,7 +89,6 @@ class LoginssoActionsBecomeLinks extends YesWikiMigration
         $columns = [
             'tag' => (string)$latest['tag'],
             'owner' => (string)$latest['owner'],
-            // the revision is the upgrade's, made by whoever ran it: nobody, from the command line
             $db->quoteIdentifier('user') => $user,
             'latest' => 'Y',
             'body' => PageBody::encode($body),
@@ -148,7 +138,6 @@ class LoginssoActionsBecomeLinks extends YesWikiMigration
         if ($action === 'userentries' && preg_match('/(^|\s)username\s*=\s*(["\'])\s*\S/i', $call[2]) === 1) {
             $this->namedSomeone[$tag] = true;
         }
-        // loginsso's `dash` drew " - " before the link: a Markdown line starting with it would be a list item
         $label = str_replace(['\\', '[', ']'], ['\\\\', '\\[', '\\]'], _t(self::LABELS[$action]));
 
         return '[' . $label . '](' . self::TARGETS[$action] . ')';

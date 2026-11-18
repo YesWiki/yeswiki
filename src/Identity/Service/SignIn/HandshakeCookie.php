@@ -7,10 +7,7 @@ use YesWiki\Identity\SignIn\Contract\Handshake;
 use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\WikiCookies;
 
-/**
- * What a redirect sign-in remembers while the person is away, signed and kept in their own browser: no session, and any replica can read it.
- * Like `yw-auth`, the cookie is mirrored in `$_COOKIE` for what follows in the same request; a worker starts each request with a fresh copy.
- */
+/** What a redirect sign-in remembers while the person is away, signed and kept in their browser. */
 class HandshakeCookie
 {
     public const NAME = 'yw-sign-in';

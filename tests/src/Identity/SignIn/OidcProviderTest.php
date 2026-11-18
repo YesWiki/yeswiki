@@ -289,10 +289,7 @@ class OidcProviderTest extends TestCase
         $this->assertSame([], $this->sent);
     }
 
-    /**
-     * authentik appends its error to the redirect_uri with a second `?` (OAuth2Error.create_uri): the error lands in the callback's
-     * own pair. The provider's error is still what the administrator reads, not a missing code.
-     */
+    /** authentik's error appended after a second `?`. */
     public function testAnErrorGluedOntoTheCallbackWithASecondQuestionMarkIsTheProvidersError(): void
     {
         $h = $this->begun();

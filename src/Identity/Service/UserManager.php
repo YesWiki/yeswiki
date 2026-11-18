@@ -292,7 +292,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
             $this->extraProfileFields($profile),
             $this->buildBody(['email' => $email, 'password' => '', 'signuptime' => date('Y-m-d H:i:s')])
         ), $providerId, $subject);
-        // written with its link at once, through the one write that may set it: PageManager::save() refuses the keys.
         if (!$this->persistNewUserPage($tag, $body, linked: true)) {
             return null;
         }
@@ -342,7 +341,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
      */
     private function buildBody(array $fields): array
     {
-        // Doryphore's loginsso kept its subject in this column: the conversion of its configuration turns it into the account's link (spec section 11).
         $loginssoId = $fields['loginsso_id'] ?? null;
         $legacy = is_scalar($loginssoId) && (string)$loginssoId !== '' ? ['loginsso_id' => (string)$loginssoId] : [];
 

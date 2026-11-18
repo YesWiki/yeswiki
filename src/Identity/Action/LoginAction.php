@@ -350,7 +350,6 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         $password = [];
         $registry = $this->getService(ProviderRegistry::class);
         foreach ($registry->enabled() as $provider) {
-            // the name people read: an entry without a label of its own goes by its type's
             $label = $registry->labelFor($provider->id());
             if ($provider instanceof RedirectProvider) {
                 $redirect[] = [

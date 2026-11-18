@@ -1,10 +1,4 @@
-/**
- * MockServer (`yeswiki-mock` in docker/docker-compose.yml), for any spec that needs an HTTP service to answer as it says:
- * the spec tells it what to answer through its REST API, then the wiki under test calls it.
- *
- * Every spec shares the one mock. That holds because the suite runs one test at a time (`workers: 1` and
- * `fullyParallel: false` in playwright.config.ts): a spec that configures the mock resets it before each test.
- */
+/** MockServer (`yeswiki-mock` in docker/docker-compose.yml), driven through its REST API. */
 export const MOCKSERVER = (
   process.env.YESWIKI_MOCKSERVER_URL || 'http://yeswiki-mock'
 ).replace(/\/$/, '')

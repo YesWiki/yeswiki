@@ -2,10 +2,7 @@
 
 namespace YesWiki\Test\Identity\SignIn;
 
-/**
- * A directory for one test: tests/fixtures/ldap/stub-server.php run by a child PHP process, which answers ext-ldap's requests
- * with the replies it is given, in order, and logs what it was asked. See that script for the shape of a reply.
- */
+/** A directory for one test, answering ext-ldap with the replies it is given. */
 final class LdapStubServer
 {
     private const SCRIPT = __DIR__ . '/../../../fixtures/ldap/stub-server.php';

@@ -11,11 +11,7 @@ use YesWiki\Identity\SignIn\Contract\ProviderIdentity;
 use YesWiki\Identity\SignIn\Provider\LdapConnection\LdapConnection;
 use YesWiki\Identity\SignIn\Provider\LdapProvider;
 
-/**
- * LDAP as a password provider (spec sections 6 and 12): a direct bind through a DN template, or a search account that finds the entry
- * first; the login escaped in the DN and in the filters; an empty password refused before any bind; attributes and groups read once
- * the person is bound; the password in no failure. The directory is FakeLdapConnection, which records every call.
- */
+/** LDAP as a password provider. */
 class LdapProviderTest extends TestCase
 {
     private const URI = 'ldap://directory.acme.example:389';
@@ -116,10 +112,7 @@ class LdapProviderTest extends TestCase
         $this->assertSame(['ou=groups,dc=acme', '(|(member=uid=o\28brien\29,ou=people,dc=acme)(memberUid=o\28brien\29))'], end($this->directory->searches));
     }
 
-    /**
-     * A template converted from Doryphore may keep the spaces of its ldap_base. The directory binds a DN with spaces as the same
-     * entry, and sends that entry back with the DN as it stores it: the entry must be found whatever the spaces.
-     */
+    /** A template converted from Doryphore may keep the spaces of its ldap_base. */
     public function testATemplateWithSpacesSignsIn(): void
     {
         $identity = $this->provider(['bind_dn_template' => 'uid={login}, ou=people , dc = acme'])->authenticate('marie', self::PASSWORD);
@@ -145,7 +138,6 @@ class LdapProviderTest extends TestCase
 
     public function testAttributeNamesAreFoundWhateverTheirCaseAsLdapComparesThem(): void
     {
-        // lldap's shape: asked for `*`, it names attributes in lower case (givenname, entryuuid), only memberOf as asked
         $this->directory->entries[self::MARIE_DN] = [
             'uid' => ['marie'],
             'mail' => ['marie.dupont@acme.example'],
@@ -176,7 +168,6 @@ class LdapProviderTest extends TestCase
 
     public function testOneAttributeSentUnderTwoSpellingsKeepsEveryValueInTheOrderSent(): void
     {
-        // not a conformant entry (an attribute appears once), but nothing the directory sent is dropped, and the first value stays first
         $this->directory->entries[self::MARIE_DN] = [
             'uid' => ['marie'],
             'mail' => ['marie.dupont@acme.example'],
@@ -286,10 +277,7 @@ class LdapProviderTest extends TestCase
         $this->assertCount(1, $this->directory->binds, 'nobody to bind as: only the anonymous bind of the search');
     }
 
-    /**
-     * An entry whose DN the client could not read comes back with an empty one. A bind with an empty DN and a password is an
-     * unauthenticated bind, which many directories answer with success: the person would be in without their password being checked.
-     */
+    /** An entry whose DN the client could not read comes back with an empty one. */
     public function testAFoundEntryWithoutDnIsRefusedBeforeAnyBindWithThePassword(): void
     {
         foreach (['', '   '] as $dn) {
@@ -362,7 +350,6 @@ class LdapProviderTest extends TestCase
                 $provider->authenticate('marie', self::PASSWORD);
                 $this->fail("$name: no failure");
             } catch (ProviderFailure $failure) {
-                // the arguments the provider's own calls had, as an error log would print them: the fixtures further up are the test's
                 $providerFrames = array_filter($failure->getTrace(), fn (array $frame): bool => ($frame['class'] ?? '') === LdapProvider::class);
                 $said = $failure->adminDetail . "\n" . $failure->getMessage() . "\n" . $failure->employeeMessage . "\n" . json_encode($failure->attributes)
                     . "\n" . $failure->getTraceAsString() . "\n" . print_r($providerFrames, true);
@@ -426,11 +413,7 @@ class LdapProviderTest extends TestCase
     }
 }
 
-/**
- * A directory in memory: entries by DN, the passwords that bind them, groups with a member list.
- * Searches understand only what the provider sends: `(uid=...)` and `(member=...)` under a base. A DN is compared as a directory
- * does: whatever its case and the spaces around `,` and `=`.
- */
+/** A directory in memory: entries by DN, the passwords that bind them, groups with a member list. */
 final class FakeLdapConnection implements LdapConnection
 {
     /** @var array<string, string> DN => password */
@@ -478,8 +461,6 @@ final class FakeLdapConnection implements LdapConnection
 
             return false;
         }
-        // as many directories do: no DN, or an empty one, is an anonymous or unauthenticated bind, and succeeds whatever the password
-        // a DN names the same entry whatever its case and the spaces around its separators, as a directory compares them
         $account = $dn === null ? null : $this->stored($dn, array_keys($this->accounts));
         if ($dn === null || trim($dn) === '' || ($account !== null && $this->accounts[$account] === $password)) {
             $this->bound = $dn;

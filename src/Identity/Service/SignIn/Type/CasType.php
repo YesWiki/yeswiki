@@ -10,9 +10,7 @@ use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Service\SessionRequirement;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * CAS 2.0 and 3.0. The service the server is told about is the provider's callback, which a server restricting its services must allow.
- */
+/** CAS 2.0 and 3.0. */
 final class CasType implements ProviderType
 {
     public const NAME = 'cas';

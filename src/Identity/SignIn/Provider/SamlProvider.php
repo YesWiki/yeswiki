@@ -24,15 +24,7 @@ use YesWiki\Identity\SignIn\Contract\PublishesMetadata;
 use YesWiki\Identity\SignIn\Contract\RedirectProvider;
 use YesWiki\Identity\SignIn\ServerDown;
 
-/**
- * SAML 2.0 as a service provider: an AuthnRequest by HTTP-Redirect, the response by HTTP-POST to the callback.
- * The assertion must be signed; its audience, time window, InResponseTo and destination are checked, and a document type is refused (php-saml in strict mode).
- * The identity provider is read from its metadata (URL or XML), and its entity ID, sign-on URL and certificate, when written in the configuration, win over it.
- * With a certificate and its private key, requests are signed, encrypted assertions are read and the certificate is in this wiki's metadata.
- *
- * php-saml keeps the wiki's address in statics of Utils: it is set again before each use, so another wiki served by the same worker never leaks into this one.
- * The response is read from the Request, never from $_POST, and nothing of it is kept or written anywhere: failures say what was wrong, not what was sent.
- */
+/** SAML 2.0 as a service provider: an AuthnRequest by HTTP-Redirect, the response by HTTP-POST to the callback. */
 final class SamlProvider implements RedirectProvider, PublishesMetadata
 {
     private const TIMEOUT = 10;
@@ -75,7 +67,6 @@ final class SamlProvider implements RedirectProvider, PublishesMetadata
         $settings = $this->settings($this->identityProvider());
         $url = $this->library('the sign-in request could not be built', function () use ($settings, $handshake): string {
             $auth = new Auth($settings);
-            // the RelayState comes back untouched; the handshake, not it, says where to go next
             $url = $auth->login($this->baseUrl, [], false, false, true);
             $handshake->set('request_id', (string)$auth->getLastRequestID());
 
@@ -114,7 +105,6 @@ final class SamlProvider implements RedirectProvider, PublishesMetadata
             return $response;
         });
 
-        // php-saml only compares the start of the address, which every provider of this wiki shares
         $destination = trim($response->document->documentElement?->getAttribute('Destination') ?? '');
         if ($destination !== '' && $destination !== $this->acsUrl) {
             throw new ProviderFailure(FailureReason::InvalidResponse, "the SAML response was sent to $destination, not to {$this->acsUrl}");
@@ -126,7 +116,6 @@ final class SamlProvider implements RedirectProvider, PublishesMetadata
     public function metadataResponse(): Response
     {
         $xml = $this->library('the metadata could not be built', function (): string {
-            // the identity provider is not needed to describe this side, so the metadata is there before it is configured
             $settings = new Settings($this->settings(null), true);
 
             return $settings->getSPMetadata(true);
@@ -144,7 +133,7 @@ final class SamlProvider implements RedirectProvider, PublishesMetadata
     }
 
     /**
-     * php-saml's settings. Utils keeps the wiki's address in statics, so it is set here, before each use.
+     * php-saml's settings.
      *
      * @param ?array<string, mixed> $idp null for this side alone (the metadata)
      *
@@ -176,7 +165,6 @@ final class SamlProvider implements RedirectProvider, PublishesMetadata
                 'wantMessagesSigned' => false,
                 'wantXMLValidation' => true,
                 'rejectUnsolicitedResponsesWithInResponseTo' => true,
-                // asking for a way of signing in can make an identity provider refuse a person it would otherwise accept
                 'requestedAuthnContext' => false,
             ],
         ];
@@ -269,10 +257,6 @@ final class SamlProvider implements RedirectProvider, PublishesMetadata
 
     /**
      * The attributes under their names, those with a friendly name under it too, and the NameID under `name_id`.
-     * A value sent once is a string; several stay a list.
-     *
-     * php-saml refuses, while reading them, an attribute sent in two elements and an assertion with no NameID: a response the wiki
-     * cannot read, unless the NameID is the user ID, which is then the attribute missing.
      *
      * @return array<string, mixed>
      */

@@ -2,8 +2,8 @@
 
 namespace YesWiki\Test\Identity\SignIn;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\GroupManager;
@@ -95,9 +95,9 @@ class SignInPlanTest extends YesWikiTestCase
     }
 
     /**
-     * @param list<string>                         $memberOf the account's groups before the sign-in
+     * @param list<string>                                $memberOf the account's groups before the sign-in
      * @param list<array{provider: string, wiki: string}> $mapping
-     * @param list<string>                         $sent     the groups the provider sends
+     * @param list<string>                                $sent     the groups the provider sends
      */
     private function planWithGroups(array $memberOf, array $mapping, array $sent): \YesWiki\Identity\SignIn\SignInPlan
     {
@@ -128,18 +128,18 @@ class SignInPlanTest extends YesWikiTestCase
     public static function branches(): array
     {
         return [
-            'no user id'               => [[],                                  ['email' => 'a@x'],                'none',              PlanAction::Refuse, FailureReason::MissingAttribute],
-            'no email'                 => [[],                                  ['sub' => 's'],                    'none',              PlanAction::Refuse, FailureReason::MissingAttribute],
+            'no user id' => [[],                                  ['email' => 'a@x'],                'none',              PlanAction::Refuse, FailureReason::MissingAttribute],
+            'no email' => [[],                                  ['sub' => 's'],                    'none',              PlanAction::Refuse, FailureReason::MissingAttribute],
             'linked here, provider stopped sending email' => [[], ['sub' => 's'], 'linked-here-s', PlanAction::UseLinked, null],
-            'linked here'              => [[],                                  ['sub' => 's', 'email' => 'a@x'],  'linked-here-s',     PlanAction::UseLinked, null],
-            'unknown, creation on'     => [[],                                  ['sub' => 's', 'email' => 'new@x'], 'none',             PlanAction::Create, null],
-            'unknown, creation off'    => [['create_accounts' => false],        ['sub' => 's', 'email' => 'new@x'], 'none',             PlanAction::Refuse, FailureReason::NoAccount],
+            'linked here' => [[],                                  ['sub' => 's', 'email' => 'a@x'],  'linked-here-s',     PlanAction::UseLinked, null],
+            'unknown, creation on' => [[],                                  ['sub' => 's', 'email' => 'new@x'], 'none',             PlanAction::Create, null],
+            'unknown, creation off' => [['create_accounts' => false],        ['sub' => 's', 'email' => 'new@x'], 'none',             PlanAction::Refuse, FailureReason::NoAccount],
             'email taken, matching off' => [[],                                 ['sub' => 's', 'email' => 'local@x'], 'local',          PlanAction::Refuse, FailureReason::EmailConflict],
             'email taken, matching on' => [['match_by_email' => true],          ['sub' => 's', 'email' => 'local@x'], 'local',          PlanAction::LinkExisting, null],
-            'unverified email'         => [['match_by_email' => true],          ['sub' => 's', 'email' => 'local@x', 'email_verified' => false], 'local', PlanAction::Refuse, FailureReason::EmailConflict],
+            'unverified email' => [['match_by_email' => true],          ['sub' => 's', 'email' => 'local@x', 'email_verified' => false], 'local', PlanAction::Refuse, FailureReason::EmailConflict],
             'unverified email, string false' => [['match_by_email' => true],    ['sub' => 's', 'email' => 'local@x', 'email_verified' => 'false'], 'local', PlanAction::Refuse, FailureReason::EmailConflict],
             'unverified email, string 0' => [['match_by_email' => true],        ['sub' => 's', 'email' => 'local@x', 'email_verified' => '0'], 'local', PlanAction::Refuse, FailureReason::EmailConflict],
-            'verified email'           => [['match_by_email' => true],          ['sub' => 's', 'email' => 'local@x', 'email_verified' => true], 'local', PlanAction::LinkExisting, null],
+            'verified email' => [['match_by_email' => true],          ['sub' => 's', 'email' => 'local@x', 'email_verified' => true], 'local', PlanAction::LinkExisting, null],
             'tied to another provider' => [['match_by_email' => true],          ['sub' => 's', 'email' => 'other@x'], 'linked-other',   PlanAction::Refuse, FailureReason::LinkedElsewhere],
             'new server, same provider' => [['match_by_email' => true],         ['sub' => 'new-id', 'email' => 'here@x'], 'linked-here-old', PlanAction::ReplaceSubject, null],
             'new server, matching off' => [[],                                  ['sub' => 'new-id', 'email' => 'here@x'], 'linked-here-old', PlanAction::Refuse, FailureReason::EmailConflict],
@@ -166,10 +166,7 @@ class SignInPlanTest extends YesWikiTestCase
         $this->assertStringContainsString('nickname', $plan->refusalDetail);
     }
 
-    /**
-     * Active Directory's objectGUID is 16 raw bytes: chosen as the user ID it arrives, but is no text the wiki can keep. The
-     * refusal must say so, not list the attribute among those received as if it had not come.
-     */
+    /** Active Directory's objectGUID is 16 raw bytes: chosen as the user ID it arrives, but is no text the wiki can keep. */
     public function testABinaryUserIdIsRefusedSayingItCameButIsNotText(): void
     {
         $guid = "\x8e\xd1\x4f\x2a\xc3\x28\x9b\x41\xa0\xff\x12\x34\xfe\x00\x7d\x91";
@@ -197,10 +194,7 @@ class SignInPlanTest extends YesWikiTestCase
         $this->assertSame('not_text', $plan->attributeUse['email']['unusable'] ?? null);
     }
 
-    /**
-     * Shibboleth's OIDC provider sends a multivalued attribute as one string, its values joined by a space: two emails then
-     * arrive as "a@x.example b@y.example", which is no email address, and must not become an account's email.
-     */
+    /** Two emails joined by a space never become an account's email. */
     public function testAnEmailAttributeThatIsNotOneAddressIsRefusedNamingTheAttribute(): void
     {
         $plan = $this->service->plan($this->config(), new ProviderIdentity(['sub' => 's', 'email' => 'marie.dupont@acme.example marie@alt.example']));
@@ -237,7 +231,7 @@ class SignInPlanTest extends YesWikiTestCase
     public static function joinedEmails(): array
     {
         return [
-            'joined by a comma'     => ['a@x.example,b@y.example'],
+            'joined by a comma' => ['a@x.example,b@y.example'],
             'joined by a semicolon' => ['a@x.example;b@y.example'],
         ];
     }
@@ -254,7 +248,7 @@ class SignInPlanTest extends YesWikiTestCase
     public static function paddedEmails(): array
     {
         return [
-            'spaces around'     => ['  new@x.example  '],
+            'spaces around' => ['  new@x.example  '],
             'a trailing newline' => ["new@x.example\n"],
         ];
     }

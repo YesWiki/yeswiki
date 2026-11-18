@@ -22,7 +22,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 require_once __DIR__ . '/FakeProviderTypes.php';
 
-/** The administration screen of the providers (spec 8.3). It writes a temporary configuration file, never the developer's. */
+/** The administration screen of the providers (spec 8.3). */
 class ProvidersEditorTest extends YesWikiTestCase
 {
     use FakeProviderTypes;
@@ -46,7 +46,6 @@ class ProvidersEditorTest extends YesWikiTestCase
         file_put_contents($this->config, "<?php\n\n\$yeswikiConfig = ['wakka_name' => 'test'];\n");
         putenv('YESWIKI_CONFIG_FILE=' . $this->config);
         $this->editor = $this->getWiki()->services->get(ProvidersEditor::class);
-        // A visit, not a posted form, whatever request an earlier test left current: edit() saves what a POST carries.
         $current = $this->getWiki()->services->get(CurrentRequest::class);
         $this->requestWas = $current->get();
         $current->replace(Request::create('/?admin/sign-in'));
@@ -67,8 +66,7 @@ class ProvidersEditorTest extends YesWikiTestCase
     }
 
     /**
-     * The admin controller as a form posted to it sees it. filter_input() reads the SAPI's input, which a CLI run has none of,
-     * so the token checker is replaced in the container's table (the seam FakeProviderTypes uses): the token is not what is tested here.
+     * The admin controller as a form posted to it sees it.
      *
      * @param array<string, mixed> $form
      */
@@ -265,7 +263,6 @@ class ProvidersEditorTest extends YesWikiTestCase
     public function testTheEditScreenWarnsOfTheTakeoverUnderTheTickedBoxesOnly(): void
     {
         $alert = fn (string $by, bool $shown): string => '#<div class="yw-alert yw-alert--warning yw-sign-in-admin__takeover"[^>]*data-yw-sign-in-takeover="' . $by . '"' . ($shown ? '(?![^>]* hidden)' : '[^>]* hidden') . '[^>]*>#';
-        // the warning belongs to the form group of its box: no other group opens between the box and the warning
         $under = fn (string $by): string => '#<input type="checkbox" name="match_by_' . $by . '"(?:(?!yw-form-group).)*?data-yw-sign-in-takeover="' . $by . '"#s';
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc(['match_by_name' => true])]);
         $html = $this->editPage('acme');
@@ -418,10 +415,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertNotEmpty($this->editor->update('local', ['enabled' => '0']), 'the edit form cannot do it either');
     }
 
-    /**
-     * An administrator signed in with a local account who switches local off loses their own way in, unless a provider they can use
-     * attaches their account by its email.
-     */
+    /** An administrator who switches local off loses their way in, unless a provider attaches them. */
     public function testSwitchingLocalOffIsRefusedWhenItLocksTheAdminOut(): void
     {
         $admin = $this->localAdmin();
@@ -525,10 +519,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertNotNull($this->editor->setEnabled('local', false));
     }
 
-    /**
-     * CAS's service is the callback followed by the sign-in's sso_state: a server registering services must take the callback as a
-     * prefix, and the edit page says so where the administrator copies it. Other types give the callback as it is.
-     */
+    /** CAS's service is the callback followed by the sign-in's sso_state: a server registering services must take the callback as a prefix, and the edit page says so where the administrator copies it. */
     public function testTheCasCallbackIsGivenAsAPrefix(): void
     {
         $this->seed([
@@ -790,7 +781,7 @@ class ProvidersEditorTest extends YesWikiTestCase
     {
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
         $services = $this->getWiki()->services;
-        $local = $services->get(\YesWiki\Identity\Service\SignIn\AccountLinks::class)->countLocal();
+        $local = $services->get(AccountLinks::class)->countLocal();
         $this->assertGreaterThan(0, $local, 'the test wiki has a local administrator');
 
         $html = (string)$services->get(AdminSignInController::class)->index()->getContent();

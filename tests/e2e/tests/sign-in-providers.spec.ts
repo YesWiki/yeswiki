@@ -21,11 +21,7 @@ import {
   throughProvider,
 } from '../helpers/sso'
 
-/**
- * Every redirect provider type: OpenID Connect, SAML and CAS against the mock identity provider. LDAP has no directory to sign in
- * against here: PHPUnit tests it against a stub (LdapProviderOverTheWireTest). The wiki is reset once for the file, so each
- * test starts from the accounts it needs.
- */
+/** Every redirect provider type: OpenID Connect, SAML and CAS against the mock identity provider. */
 const TYPES: ProviderType[] = ['oidc', 'saml', 'cas']
 
 test.beforeAll(mockReady)
@@ -95,7 +91,6 @@ for (const type of TYPES) {
       )
       await first.context().close()
 
-      // the mock identity provider is told the new email
       const moved = { ...PEOPLE.jean, email: JEAN_NEW_EMAIL }
       const again = await browser.newPage()
       await signInWith(again, type, moved)
@@ -139,7 +134,6 @@ for (const type of TYPES) {
       setProviders(sectionFor(type, { create_accounts: false }))
       const before = latestRow()
 
-      // a redirect provider records the person's email
       const who = PEOPLE.marie.email
 
       await signInWith(page, type, PEOPLE.marie)
@@ -170,7 +164,6 @@ for (const type of TYPES) {
         'what was sent is never recorded, only what it said',
       ).not.toMatch(SENT_OR_SECRET)
 
-      // and the screen reads it back: filter on the target, then open the detail
       await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
       await page.goto('/?admin/logs')
       const filtered = page.waitForResponse(
@@ -183,14 +176,12 @@ for (const type of TYPES) {
       const table = page.locator('#yw-logs-table')
       await expect(table).toContainText('login.refused.no_account.' + id)
       await expect(table).toContainText(who)
-      // the types tested before this one were refused for the same person
       const editLink = `a[href*="admin/sign-in/${id}/edit"]`
       const detail = table
         .locator('.yw-logs__sign-in')
         .filter({ has: page.locator(editLink) })
       await expect(detail).toHaveCount(1)
       const edit = detail.locator(editLink)
-      // the table is fetched again as the filter settles, which closes a detail opened too early
       await expect(async () => {
         if (!(await edit.isVisible())) await detail.locator('summary').click()
         await expect(edit).toBeVisible({ timeout: 500 })
@@ -212,7 +203,6 @@ for (const type of TYPES) {
     })
 
     test(`${type}: test mode signs nobody in`, async ({ page }) => {
-      // switched off: an administrator tries a provider out before anyone can use it.
       setProviders(sectionFor(type, { enabled: false }))
       await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
       const before = latestRow()
@@ -303,8 +293,6 @@ for (const type of TYPES) {
       test('oidc: a provider that sorts the callback query still reaches the callback', async ({
         page,
       }) => {
-        // what Pocket ID does (Go's url.Values.Encode): the query rebuilt as a form, keys sorted and encoded, so the wiki's
-        // callback key comes after the answer: ?code=…&state=…&user%2Fsign-in%2Foidc%2Fcallback=
         const sorted = (location: string): string => {
           const url = new URL(location)
           const pairs = [...url.searchParams.entries()].sort(([a], [b]) =>
@@ -319,8 +307,6 @@ for (const type of TYPES) {
           return url.href
         }
         const callbacks: string[] = []
-        // the browser follows the wiki's redirect to the provider, and the provider's to the callback, without routing them:
-        // both are fetched from the wiki's start, and the browser is sent to the sorted callback
         await page.route(
           (url) => url.href.startsWith(`${WIKI}/?user/sign-in/oidc&`),
           async (route) => {
@@ -363,8 +349,6 @@ for (const type of TYPES) {
       test('oidc: a provider that drops the callback key still reaches the callback by its pair', async ({
         page,
       }) => {
-        // what authentik does (Python's parse_qs without keep_blank_values): the query rebuilt without the keys that have no
-        // value, so only ?sso_callback=oidc&code=…&state=… comes back
         const withoutBareKeys = (location: string): string => {
           const url = new URL(location)
           url.search = url.search
@@ -437,7 +421,6 @@ for (const type of TYPES) {
           'saml-a': { ...PROVIDERS.saml, label: labels['saml-a'] },
           'saml-b': { ...PROVIDERS.saml, label: labels['saml-b'] },
         })
-        // the mock identity provider serves one SAML provider at a time: it is told which before each sign-in
         const through = async (
           provider: 'saml-a' | 'saml-b',
           person: Person,
@@ -471,7 +454,6 @@ for (const type of TYPES) {
           await page.context().close()
         }
 
-        // marie's account is saml-a's: saml-b cannot take it over
         const before = latestRow()
         const refused = await through('saml-b', PEOPLE.marie)
         await expect(refused.locator('body')).toContainText(labels['saml-b'])
@@ -485,12 +467,8 @@ for (const type of TYPES) {
   })
 }
 
-/**
- * Accounts of the wiki stay a way to sign in beside a provider (spec section 8.1): the form offers a tab for each, and what
- * belongs to local accounts alone -- lost password, remember me, sign up -- shows under its tab only.
- */
+/** Local accounts stay a way to sign in beside a provider. */
 test.describe('local accounts beside a provider', () => {
-  // a password provider beside local accounts; nothing here asks its directory anything
   test.beforeEach(() => {
     setProviders({
       local: { type: 'local' },

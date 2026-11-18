@@ -25,11 +25,7 @@ use YesWiki\Identity\SignIn\IdTokenVerifier;
 use YesWiki\Identity\SignIn\ServerDown;
 use YesWiki\Identity\SignIn\SignInCallback;
 
-/**
- * OpenID Connect, or plain OAuth2 when only endpoints are configured (what Doryphore's loginsso held): authorization code with state, PKCE S256 and a nonce.
- * The attributes come from userinfo. The ID token's claims are added when the token can be checked, with discovery or with `issuer` and `jwks_uri`; otherwise the token is ignored.
- * The league client keeps the state and the verifier of one trip, so one is made per call and nothing outlives it.
- */
+/** OpenID Connect, or plain OAuth2 when only endpoints are configured. */
 final class OidcProvider implements RedirectProvider
 {
     private const DEFAULT_SCOPES = ['openid', 'email', 'profile'];
@@ -100,7 +96,6 @@ final class OidcProvider implements RedirectProvider
         $token = $this->call('token', function () use ($client, $code): AccessToken {
             $token = $client->getAccessToken('authorization_code', ['code' => $code]);
 
-            // the generic client always makes an AccessToken; anything else would carry no ID token to read
             return $token instanceof AccessToken ? $token : throw new ProviderFailure(FailureReason::InvalidResponse, 'the token endpoint answered with no usable access token');
         });
         $claims = $this->verifiedClaims($token, $endpoints, (string)$handshake->get('nonce'));
@@ -118,18 +113,7 @@ final class OidcProvider implements RedirectProvider
     {
         $separator = $this->config->connection('scope_separator');
 
-        // the league client reads a proxy's error page as an unreadable answer: a server down behind its proxy is said here, before it parses
-        return new class([
-            'clientId' => (string)$this->config->connection('client_id', ''),
-            'clientSecret' => (string)$this->config->connection('client_secret', ''),
-            'redirectUri' => $redirectUri,
-            'urlAuthorize' => $endpoints['authorize'],
-            'urlAccessToken' => $endpoints['token'],
-            'urlResourceOwnerDetails' => $endpoints['userinfo'],
-            'scopes' => $this->scopes(),
-            'scopeSeparator' => is_string($separator) && $separator !== '' ? $separator : ' ',
-            'pkceMethod' => GenericProvider::PKCE_METHOD_S256,
-        ], ['httpClient' => $this->http]) extends GenericProvider {
+        return new class(['clientId' => (string)$this->config->connection('client_id', ''), 'clientSecret' => (string)$this->config->connection('client_secret', ''), 'redirectUri' => $redirectUri, 'urlAuthorize' => $endpoints['authorize'], 'urlAccessToken' => $endpoints['token'], 'urlResourceOwnerDetails' => $endpoints['userinfo'], 'scopes' => $this->scopes(), 'scopeSeparator' => is_string($separator) && $separator !== '' ? $separator : ' ', 'pkceMethod' => GenericProvider::PKCE_METHOD_S256], ['httpClient' => $this->http]) extends GenericProvider {
             public function getResponse(RequestInterface $request): ResponseInterface
             {
                 $refused = null;
@@ -142,16 +126,11 @@ final class OidcProvider implements RedirectProvider
                 if (ServerDown::is($status)) {
                     throw new ProviderFailure(FailureReason::ProviderUnreachable, "answered HTTP $status: the provider's server is down or overloaded, or its proxy cannot reach it");
                 }
-                // an address that does not exist is a wrong setting, as for discovery, whatever its body (Spring's error page has an `error` too)
                 if (in_array($status, [404, 405, 410], true)) {
                     throw new ProviderFailure(FailureReason::ConfigurationInvalid, "answered HTTP $status: check its address");
                 }
-                // the client only fails on an OAuth `error` member: without one, an error status must not pass for an answer (at userinfo,
-                // for the person's attributes). A refusal (Kanidm's bare 401 for a wrong client secret, a framework's {"detail": …}) is
-                // still a refusal; another status with a JSON body is unusable; a body that is not JSON keeps the client's own reading
                 if ($status >= 400) {
                     $body = json_decode((string)$response->getBody(), true);
-                    // an empty `error` ("" or "0") is none: the client, which tests it with empty(), would read the body as an answer
                     if (!is_array($body) || !is_string($body['error'] ?? null) || empty($body['error'])) {
                         if (in_array($status, [400, 401, 403], true)) {
                             throw new ProviderFailure(FailureReason::ProviderRejected, "answered HTTP $status with no OAuth error in its body");
@@ -211,10 +190,7 @@ final class OidcProvider implements RedirectProvider
         try {
             return $call();
         } catch (ProviderFailure $down) {
-            // the client's own failures name no endpoint; a ProviderFailure thrown by $call itself already does
-            throw str_starts_with($down->adminDetail, 'answered HTTP ')
-                ? new ProviderFailure($down->reason, "the $endpoint endpoint " . $down->adminDetail)
-                : $down;
+            throw str_starts_with($down->adminDetail, 'answered HTTP ') ? new ProviderFailure($down->reason, "the $endpoint endpoint " . $down->adminDetail) : $down;
         } catch (IdentityProviderException $refused) {
             throw new ProviderFailure(FailureReason::ProviderRejected, "the $endpoint endpoint refused: " . self::show($refused->getResponseBody()));
         } catch (GuzzleException $unreachable) {
@@ -225,9 +201,7 @@ final class OidcProvider implements RedirectProvider
     }
 
     /**
-     * What a server appended to the callback with a second `?`, glued onto the value of the callback's own pair, the last of its address:
-     * authentik's errors (OAuth2Error.create_uri), `…&sso_callback=<id>?error=invalid_request&error_description=…&state=…`.
-     * Only on the pair naming this provider; the caller keeps whatever the answer already holds.
+     * What a server appended to the callback after a second `?`.
      *
      * @param array<mixed> $answer
      *
