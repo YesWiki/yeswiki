@@ -77,7 +77,7 @@ class LinkRenderer
             $link = 'mailto:' . $link;
         }
 
-        if (preg_match('/^(javascript|vbscript|data):/i', preg_replace('/[\x00-\x20]+/', '', (string)$link))) {
+        if (preg_match('/^(javascript|vbscript|data):/i', (string)preg_replace('/[\x00-\x20]+/', '', (string)$link))) {
             return $textIsHtml ? $text : htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
         }
 

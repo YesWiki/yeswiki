@@ -79,6 +79,13 @@ jobs:
           php-version: '8.4'
           tools: composer:v2
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+        if: steps.cache.outputs.cache-hit != 'true'
+
       - run: composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
         if: steps.cache.outputs.cache-hit != 'true'
 
@@ -200,6 +207,13 @@ jobs:
           php-version: '8.4'
           extensions: ctype, curl, dom, fileinfo, filter, gd, iconv, mbstring, openssl, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, tokenizer, xml, xmlreader, zip, ldap
           tools: composer:v2
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+        if: steps.covered.outputs.run == 'true'
 
       - run: composer install --prefer-dist --no-progress
         if: steps.covered.outputs.run == 'true'

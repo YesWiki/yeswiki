@@ -67,23 +67,24 @@ class WakkaFormatterTest extends YesWikiTestCase
         ];
     }
 
-    /**
-     * Regression test for a CPU-exhaustion DoS in the markdown-link branch of the wakka formatter's mega-regex: an unbounded `[^\]]+`/`[^\)]+` scan restarts at every `[` in the input, making a run of N `[` characters cost O(N^2).
-     */
+    /** A run of '[' costs linear time in the markdown parser (GHSA-gf57-wg5m-h34q): four times the input, about four times the work. */
     public function testMarkdownLinkBracketRunIsNotQuadratic(): void
     {
-        $wiki = $this->getWiki();
-        $payload = str_repeat('[', 60000);
+        $formatter = $this->getWiki()->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class);
+        $formatter->format('[');
+        $time = function (int $length) use ($formatter): float {
+            $start = microtime(true);
+            $formatter->format(str_repeat('[', $length));
 
-        $start = microtime(true);
-        $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($payload);
-        $elapsed = microtime(true) - $start;
+            return microtime(true) - $start;
+        };
+        $small = min($time(5000), $time(5000));
+        $large = min($time(20000), $time(20000));
 
         $this->assertLessThan(
-            2.0,
-            $elapsed,
-            "Formatting a run of '[' characters took {$elapsed}s: "
-            . 'the markdown-link regex looks unbounded again (algorithmic-complexity DoS).'
+            8 * $small,
+            $large,
+            "Formatting 4x more '[' took {$large}s against {$small}s: the parser looks quadratic again."
         );
     }
 

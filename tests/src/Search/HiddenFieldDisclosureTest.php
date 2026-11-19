@@ -51,14 +51,16 @@ class HiddenFieldDisclosureTest extends YesWikiTestCase
             'condition' => '',
         ]);
         self::$anonymousTag = $entries->create(self::$formId, ['antispam' => 1, 'bf_titre' => 'Public title', 'bf_secret' => 'topsecret', 'bf_mine' => 'mymine', 'bf_mail' => 'hidden@example.org'])['tag'];
-        $auth->login($users->getOneByName(self::OWNER));
+        $owner = $users->getOneByName(self::OWNER);
+        self::assertNotNull($owner);
+        $auth->login($owner);
         self::$ownedTag = $entries->create(self::$formId, ['antispam' => 1, 'bf_titre' => 'Owned title', 'bf_secret' => 'ownersecret', 'bf_mine' => 'ownermine', 'bf_mail' => 'owner@example.org'])['tag'];
         $auth->logout();
         foreach ([self::$anonymousTag, self::$ownedTag] as $tag) {
             $services->get(AclService::class)->save($tag, 'read', '*');
         }
         $pages = $services->get(PageManager::class);
-        $stored = $pages->getOne(self::$anonymousTag, null, false, true)['body'];
+        $stored = $pages->getOne(self::$anonymousTag, null, false, true)['body'] ?? '';
         $body = is_array($stored) ? $stored : PageBody::decode($stored);
         $body['__translation'] = ['en' => ['bf_titre' => 'Translated title', 'bf_secret' => 'translated secret', 'bf_mine' => 'translated mine', 'bf_mail' => 'translated@example.org']];
         $pages->save(self::$anonymousTag, $body, '', true, null, $pages->getOne(self::$anonymousTag, null, false, true)['type'] ?? null);
@@ -89,7 +91,10 @@ class HiddenFieldDisclosureTest extends YesWikiTestCase
         $this->getWiki()->services->get(AuthenticationService::class)->logout();
     }
 
-    /** @return list<string> the tags a guarded search returns */
+    /**
+     * @param array<string, string> $params
+     * @return list<string> the tags a guarded search returns
+     */
     private function found(array $params): array
     {
         $tags = array_keys($this->getWiki()->services->get(SearchManager::class)->search($params + ['formsIds' => [self::$formId]], true, true));
@@ -101,13 +106,15 @@ class HiddenFieldDisclosureTest extends YesWikiTestCase
     private function loginAsOwner(): void
     {
         $services = $this->getWiki()->services;
-        $services->get(AuthenticationService::class)->login($services->get(UserManager::class)->getOneByName(self::OWNER));
+        $owner = $services->get(UserManager::class)->getOneByName(self::OWNER);
+        $this->assertNotNull($owner);
+        $services->get(AuthenticationService::class)->login($owner);
     }
 
     public function testTheEmailFieldIsInContactFormMode(): void
     {
         $fields = array_filter(
-            $this->getWiki()->services->get(FormManager::class)->getOne(self::$formId)['prepared'],
+            $this->getWiki()->services->get(FormManager::class)->getOne(self::$formId)['prepared'] ?? [],
             fn ($field) => $field instanceof EmailField
         );
 
@@ -128,6 +135,7 @@ class HiddenFieldDisclosureTest extends YesWikiTestCase
         ];
     }
 
+    /** @param array<string, string> $params */
     #[DataProvider('hiddenValueProbes')]
     public function testAnAnonymousFilterCannotProbeAHiddenValue(array $params): void
     {
@@ -155,8 +163,8 @@ class HiddenFieldDisclosureTest extends YesWikiTestCase
 
     public function testTheTranslationOfAnUnreadableFieldIsNotServed(): void
     {
-        $page = $this->getWiki()->services->get(PageManager::class)->getOne(self::$anonymousTag, null, false);
-        $body = is_array($page['body']) ? $page['body'] : PageBody::decode($page['body']);
+        $stored = $this->getWiki()->services->get(PageManager::class)->getOne(self::$anonymousTag, null, false)['body'] ?? '';
+        $body = is_array($stored) ? $stored : PageBody::decode($stored);
         $translations = $body['__translation']['en'] ?? [];
 
         $this->assertSame('Translated title', $translations['bf_titre'] ?? null);
