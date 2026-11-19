@@ -8,7 +8,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for the markdown-image-compatibility XSS in the wakka formatter : an unescaped/unvalidated src attribute allowed breaking out of the src="..." HTML attribute (e.g.
+ * The markdown formatter's output for images and links carries no script.
  */
 class WakkaFormatterTest extends YesWikiTestCase
 {
@@ -85,5 +85,58 @@ class WakkaFormatterTest extends YesWikiTestCase
             "Formatting a run of '[' characters took {$elapsed}s: "
             . 'the markdown-link regex looks unbounded again (algorithmic-complexity DoS).'
         );
+    }
+
+    /** @return list<array<string, string>> the attributes of each link in the formatted text, in document order */
+    private function linkAttributes(string $markdown): array
+    {
+        $html = $this->getWiki()->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($markdown);
+        $dom = new \DOMDocument();
+        @$dom->loadHTML('<?xml encoding="utf-8"?><div>' . $html . '</div>');
+        $links = [];
+        foreach ($dom->getElementsByTagName('a') as $a) {
+            $attrs = [];
+            foreach ($a->attributes as $attr) {
+                $attrs[$attr->name] = $attr->value;
+            }
+            $links[] = $attrs;
+        }
+
+        return $links;
+    }
+
+    /** @return array<string, array{string}> */
+    public static function hostileLinks(): array
+    {
+        return [
+            'event handler attribute' => ['[x](https://example.com){onmouseover=alert(1)}'],
+            'event handler on a wiki link' => ['[x](PagePrincipale){onfocus=alert(1)}'],
+            'double quote inside a single-quoted value' => ["[x](https://example.com){title='a\" onmouseover=\"alert(1)'}"],
+            'double quote inside a wiki link value' => ["[x](PagePrincipale){data-x='a\" onfocus=\"alert(1)'}"],
+            'javascript destination' => ['[x](javascript:alert(1))'],
+            'data destination' => ['[x](data:text/html,<script>alert(1)</script>)'],
+        ];
+    }
+
+    #[DataProvider('hostileLinks')]
+    public function testALinkCarriesNoScript(string $markdown): void
+    {
+        $links = $this->linkAttributes($markdown);
+        $this->assertNotEmpty($links, $markdown);
+        foreach ($links as $attrs) {
+            foreach (array_keys($attrs) as $name) {
+                $this->assertStringStartsNotWith('on', strtolower($name), "$markdown kept $name");
+            }
+            $this->assertDoesNotMatchRegularExpression('/^\s*(javascript|vbscript|data):/i', $attrs['href'] ?? '', $markdown);
+        }
+    }
+
+    public function testAQuotedValueKeepsItsQuoteAsText(): void
+    {
+        $links = $this->linkAttributes("[x](https://example.com){title='a\"b' .btn target=_blank}");
+
+        $this->assertSame('a"b', $links[0]['title']);
+        $this->assertSame('btn', $links[0]['class']);
+        $this->assertSame('_blank', $links[0]['target']);
     }
 }

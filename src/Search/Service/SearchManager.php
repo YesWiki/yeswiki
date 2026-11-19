@@ -514,6 +514,22 @@ class SearchManager
         return SqlFragment::all(' AND ', ...$vQueriesConditions);
     }
 
+    /**
+     * $value, or an empty string on a Content of $formIds the current user does not own, as Guard blanks a field they may not read.
+     *
+     * @param list<int> $formIds
+     */
+    private function maskedForNonOwners(string $value, array $formIds): SqlFragment
+    {
+        $inForms = $this->fieldColumnExpression('form_id') . ' IN (' . implode(', ', array_map(static fn (int $formId): string => "'" . $formId . "'", array_unique($formIds))) . ')';
+        $userName = $this->container->get(AuthenticationService::class)->getLoggedUserName();
+        if (empty($userName)) {
+            return SqlFragment::of("CASE WHEN {$inForms} THEN '' ELSE {$value} END");
+        }
+
+        return SqlFragment::of("CASE WHEN {$inForms} AND COALESCE(p.owner, '') <> ? THEN '' ELSE {$value} END", [$userName]);
+    }
+
     /** The SQL reading a field for the search CTE, falling back for the metadata older entries never stored. */
     private function fieldColumnExpression(string $pFieldName): string
     {
@@ -652,7 +668,7 @@ class SearchManager
      *                     fragment means "this search cannot match anything" -- the caller must
      *                     not run it, exactly as the empty string used to mean.
      */
-    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): SqlFragment
+    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false, bool $maskUnreadable = false): SqlFragment
     {
         $params = array_merge(
             [
@@ -830,6 +846,10 @@ class SearchManager
                             $vFields[$vField]['needSplit'] = true;
                         }
 
+                        if ($maskUnreadable && !$vFieldObject->canRead(['tag' => ' '])) {
+                            $vFields[$vField]['unreadableIn'][] = (int)$vFormID;
+                        }
+
                         break;
                     }
                 }
@@ -856,11 +876,18 @@ class SearchManager
             $this->fieldColumnExpression('form_id') . ' AS ' . $this->renameJSONPathVariable('form_id'),
         ];
 
-        foreach (array_keys($vFields) as $vFieldName) {
+        $vSelectParams = [];
+        foreach ($vFields as $vFieldName => $vField) {
             if ($vFieldName === 'form_id') {
                 continue;
             }
-            $vSelectRequest[] = $this->fieldColumnExpression((string)$vFieldName) . ' AS ' . $this->renameJSONPathVariable($vFieldName);
+            $vValue = $this->fieldColumnExpression((string)$vFieldName);
+            if (!empty($vField['unreadableIn'])) {
+                $vMasked = $this->maskedForNonOwners($vValue, $vField['unreadableIn']);
+                $vValue = $vMasked->sql;
+                $vSelectParams = array_merge($vSelectParams, $vMasked->params);
+            }
+            $vSelectRequest[] = $vValue . ' AS ' . $this->renameJSONPathVariable($vFieldName);
         }
 
         $vSelectRequest = implode(', ', $vSelectRequest);
@@ -935,7 +962,7 @@ class SearchManager
             '',
             SqlFragment::of('WITH RECURSIVE filteredPages AS ( SELECT ' . $vSelectRequest
                 . ' FROM ' . $this->dbService->prefixTable('pages') . ' p '
-                . 'WHERE '),
+                . 'WHERE ', $vSelectParams),
             $vInnerFilters,
             SqlFragment::of(')' . ($vSplittedsRequest != '' ? $vSplittedsRequest . ' ' : ' ')
                 . 'SELECT DISTINCT f.* FROM filteredPages f '
@@ -955,7 +982,7 @@ class SearchManager
      */
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
-        $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
+        $requete = $this->prepareSearchRequest($params, $filterOnReadACL, false, $useGuard && !$this->aclService->isAdmin());
 
         $searchResults = [];
         if ($requete->isEmpty()) {

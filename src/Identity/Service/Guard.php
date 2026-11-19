@@ -4,6 +4,7 @@ namespace YesWiki\Identity\Service;
 
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\EmailField;
 use YesWiki\Content\Service\FormManager;
@@ -57,11 +58,10 @@ class Guard
     }
 
     /**
-     * Teste les droits d'acces champ par champ du contenu d'un fiche bazar Si utilisateur connecte est proprietaire ou adminstrateur : acces a tous les champs Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
+     * $page with every field the reader may not read blanked, together with its translations; admins and the owner see everything.
      *
      * @param array<string, mixed> $page
      * @param string               $tag
-     * @param string|null          $userNameForCheckingACL username used to check ACL, if empty, uses en the connectd user
      *
      * @return array<string, mixed> $page
      */
@@ -88,6 +88,7 @@ class Guard
                     if (count($redactedFields) > 0) {
                         foreach ($redactedFields as $field) {
                             $body[$field] = '';
+                            $body = Translations::withoutPath($body, (string)$field);
                         }
                         $page['body'] = is_array($rawBody) ? $body : PageBody::encode($body);
                     }
@@ -131,6 +132,11 @@ class Guard
 
         $modified = false;
         foreach ($fieldsToHide as $field) {
+            $redacted = Translations::withoutPath($body, (string)$field);
+            if ($redacted !== $body) {
+                $body = $redacted;
+                $modified = true;
+            }
             if (!array_key_exists($field, $body)) {
                 continue;
             }

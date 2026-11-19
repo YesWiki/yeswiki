@@ -59,8 +59,6 @@ class LinkRenderer
 
             $options['data-tag'] = $tag;
             $options['data-method'] = $method ?? 'show';
-            unset($options['method']);
-            unset($options['params']);
 
             $link = $this->urlFormatter->href($method, $tag, $params, false);
         } elseif ((!isset($options['data-iframe'])
@@ -79,20 +77,20 @@ class LinkRenderer
             $link = 'mailto:' . $link;
         }
 
-        $stringAttrs = implode(
-            ' ',
-            array_map(
-                function ($key) use ($options) {
-                    $value = $options[$key];
-                    $encodedValue = is_string($value)
-                        ? $value
-                        : json_encode($value);
+        if (preg_match('/^(javascript|vbscript|data):/i', preg_replace('/[\x00-\x20]+/', '', (string)$link))) {
+            return $textIsHtml ? $text : htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
+        }
 
-                    return "$key=\"$encodedValue\"";
-                },
-                array_keys($options)
-            )
-        );
+        unset($options['method'], $options['params'], $options['href']);
+        $attrs = [];
+        foreach ($options as $key => $value) {
+            if (!is_string($key) || !preg_match('/^[a-zA-Z_:][a-zA-Z0-9_:.-]*$/', $key) || stripos($key, 'on') === 0) {
+                continue;
+            }
+            $value = is_string($value) ? $value : json_encode($value);
+            $attrs[] = $key . '="' . htmlspecialchars((string)$value, ENT_QUOTES, YW_CHARSET, false) . '"';
+        }
+        $stringAttrs = implode(' ', $attrs);
 
         $link = htmlspecialchars($link, ENT_COMPAT, YW_CHARSET);
         $text = $textIsHtml ? $text : htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
