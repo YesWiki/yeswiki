@@ -4,6 +4,7 @@ namespace YesWiki\Bazar;
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
@@ -39,23 +40,26 @@ class TranslateHandler extends YesWikiHandler
         return $this->render('@templates/alert-message.twig', ['type' => 'danger', 'message' => $message]);
     }
 
-    /** The stored body of entry $tag, untranslated. */
-    private function storedEntry(string $tag): array
+    /** The stored body of entry $tag, untranslated, with the fields the user may not read blanked when $forReader. */
+    private function storedEntry(string $tag, bool $forReader = false): array
     {
         $page = $this->getService(PageManager::class)->getOne($tag, null, false, true);
+        if ($forReader && $page) {
+            $page = $this->getService(Guard::class)->checkAcls($page, $tag);
+        }
         $entry = json_decode($page['body'] ?? '', true);
 
         return is_array($entry) ? $entry : [];
     }
 
-    /** The fields of the entry's form that can be translated, as name, label and input type. */
+    /** The fields of the entry's form the user can read and translate, as name, label and input type. */
     private function translatableFields(array $entry): array
     {
         $form = $this->getService(FormManager::class)->getOne($entry['id_typeannonce'] ?? null, 'all');
         $fields = [];
         foreach ($form['prepared'] ?? [] as $field) {
             $name = $field->getPropertyName();
-            if (empty($name) || !in_array($field->getType(), self::TRANSLATABLE_TYPES, true)) {
+            if (empty($name) || !in_array($field->getType(), self::TRANSLATABLE_TYPES, true) || !$field->canRead($entry)) {
                 continue;
             }
             $fields[$name] = [
@@ -75,7 +79,15 @@ class TranslateHandler extends YesWikiHandler
         $targets = $this->wiki->translationTargets($entry['lang'] ?? null);
         $posted = json_decode((string)$this->getRequest()->request->get('__translation'), true);
         $purifier = $this->getService(HtmlPurifierService::class);
-        $translations = is_array($entry['__translation'] ?? null) ? array_diff_key($entry['__translation'], array_flip($targets)) : [];
+        $translations = is_array($entry['__translation'] ?? null) ? $entry['__translation'] : [];
+        foreach ($targets as $lang) {
+            $kept = is_array($translations[$lang] ?? null) ? array_diff_key($translations[$lang], $fields) : [];
+            if ($kept === []) {
+                unset($translations[$lang]);
+            } else {
+                $translations[$lang] = $kept;
+            }
+        }
         foreach (is_array($posted) ? $posted : [] as $lang => $values) {
             if (!in_array($lang, $targets, true) || !is_array($values)) {
                 continue;
@@ -101,7 +113,7 @@ class TranslateHandler extends YesWikiHandler
 
     private function displayForm(string $tag): string
     {
-        $entry = $this->storedEntry($tag);
+        $entry = $this->storedEntry($tag, true);
         $baseLang = $entry['lang'] ?? $this->wiki->defaultLanguage();
         $langs = array_merge([$baseLang], $this->wiki->translationTargets($baseLang));
         if (!is_array($entry['__translation'] ?? null)) {

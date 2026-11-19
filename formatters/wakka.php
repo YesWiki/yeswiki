@@ -85,7 +85,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
 
             // we're cutting the last <br />
             $text = preg_replace("/<br \/>$/", '', trim($text));
-            $text = $this->wiki->services->get(\YesWiki\Core\Service\RestrictedBlocks::class)->strip($text);
+            $text = $this->wiki->services->get(Core\Service\RestrictedBlocks::class)->strip($text);
 
             return $text;
         }
@@ -451,8 +451,10 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 } elseif (startsWith($part, '.')) {
                     $attrs['class'] = trim(str_replace('.', ' ', $part), ' ');
                 } elseif (strpos($part, '=') !== false) {
-                    list($key, $value) = explode('=', $part);
-                    $attrs[$key] = "$value";
+                    list($key, $value) = explode('=', $part, 2);
+                    if (preg_match('/^(title|target|rel|download|hreflang|lang|role|(data|aria)-[a-z0-9-]+)$/i', $key)) {
+                        $attrs[strtolower($key)] = trim($value, '"\'');
+                    }
                 }
             }
 

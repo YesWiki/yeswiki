@@ -8,9 +8,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for the markdown-image-compatibility XSS in the wakka formatter :
- * an unescaped/unvalidated src attribute allowed breaking out of the src="..." HTML
- * attribute (e.g. via a quote+tab) to inject an event-handler attribute.
+ * The wakka formatter's output for markdown images, links and indented lists.
  */
 class WakkaFormatterTest extends YesWikiTestCase
 {
@@ -20,8 +18,6 @@ class WakkaFormatterTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $html = $wiki->Format($markdown);
 
-        // no <img> tag should ever carry an event-handler attribute or a javascript:/data: src,
-        // regardless of how the rest of the markdown was (mis)parsed
         $this->assertDoesNotMatchRegularExpression(
             '/<img\b[^>]*\son[a-z]+\s*=/i',
             $html,
@@ -68,13 +64,7 @@ class WakkaFormatterTest extends YesWikiTestCase
         ];
     }
 
-    /**
-     * Regression test for a CPU-exhaustion DoS in the markdown-link branch of the
-     * wakka formatter's mega-regex: an unbounded `[^\]]+`/`[^\)]+` scan restarts at
-     * every `[` in the input, making a run of N `[` characters cost O(N^2).
-     * A vulnerable formatter takes multiple seconds on this payload; a fixed one
-     * (bounded quantifiers) completes in well under a second.
-     */
+    /** A run of `[` formats in linear time. */
     public function testMarkdownLinkBracketRunIsNotQuadratic()
     {
         $wiki = $this->getWiki();
@@ -90,6 +80,80 @@ class WakkaFormatterTest extends YesWikiTestCase
             "Formatting a run of '[' characters took {$elapsed}s: "
             . 'the markdown-link regex looks unbounded again (algorithmic-complexity DoS).'
         );
+    }
+
+    /** The attributes of each link in the formatted text, in document order. */
+    private function linkAttributes(string $wikiText): array
+    {
+        $html = $this->getWiki()->Format($wikiText);
+        $dom = new \DOMDocument();
+        @$dom->loadHTML('<?xml encoding="utf-8"?><div>' . $html . '</div>');
+        $links = [];
+        foreach ($dom->getElementsByTagName('a') as $a) {
+            $attrs = [];
+            foreach ($a->attributes as $attr) {
+                $attrs[$attr->name] = $attr->value;
+            }
+            $links[] = $attrs;
+        }
+
+        return $links;
+    }
+
+    public static function hostileLinks(): array
+    {
+        return [
+            'event handler in markdown extra' => ['[x](https://example.com){onmouseover=alert(1)}'],
+            'event handler on a wiki link' => ['[x](PagePrincipale){onfocus=alert(1) autofocus=1}'],
+            'quote breakout from a value' => ['[x](https://example.com){title=a"onmouseover="alert(1)}'],
+            'quote breakout from an id' => ['[x](https://example.com){#a"onmouseover="alert(1)}'],
+            'style attribute' => ['[x](https://example.com){style=position:fixed}'],
+            'javascript destination' => ['[x](javascript:alert(1))'],
+            'uppercase javascript destination' => ['[x](JavaScript:alert(1))'],
+            'data destination' => ['[x](data:text/html,<script>alert(1)</script>)'],
+            'javascript forced link' => ['[[javascript:alert(1) x]]'],
+            'vbscript forced link' => ['[[vbscript:msgbox(1) x]]'],
+        ];
+    }
+
+    #[DataProvider('hostileLinks')]
+    public function testALinkCarriesNoScript(string $wikiText)
+    {
+        $this->assertStringContainsString('x', strip_tags($this->getWiki()->Format($wikiText)));
+        foreach ($this->linkAttributes($wikiText) as $attrs) {
+            foreach ($attrs as $name => $value) {
+                $this->assertStringStartsNotWith('on', strtolower($name), "$wikiText kept $name");
+                $this->assertNotSame('style', $name, "$wikiText kept style");
+                $this->assertNotSame('autofocus', $name, "$wikiText kept autofocus");
+            }
+            $this->assertDoesNotMatchRegularExpression('/^\s*(javascript|vbscript|data):/i', $attrs['href'] ?? '', $wikiText);
+        }
+    }
+
+    public function testMarkdownExtraKeepsLinkAttributes()
+    {
+        $links = $this->linkAttributes('[x](https://example.com){#anchor .btn.btn-primary target=_blank title="Title" data-size=modal-lg}');
+
+        $this->assertCount(1, $links);
+        $this->assertSame('https://example.com', $links[0]['href']);
+        $this->assertSame('anchor', $links[0]['id']);
+        $this->assertSame('btn btn-primary', $links[0]['class']);
+        $this->assertSame('_blank', $links[0]['target']);
+        $this->assertSame('Title', $links[0]['title']);
+        $this->assertSame('modal-lg', $links[0]['data-size']);
+    }
+
+    public function testAnAttributeValueKeepsItsQuoteAsText()
+    {
+        $links = $this->linkAttributes('[x](https://example.com){title=a"b}');
+
+        $this->assertSame('a"b', $links[0]['title']);
+    }
+
+    public function testOrdinarySchemesStayLinks()
+    {
+        $this->assertSame('mailto:a@example.com', $this->linkAttributes('[x](mailto:a@example.com)')[0]['href']);
+        $this->assertSame('tel:+33100000000', $this->linkAttributes('[x](tel:+33100000000)')[0]['href']);
     }
 
     /** Each list item of the formatted text, as its nesting depth and its own text. */

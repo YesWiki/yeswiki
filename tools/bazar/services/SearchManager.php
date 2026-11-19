@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Service;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
@@ -416,7 +417,7 @@ class SearchManager
      *
      * @return $string
      */
-    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
+    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false, bool $maskUnreadable = false): string
     {
         $params = array_merge(
             [
@@ -605,6 +606,10 @@ class SearchManager
                             $vFields[$vField]['needSplit'] = true;
                         }
 
+                        if ($maskUnreadable && !$vFieldObject->canRead(['id_fiche' => ' '])) {
+                            $vFields[$vField]['unreadableIn'][] = (string)$vFormID;
+                        }
+
                         break;
                     }
                 }
@@ -641,6 +646,9 @@ class SearchManager
                 $value = $this->bodyValue($this->jsonPath($vFieldName));
                 if ($translated) {
                     $value = 'COALESCE(' . $this->bodyValue($this->jsonPath('__translation.' . $this->wiki->lang . '.' . $vFieldName)) . ', ' . $value . ')';
+                }
+                if (!empty($vField['unreadableIn'])) {
+                    $value = $this->maskedForNonOwners($value, $vField['unreadableIn']);
                 }
                 $vSelectRequest[] = $value . ' AS ' . $this->column($vFieldName);
                 $vField['isExtracted'] = true;
@@ -760,7 +768,7 @@ class SearchManager
      */
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
-        $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
+        $requete = $this->prepareSearchRequest($params, $filterOnReadACL, false, $useGuard && !$this->wiki->UserIsAdmin());
 
         $searchResults = [];
         if ($requete === '') {
@@ -1595,9 +1603,21 @@ class SearchManager
         return 'JSON_UNQUOTE(JSON_EXTRACT(CASE WHEN JSON_VALID(body) THEN body END, \'' . mysqli_real_escape_string($this->wiki->dblink, $path) . '\'))';
     }
 
-    /**
-     * The column a requested field is extracted into, quoted as an SQL identifier.
-     */
+    /** $value, or an empty string on an entry of $formIds the current user does not own, as Guard blanks a field they may not read. */
+    private function maskedForNonOwners(string $value, array $formIds): string
+    {
+        $inForms = $this->bodyValue('$.id_typeannonce') . ' IN (' . implode(',', array_map(
+            fn ($formId) => '\'' . mysqli_real_escape_string($this->wiki->dblink, $formId) . '\'',
+            array_unique($formIds)
+        )) . ')';
+        $userName = $this->wiki->services->get(AuthController::class)->getLoggedUserName();
+        $notOwner = empty($userName)
+            ? ''
+            : ' AND COALESCE(p.owner, \'\') <> \'' . mysqli_real_escape_string($this->wiki->dblink, $userName) . '\'';
+
+        return 'CASE WHEN ' . $inForms . $notOwner . ' THEN \'\' ELSE ' . $value . ' END';
+    }
+
     /** Converts an SQL expression to utf8mb4 so the accent and case insensitive collation applies whatever the connection charset. */
     private function collate(string $expression): string
     {
