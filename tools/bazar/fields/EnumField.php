@@ -19,6 +19,7 @@ abstract class EnumField extends BazarField
     protected $linkedObjectName;
     protected $keywords;
     protected $queries;
+    protected $ignoredDefault = [];
 
     protected const FIELD_LINKED_OBJECT = 1;
     public const FIELD_NAME = 6;
@@ -52,7 +53,34 @@ abstract class EnumField extends BazarField
                     $this->optionsTree = $list['nodes'];
                 }
             }
+            $this->dropDefaultOutsideOptions();
         }
+    }
+
+    /** Removes from the default every value the options do not offer, remembering them in ignoredDefault(). */
+    protected function dropDefaultOutsideOptions(): void
+    {
+        if ($this->isEmpty($this->default)) {
+            return;
+        }
+        $values = $this->defaultValues();
+        $kept = array_values(array_filter($values, fn ($value) => array_key_exists($value, $this->options)));
+        $this->ignoredDefault = array_values(array_diff($values, $kept));
+        if (!empty($this->ignoredDefault)) {
+            $this->default = empty($kept) ? null : implode(',', $kept);
+        }
+    }
+
+    /** The values the default names. */
+    protected function defaultValues(): array
+    {
+        return [trim((string)$this->default)];
+    }
+
+    /** Default values the form declares but the options do not offer. */
+    public function ignoredDefault(): array
+    {
+        return $this->ignoredDefault;
     }
 
     // Recursively load options from list, in case the list is a tree (with children)

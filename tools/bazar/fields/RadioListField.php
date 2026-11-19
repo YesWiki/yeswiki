@@ -24,7 +24,7 @@ class RadioListField extends RadioField
         }
 
         return $this->render('@bazar/fields/radio.twig', [
-            'value' => $this->options[$value],
+            'value' => $this->options[$value] ?? $value,
         ]);
     }
 }

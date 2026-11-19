@@ -53,6 +53,11 @@ class FormController extends YesWikiController
                     Flash::error(htmlspecialchars($value['bn_label_nature'] ?? '') . ' : ' . _t('BAZ_FORM_INVALID_FIELD_NAMES', ['names' => htmlspecialchars(implode(', ', $invalidNames))]));
                     continue;
                 }
+                $invalidDefaults = $this->formManager->invalidListDefaults($this->formManager->getFromRawData($value));
+                if (!empty($invalidDefaults)) {
+                    Flash::error(htmlspecialchars($value['bn_label_nature'] ?? '') . ' : ' . _t('BAZ_FORM_INVALID_LIST_DEFAULTS', ['fields' => htmlspecialchars(implode(' ; ', $invalidDefaults))]));
+                    continue;
+                }
                 $existingForms = multiArraySearch($forms, 'bn_label_nature', $value['bn_label_nature'] ?? $value['title'] ?? '');
                 // If a form with the same name exist, replace it
                 if (count($existingForms) > 0) {
@@ -198,6 +203,12 @@ class FormController extends YesWikiController
         $invalidNames = $this->formManager->invalidPropertyNames($form);
         if (!empty($invalidNames)) {
             Flash::error(_t('BAZ_FORM_INVALID_FIELD_NAMES', ['names' => htmlspecialchars(implode(', ', $invalidNames))]));
+
+            return false;
+        }
+        $invalidDefaults = $this->formManager->invalidListDefaults($form);
+        if (!empty($invalidDefaults)) {
+            Flash::error(_t('BAZ_FORM_INVALID_LIST_DEFAULTS', ['fields' => htmlspecialchars(implode(' ; ', $invalidDefaults))]));
 
             return false;
         }

@@ -42,4 +42,10 @@ class FieldFactoryTest extends TestCase
     {
         $this->assertInstanceOf(AttributeDeclaredField::class, $this->factory()->create(['attributedeclared']));
     }
+
+    public function testFileThatIsNotAFieldClassIsSkipped()
+    {
+        $this->assertInstanceOf(AttributeDeclaredField::class, $this->factory()->create(['attributekeyword']));
+        $this->assertFileExists(__DIR__ . '/fieldfactory-fixture/fields/README.md');
+    }
 }

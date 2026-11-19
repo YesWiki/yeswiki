@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Core\Entity\Translations;
 use YesWiki\Core\Service\AclService;
@@ -888,6 +889,21 @@ class FormManager
         }
 
         return array_values(array_unique($names));
+    }
+
+    /**
+     * Fields of $form whose default names a value their list does not offer, as `name: value, value`.
+     */
+    public function invalidListDefaults(array $form): array
+    {
+        $invalid = [];
+        foreach ($form['prepared'] ?? [] as $field) {
+            if ($field instanceof EnumField && !empty($field->ignoredDefault())) {
+                $invalid[] = $field->getPropertyName() . ' : ' . implode(', ', $field->ignoredDefault());
+            }
+        }
+
+        return $invalid;
     }
 
     public function prepareData($form)

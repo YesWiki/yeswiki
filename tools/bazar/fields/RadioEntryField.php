@@ -46,7 +46,7 @@ class RadioEntryField extends RadioField
 
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
-            'label' => $this->getOptions()[$value],
+            'label' => $this->getOptions()[$value] ?? $value,
             'entryUrl' => $entryUrl,
         ]);
     }

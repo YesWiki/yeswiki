@@ -146,6 +146,11 @@ abstract class CheckboxField extends EnumField
         return $options;
     }
 
+    protected function defaultValues(): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', (string)$this->default)), fn ($value) => $value !== ''));
+    }
+
     /**
      * Label of a recorded value the options do not offer any more.
      */

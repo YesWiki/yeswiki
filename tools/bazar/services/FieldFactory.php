@@ -55,7 +55,9 @@ class FieldFactory
                 $fieldsFiles = array_diff(scandir($fullExtensionDir), ['..', '.']);
 
                 foreach ($fieldsFiles as $fieldFile) {
-                    preg_match("/^([a-zA-Z0-9_-]+)Field\.php$/", $fieldFile, $matches);
+                    if (!preg_match("/^([a-zA-Z0-9_-]+)Field\.php$/", $fieldFile, $matches)) {
+                        continue;
+                    }
                     $fieldName = $matches[1];
 
                     $extensionName = ucfirst($extensionKey);
