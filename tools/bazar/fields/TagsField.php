@@ -14,12 +14,17 @@ class TagsField extends EnumField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-        $this->name = $this->linkedObjectName; // hack because tags are Enums but id is not on same position than enums
+        $this->name = $this->linkedObjectName;
         $this->maxChars = $this->maxChars ?? 255;
         $this->propertyName = $this->name;
     }
 
-    public function getValueStructure() // See BazarField::getValueStructure
+    public function requireIDFiche()
+    {
+        return true;
+    }
+
+    public function getValueStructure()
     {
         return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
     }
@@ -33,7 +38,6 @@ class TagsField extends EnumField
         $allTags = $tagsManager->getAll();
         if (is_array($allTags)) {
             foreach ($allTags as $tag) {
-                // TODO why ISO-8859-15 ? fix the encoding ???
                 $response[] = _convert(str_replace('\'', '&#39;', $tag['value']), 'ISO-8859-15');
             }
         }
@@ -77,21 +81,18 @@ class TagsField extends EnumField
 
     public function formatValuesBeforeSave($entry)
     {
-        // TODO use TagsManager instead of TripleStore
         $tripleStore = $this->getService(TripleStore::class);
 
         $value = $this->getValue($entry);
 
-        // Delete existing tags linked to this entry
         if (!isset($GLOBALS['delete_tags']) && !empty($entry['id_fiche'])) {
             $tripleStore->delete($entry['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
             $GLOBALS['delete_tags'] = true;
         }
 
-        // Add back all specified tags
         $tags = explode(',', $value);
         foreach ($tags as $tag) {
-            trim($tag);
+            $tag = trim($tag);
             if ($tag != '') {
                 $tripleStore->create($entry['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', _convert($tag, YW_CHARSET, true), '', '');
             }
@@ -136,7 +137,6 @@ class TagsField extends EnumField
 
     private function loadOptionsFromTags()
     {
-        // TODO use TagsManager instead of TripleStore
         $tripleStore = $this->getService(TripleStore::class);
 
         $rawOptions = $tripleStore->getMatching(null, 'http://outils-reseaux.org/_vocabulary/tag');
