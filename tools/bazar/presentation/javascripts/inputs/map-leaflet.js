@@ -471,12 +471,11 @@ $(document).ready(() => {
       }
 
       function showAddressError(pMessage) {
-        // console.log("showAddressError: " + pMessage);
         if (pMessage === 'not found') {
           alert(_t('BAZ_GEOLOC_NOT_FOUND'))
           geocodedmarkerRefresh()
         } else {
-          alert(_t('BAZ_MAP_ERROR', { pMessage }))
+          alert(_t('BAZ_MAP_ERROR', { msg: pMessage }))
         }
       }
 

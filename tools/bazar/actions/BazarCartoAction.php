@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Bazar\Field\MapField;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -121,8 +123,24 @@ class BazarCartoAction extends YesWikiAction
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
             'pagination' => -1, // disable pagination
             'query' => $query,
-            'geolocationfield' => $get->get('geolocationfield') ?? $arg['geolocationfield'] ?? 'bf_geolocation',
+            'geolocationfield' => $get->get('geolocationfield') ?? $arg['geolocationfield'] ?? $this->mapFieldName($arg['id'] ?? ''),
         ];
+    }
+
+    /** Property name of the first map field of the listed forms, bf_geolocation when none has one. */
+    private function mapFieldName($formIds): string
+    {
+        $ids = array_filter(array_map('trim', explode(',', (string)$formIds)));
+        foreach ($ids as $id) {
+            $form = $this->getService(FormManager::class)->getOne($id);
+            foreach ($form['prepared'] ?? [] as $field) {
+                if ($field instanceof MapField) {
+                    return $field->getPropertyName();
+                }
+            }
+        }
+
+        return 'bf_geolocation';
     }
 
     public function run()

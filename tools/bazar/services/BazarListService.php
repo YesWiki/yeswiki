@@ -252,6 +252,7 @@ class BazarListService
                 'nodes' => [],
                 'collapsed' => true,
             ];
+            $field = null;
 
             // Check if linked data value
             if (str_contains($propName, $linkedSep)) {
