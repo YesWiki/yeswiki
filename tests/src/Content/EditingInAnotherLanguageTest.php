@@ -63,6 +63,7 @@ class EditingInAnotherLanguageTest extends YesWikiTestCase
         if (count($this->getWiki()->services->get(LanguageService::class)->availableLanguages()) < 2) {
             $this->markTestSkipped('this wiki offers a single language, so nothing switches');
         }
+        $this->translatingInto('en');
     }
 
     /**

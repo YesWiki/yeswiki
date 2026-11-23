@@ -37,6 +37,7 @@ class MenuScreensTest extends YesWikiTestCase
         if (!in_array('en', $this->getWiki()->services->get(LanguageService::class)->availableLanguages(), true)) {
             $this->markTestSkipped('this wiki does not offer English, so nothing is translated into it');
         }
+        $this->translatingInto('en');
     }
 
     /**

@@ -6,6 +6,7 @@ use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\CSVManager;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -91,8 +92,12 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
                 ]);
                 $importProblem = $reading['problem'];
                 if ($extracted = $reading['extracted']) {
-                    $extracted = array_map(function ($extract) use ($vForm, $entryController) {
-                        $extract['displayData'] = $entryController->view($extract['entry'], '', false, null, $vForm);
+                    $formProperties = $this->getService(FormPropertiesService::class);
+                    $extracted = array_map(function ($extract) use ($vForm, $entryController, $formProperties) {
+                        $preview = $extract['entry'];
+                        $preview['title'] = $formProperties->computeTitle($vForm, $preview);
+                        $preview['tag'] = $formProperties->generateTag($preview['title']);
+                        $extract['displayData'] = $entryController->view($preview, '', false, null, $vForm);
                         $extract['json'] = json_encode($extract['entry']);
 
                         return $extract;

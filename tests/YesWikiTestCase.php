@@ -221,6 +221,9 @@ class YesWikiTestCase extends TestCase
      */
     private $obLevelAtSetUp;
 
+    /** @var array{0: bool, 1: mixed}|null whether the wiki had `other_languages` before translatingInto(), and what it held */
+    private ?array $otherLanguagesWas = null;
+
     /** @var list<string> directories makeDirectory() created, deepest first */
     private array $createdDirectories = [];
 
@@ -265,6 +268,14 @@ class YesWikiTestCase extends TestCase
         return 'env' . implode('', array_map(static fn (string $name): string => ' -u ' . escapeshellarg($name), $names)) . ' ';
     }
 
+    /** Turns translation into $languages on for this test, as `other_languages` would; tearDown() puts the wiki's own setting back. */
+    protected function translatingInto(string ...$languages): void
+    {
+        $config = self::getWiki()->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class);
+        $this->otherLanguagesWas ??= [isset($config['other_languages']), $config['other_languages'] ?? null];
+        $config['other_languages'] = $languages;
+    }
+
     protected static function signedIn(): string
     {
         return self::getWiki()->services->get(\YesWiki\Identity\Service\AuthenticationService::class)->signedInName();
@@ -282,6 +293,15 @@ class YesWikiTestCase extends TestCase
             @rmdir($directory);
         }
         $this->createdDirectories = [];
+        if ($this->otherLanguagesWas !== null) {
+            $config = self::getWiki()->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class);
+            if ($this->otherLanguagesWas[0]) {
+                $config['other_languages'] = $this->otherLanguagesWas[1];
+            } else {
+                unset($config['other_languages']);
+            }
+            $this->otherLanguagesWas = null;
+        }
         if ($this->envFileWas !== null) {
             foreach ($this->envFileWas as $name => $value) {
                 putenv($value === false ? $name : $name . '=' . $value);

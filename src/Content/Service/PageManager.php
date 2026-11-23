@@ -662,6 +662,9 @@ class PageManager implements CachesTheDatabase
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
+        if (trim((string)$tag) === '') {
+            throw new \InvalidArgumentException(_t('INCORRECT_PAGENAME'));
+        }
         if (ReservedTags::isReserved((string)$tag) || self::isGroupTag((string)$tag)) {
             throw new ReservedTagException(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $tag]));
         }

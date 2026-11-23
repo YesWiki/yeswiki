@@ -93,6 +93,26 @@ class PageWithoutNameTest extends YesWikiTestCase
 
         $this->assertTrue($pages->tagExists(self::RENAMED));
         $neighbour = $db->loadSingle('SELECT parent FROM ' . trim($db->prefixTable('pages')) . " WHERE tag = ? AND latest = 'Y'", [self::PAGE]);
+        $this->assertNotNull($neighbour);
         $this->assertSame('', (string)$neighbour['parent']);
+    }
+
+    public function testSavingOneIsRefused(): void
+    {
+        $services = self::getWiki()->services;
+        $db = $services->get(DbService::class);
+        $pages = trim($db->prefixTable('pages'));
+        $db->query("DELETE FROM {$pages} WHERE tag = ''");
+        $services->get(PageManager::class)->forget('');
+
+        foreach (['', ' '] as $tag) {
+            try {
+                $services->get(PageManager::class)->save($tag, [PageBody::CONTENT => ''], '', true);
+                $this->fail('saving under an empty tag is refused');
+            } catch (\InvalidArgumentException $refused) {
+                $this->assertSame(_t('INCORRECT_PAGENAME'), $refused->getMessage());
+            }
+        }
+        $this->assertNull($db->loadSingle("SELECT id FROM {$pages} WHERE TRIM(tag) = ''"));
     }
 }

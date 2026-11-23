@@ -5,6 +5,8 @@ namespace YesWiki\Test\Content;
 use YesWiki\Content\Service\CSVManager;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Render\Service\Performer;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -84,6 +86,34 @@ class CSVImportOptionsTest extends YesWikiTestCase
 
         $this->assertCount(1, $row['errormsg']);
         $this->assertStringContainsString(_t('BAZ_UNREADABLE_MAP_VALUE'), $row['errormsg'][0]);
+    }
+
+    /** The preview renders each row before it has a tag, since only the creation computes it. */
+    public function testThePreviewShowsARowThatHasNoTagYet(): void
+    {
+        self::actAs(self::adminName());
+        $csv = $this->csvManager->getCSVfromFormId(self::FORM_ID, [], ['fakeMode' => true]);
+        $headers = $csv[0] ?? [];
+        $row = array_fill(0, count($headers), '');
+        $row[0] = 'Fiche en aperçu';
+        $path = tempnam(sys_get_temp_dir(), 'csvimportpreview') . '.csv';
+        file_put_contents($path, $this->csvManager->arrayToCSV([$headers, $row]));
+        $request = $this->getWiki()->services->get(CurrentRequest::class)->get();
+        $request->request->set('form_id', self::FORM_ID);
+        $request->request->set('submit_file', '1');
+        $_FILES['fileimport'] = ['name' => basename($path), 'tmp_name' => $path, 'error' => 0, 'size' => filesize($path), 'type' => 'text/csv'];
+
+        try {
+            $html = $this->getWiki()->services->get(Performer::class)->run('entryimport', 'action', []);
+        } finally {
+            unset($_FILES['fileimport']);
+            $request->request->remove('form_id');
+            $request->request->remove('submit_file');
+            unlink($path);
+        }
+
+        $this->assertStringNotContainsString(_t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE'), $html);
+        $this->assertStringContainsString('Fiche en aperçu', $html);
     }
 
     public function testBothPostedFormatsAreRead(): void
