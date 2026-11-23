@@ -1,6 +1,7 @@
 import { legacyIconToSprite } from './yw-icon-map.js'
 import { claimRailSlot, registerRail } from './editor-rails.js'
 import InputHelper from './components/InputHelper.js'
+import { fileNamesReady } from './services/file-names.js'
 import InputHidden from './components/InputHidden.js'
 import InputText from './components/InputText.js'
 import InputPageList from './components/InputPageList.js'
@@ -325,7 +326,9 @@ export const appConfig = {
       this.view = options.action || options.groupName ? 'settings' : 'palette'
       this.paletteFilter = ''
       this.written = null
-      setTimeout(() => this.initValues(), 0)
+      fileNamesReady(options.action).then(() =>
+        setTimeout(() => this.initValues(), 0),
+      )
     },
     /** The page that is on screen now is the one whose components the rail offers. */
     readPalette() {

@@ -1,3 +1,5 @@
+import { fileNameFor } from '../services/file-names.js'
+
 export default {
   methods: {
     componentIdFrom(config) {
@@ -15,7 +17,9 @@ export default {
         }
         for (const field in showIfConf) {
           const said = this.values[field] ?? this.specialValues?.[field]
-          const value = (said || false).toString()
+          const value = (
+            (field === 'file' ? fileNameFor(said) : said) || false
+          ).toString()
           const expectedValue = showIfConf[field].toString()
           if (expectedValue === 'notNull')
             showIfResult = showIfResult && !['', 'false'].includes(value)
