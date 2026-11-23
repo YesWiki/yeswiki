@@ -220,7 +220,7 @@ class PageManager implements CachesTheDatabase
         }
 
         $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET tag = ? WHERE tag = ?", [$newTag, $oldTag]);
-        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET parent = ? WHERE parent = ?", [$newTag, $oldTag]);
+        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET parent = ? WHERE parent = ? AND parent <> ''", [$newTag, $oldTag]);
 
         unset($this->pageCache[$oldTag]);
         unset($this->rawPageCache[$oldTag]);
@@ -602,8 +602,6 @@ class PageManager implements CachesTheDatabase
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        // Read before the caches are dropped and the row is gone: asking afterwards would answer
-        // from a cache this method just refilled, and leave it holding a type for a tag with no row.
         $type = $this->typeOf($tag);
 
         unset($this->ownersCache[$tag]);
@@ -613,13 +611,11 @@ class PageManager implements CachesTheDatabase
         unset($this->typeCache[$tag]);
         $this->aclService->forget($tag);
 
-        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag = ? OR parent = ?", [$tag, $tag]);
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag = ? OR (parent = ? AND parent <> '')", [$tag, $tag]);
         if (!self::isGroupTag((string)$tag)) {
             $this->tripleStore->deleteAll($tag, '');
         }
 
-        // Every deletion, whatever asked for it: this is where the row actually goes, and a
-        // deletion leaves no revision behind to be the record of itself.
         $this->journal()->audit('content.delete', $tag, $type === null ? [] : ['type' => $type]);
 
         $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
@@ -737,9 +733,6 @@ class PageManager implements CachesTheDatabase
             $this->aclService->forget($tag);
             $this->ownersCache[$tag] = $owner;
 
-            // The act, never the content: the revision that was just written *is* the content, and
-            // a second copy of it under a different retention would disagree with the first the
-            // moment one was pruned (ADR-0025).
             $this->journal()->audit(empty($oldPage) ? 'content.create' : 'content.update', $tag, ['type' => $type]);
 
             $errors = $this->eventDispatcher->yesWikiDispatch(empty($oldPage) ? 'page.created' : 'page.updated', [

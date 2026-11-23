@@ -222,7 +222,7 @@ class Trash
         $parents = [$tag];
         while ($parents !== []) {
             $placeholders = implode(', ', array_fill(0, count($parents), '?'));
-            $children = array_column($this->db->loadAll("SELECT DISTINCT tag FROM {$pages} WHERE latest = 'Y' AND parent IN ({$placeholders})", $parents), 'tag');
+            $children = array_column($this->db->loadAll("SELECT DISTINCT tag FROM {$pages} WHERE latest = 'Y' AND parent <> '' AND parent IN ({$placeholders})", $parents), 'tag');
             $parents = array_values(array_diff(array_map('strval', $children), $found, [$tag]));
             $found = [...$found, ...$parents];
         }
