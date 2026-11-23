@@ -373,6 +373,9 @@ class PageManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+        if (trim((string)$tag) === '') {
+            throw new \InvalidArgumentException(_t('INCORRECT_PAGENAME'));
+        }
         if (stripos((string)$tag, GROUP_PREFIX) === 0) {
             return 1;
         }
