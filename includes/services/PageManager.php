@@ -329,7 +329,7 @@ class PageManager
         }
         unset($this->ownersCache[$tag]);
         unset($this->pageCache[$tag]);
-        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR (comment_on='{$this->dbService->escape($tag)}' AND comment_on <> '')");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         if (stripos((string)$tag, GROUP_PREFIX) !== 0) {

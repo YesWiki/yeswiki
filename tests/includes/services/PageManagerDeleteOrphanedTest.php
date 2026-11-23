@@ -2,15 +2,14 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Deleting a page takes its triples with it, so a deleted entry stops being an entry.
- */
+/** Deleting a page takes its triples with it, and a page with an empty tag goes alone. */
 class PageManagerDeleteOrphanedTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'DeleteOrphanedTestPage';
@@ -39,5 +38,17 @@ class PageManagerDeleteOrphanedTest extends YesWikiTestCase
         $this->pageManager->deleteOrphaned(self::PAGE_TAG);
 
         $this->assertNull($this->tripleStore->exist(self::PAGE_TAG, self::PROPERTY, 'fiche_bazar', '', ''));
+    }
+
+    public function testAPageWithAnEmptyTagGoesAlone()
+    {
+        $dbService = $this->getWiki()->services->get(DbService::class);
+        $pages = $dbService->prefixTable('pages');
+        $dbService->query("INSERT INTO {$pages} (tag, time, body, body_r, owner, user, latest, handler, comment_on) VALUES ('', NOW(), 'sans nom', '', '', '', 'Y', 'page', '')");
+
+        $this->pageManager->deleteOrphaned('');
+
+        $this->assertNull($dbService->loadSingle("SELECT id FROM {$pages} WHERE tag = ''"));
+        $this->assertNotNull($this->pageManager->getOne(self::PAGE_TAG));
     }
 }
