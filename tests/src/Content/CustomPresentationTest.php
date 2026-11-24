@@ -6,25 +6,22 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Render\Service\Performer;
 use YesWiki\Render\Service\PresentationCatalog;
+use YesWiki\Render\Service\TemplateOverrides;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/** A wiki's own list template in `custom/templates/core/presentations/` is drawn on the server, from Items that carry their entry. */
+/** A wiki's own list template, saved from the templates screen under `core/presentations/`, is drawn on the server from Items that carry their entry. */
 class CustomPresentationTest extends YesWikiTestCase
 {
     private const FORM_ID = '999943';
     private const TAG = 'CustomPresentationTestEntry';
-    private const DIR = PresentationCatalog::CUSTOM_PREFIX . 'presentations';
-    private const FILE = self::DIR . '/zz-probe-server.twig';
+    private const OVERRIDE = 'core/presentations/zz-probe-server.twig';
 
     protected function setUp(): void
     {
         parent::setUp();
-        if (!is_dir(self::DIR)) {
-            mkdir(self::DIR, 0777, true);
-        }
-        file_put_contents(self::FILE, "{# presentation\n   label: Sonde\n   category: card\n#}\n"
+        $this->getWiki()->services->get(TemplateOverrides::class)->save(self::OVERRIDE, "{# presentation\n   label: Sonde\n   category: card\n#}\n"
             . "{% for item in items %}<p class=\"probe\" data-town=\"{{ item.entry.bf_ville }}\">{{ item.title }}|{{ entryField(item.entry, 'bf_ville') }}</p>{% endfor %}");
         $this->freshCatalog();
 
@@ -48,8 +45,7 @@ class CustomPresentationTest extends YesWikiTestCase
             $services->get(EntryManager::class)->delete(self::TAG, true);
         }
         $services->get(FormManager::class)->delete(self::FORM_ID);
-        @unlink(self::FILE);
-        @rmdir(self::DIR);
+        $services->get(TemplateOverrides::class)->delete(self::OVERRIDE);
         $this->freshCatalog();
         parent::tearDown();
     }
@@ -70,7 +66,7 @@ class CustomPresentationTest extends YesWikiTestCase
 
         $this->assertStringContainsString('data-town="Die"', $html, 'the raw value reaches the template');
         $this->assertMatchesRegularExpression('/La halle\|.*Die/s', $html, 'a field renders as the form shows it');
-        $this->assertStringNotContainsString('entry-list-dynamic-container', $html, 'it is not handed to Vue');
+        $this->assertStringNotContainsString('entry-list-dynamic-container', $html, 'it is drawn on the server');
     }
 
     public function testTheGlobalSearchDoesNotOfferIt(): void

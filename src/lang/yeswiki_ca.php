@@ -3055,4 +3055,10 @@ Podeu avisar els administradors per ajudar-los a mantenir aquest lloc donant-los
     'TRANSLATIONS_TYPE_MENU' => 'menú',
     'ADMIN_MENUS_TRANSLATE_HINT' => 'Per traduir aquest menú, canvieu de llengua amb el selector al peu de la pàgina.',
     'ADMIN_MENUS_TRANSLATING_HINT' => 'Esteu traduint aquest menú. Aquí només s\'escriuen les etiquetes; l\'ordre, els enllaços i les icones es canvien en la llengua d\'origen.',
+    'ACTION_BUILDER_PREVIEW' => 'Vista prèvia (no es pot fer clic)',
+    'ACTION_BUILDER_ONLINEDOC' => 'Documentació en línia',
+    'ACTION_BUILDER_OWNER' => 'Propietari del llistat',
+    'ACTION_BUILDER_MODIFICATION_DATE' => 'Data modificada',
+    'ACTION_BUILDER_CREATION_DATE' => 'Data de creació',
+    'ACTION_BUILDER_FORM_ID' => 'Formulari',
 ];

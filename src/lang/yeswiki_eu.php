@@ -3085,4 +3085,10 @@ Mesedez, berretsi ezabatzea, beheko laukia markatuz.
     'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => 'Eguneraketa abiarazita (itxaron)',
     'ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' => 'Ezin izan da segurtasun-kopien zerrenda eguneratu',
     'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => 'Errorea: ezin izan da kopia gelditu',
+    'ACTION_BUILDER_PREVIEW' => 'Aurrebista (ezin da klikatu)',
+    'ACTION_BUILDER_ONLINEDOC' => 'On line dokumentazioa',
+    'ACTION_BUILDER_OWNER' => 'Fitxaren jabea',
+    'ACTION_BUILDER_MODIFICATION_DATE' => 'Aldaketa-data',
+    'ACTION_BUILDER_CREATION_DATE' => 'Sorrera-data',
+    'ACTION_BUILDER_FORM_ID' => 'Inprimakia',
 ];

@@ -40,7 +40,7 @@ class BackupsScreenTest extends YesWikiTestCase
         return $this->getWiki()->services->get(BackupsApiController::class);
     }
 
-    public function testTheScreenIsDrawnWithoutVue(): void
+    public function testTheScreenIsDrawnOnTheServer(): void
     {
         $html = (string)$this->getWiki()->services->get(Performer::class)->run('adminbackups', 'action', []);
 

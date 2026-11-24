@@ -5,7 +5,7 @@ import { watchConsole } from '../helpers/console'
 import { login, logout, ADMIN_USERNAME, ADMIN_PASSWORD } from '../helpers/login'
 import { nestListValues, seedResources } from '../helpers/bazar'
 
-/** What the server-rendered presentations took over from the Vue ones: the list that unfolds an entry, and the facets of a hierarchical list. */
+/** What the server-rendered presentations took over from the browser-drawn ones: the list that unfolds an entry, and the facets of a hierarchical list. */
 
 test.beforeEach(async ({ page }) => {
   resetEnv()

@@ -1,88 +1,16 @@
-
-<aside class="yw-designer__sidebar actions-builder-panel" id="actions-builder-panel" hidden>
-  <div id="actions-builder-app">
-    <div class="yw-rail__header">
-
-      <button type="button" class="yw-btn yw-btn--sm actions-builder-panel__back"
-              v-if="view === 'settings' && !isEditingExistingAction" @click="backToPalette"
-              :title="'{{ _t('ACTION_BUILDER_PALETTE_BACK')|e('js') }}'">
-        {{ icon('arrow-left') }}
-      </button>
-
-      <h2 class="yw-rail__title"
-          v-html="view === 'palette' ? '{{ _t('ACTION_BUILDER_PALETTE_TITLE')|e('js') }}' : railTitle"></h2>
-      <button type="button" class="yw-close" @click="close" aria-label="close">&times;</button>
-    </div>
-
-    <div class="actions-builder-panel__body" v-if="view === 'palette'">
-      <div class="yw-form-group">
-        <input type="text" class="yw-input" v-model="paletteFilter" autocomplete="off"
-               placeholder="{{ _t('ACTION_BUILDER_PALETTE_FILTER') }}">
-      </div>
-      <p v-if="paletteGroups.length === 0" class="actions-builder-panel__empty">
-        {{ _t('ACTION_BUILDER_PALETTE_NO_RESULT') }}
-      </p>
-      <template v-for="group in paletteGroups" :key="group.id">
-        <h3 class="actions-builder-panel__palette-group" v-text="group.label"></h3>
-        <div class="actions-builder-panel__palette">
-
-          <button type="button" class="actions-builder-panel__component"
-                  v-for="action in group.actions" :key="action.id"
-                  :title="action.label"
-                  @click="selectFromPalette(group.id, action.id)">
-
-            <span class="actions-builder-panel__component-icon" v-html="action.icon"></span>
-            <span class="actions-builder-panel__component-label" v-html="action.label"></span>
-          </button>
-        </div>
-      </template>
-    </div>
-
-    <div class="actions-builder-panel__body" v-else>
-
-      <div v-if="selectedAction" class="action-parameters-container">
-
-        <div v-if="selectedAction.hint" class="alert alert-info" v-html="selectedAction.hint"></div>
-
-        <preview-action v-if="!editorRendersComponents" :wiki-code="wikiCodeForIframe"
-                        :height="selectedAction ? selectedAction.previewHeight : null"></preview-action>
-
-        <div class="panels-config-container">
-          <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class"
-               :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
-            <h3 v-text="panel.params.title || '{{ _t('ACTION_BUILDER_PARAMETERS')|e('js') }}'"></h3>
-            <div class="config-panel-content">
-
-              <template v-for="(config, propName) in panel.params.properties" :key="propName">
-                <div class="config-cell" :class="{'config-cell--third': spanOf(config) === 2}"
-                     :style="{'--yw-span': spanOf(config)}"
-                     v-show="checkVisibility(config)">
-
-                  <div class="config-intro" v-if="config.intro" v-html="config.intro"></div>
-                  <component :is="componentIdFrom(config)" :ref="refFrom(config)"
-                             :value="values[propName]" v-on:input="updateValue(propName, $event)"
-                             :name="propName" :values="values"
-                             :config="config" :selected-forms="selectedForms">
-                  </component>
-                </div>
-              </template>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
+{# The component rail beside an editor: the palette and each component's settings come from the server, actions-builder.js moves the tag they write into the editor. #}
+<aside class="yw-designer__sidebar actions-builder-panel" id="actions-builder-panel" hidden data-yw-unsaved-ignore
+       data-ab-palette-url="{{ url({ tag: 'api/actions-builder/palette' }) }}"
+       data-ab-settings-url="{{ url({ tag: 'api/actions-builder/settings' }) }}"
+       data-ab-palette-title="{{ _t('ACTION_BUILDER_PALETTE_TITLE') }}">
+  <div class="yw-rail__header">
+    <h2 class="yw-rail__title" data-ab-title>{{ _t('ACTION_BUILDER_PALETTE_TITLE') }}</h2>
+    <button type="button" class="yw-close" data-ab-close aria-label="{{ _t('ACTION_BUILDER_CLOSE') }}">&times;</button>
   </div>
+  <div class="actions-builder-panel__body" data-ab-palette></div>
+  <div class="actions-builder-panel__body" data-ab-settings-host hidden></div>
 </aside>
 
 {{ include_css('styles/vendor/leaflet/leaflet.css') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
-
-{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
-
-{{ include_javascript('javascripts/vendor/vue-select/vue-select.min.js') }}
-{{ include_css('styles/vendor/vue-select/vue-select.css') }}
-
-{{ include_javascript('javascripts/actions-builder.js', false, true) }}
 {{ include_css('styles/yw-editor.css') }}

@@ -99,6 +99,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
                 document.addEventListener('htmx:confirm', function(e) {
                     if (!showPopup || e.detail.question) return;
+                    if (e.detail.elt && e.detail.elt.closest && e.detail.elt.closest('[data-yw-unsaved-ignore]')) return;
                     e.preventDefault();
                     window.ywConfirm(_t('EDIT_LEAVE_WITHOUT_SAVING'), { destructive: true }).then(function(confirmed) {
                         if (!confirmed) return;

@@ -183,16 +183,21 @@ All the javascript files in the `custom/javascripts/` directory are included.
 
 But files in a subfolder are not automatically included.
 
-### Extra-components for actions-builder
+### A setting type of your own in the component rail
 
-1.  Choose a component from the `tools/aceditor/presentation/javascripts/components` folder that resembles the custom component you are looking for (e.g. `InputGeo.js`)
-2.  Copy it to the `custom/javascripts/components/actions-builder` folder
-    - keep your name if you want to replace the original field
-    - rename it if you do not want to replace the original field
-3.  Be careful to update the relative paths for imports (example: `import InputMultiInput from '.. /.. /.. /.. /tools/aceditor/presentation/javascripts/components/InputMultiInput.js'`)
-4.  To use it, define in the file `.yaml` associated with actions builder for the desired part the type that goes well.
-    - if the file is called `InputNomInput.js`, then you have to type in the file `.yaml`: `type: name-input`
-    - if the file is called `InputGeo.js`, you have to type `type: geo`
+The editor's component rail draws each setting on the server. A setting whose type core does not know is drawn by the Twig template `actions-builder/inputs/<type>.twig`, which a wiki puts in `custom/templates/core/actions-builder/inputs/` and an extension in its own `templates/core/actions-builder/inputs/`.
+
+The template gets `setting` (the setting's `config`, its current `value` and its `name`), `field` (the name its input must carry) and `id` (a base for the ids of its elements). Whatever it posts under `field` is written into the tag. Give a text input `hx-preserve="true"` and the `id`, so that what is being typed survives the rail redrawing itself.
+
+```twig
+{# custom/templates/core/actions-builder/inputs/postcode.twig #}
+<div class="yw-form-group input-group postcode">
+  <label class="yw-form-label" for="{{ id }}">{{ setting.config.label }}</label>
+  <input type="text" id="{{ id }}" name="{{ field }}" value="{{ setting.value }}" class="yw-input" pattern="[0-9]{5}" hx-preserve="true">
+</div>
+```
+
+A component declares it with `Setting::custom('postcode', 'postcode')`, followed by the usual modifiers (`label()`, `hint()`, `showIf()`…).
 
 ### Custom Css
 

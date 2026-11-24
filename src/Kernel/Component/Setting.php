@@ -25,6 +25,12 @@ final class Setting
         return new self($name, 'text');
     }
 
+    /** A setting core does not draw itself: `actions-builder/inputs/<type>.twig`, from the wiki or an extension, draws it. */
+    public static function custom(string $name, string $type): self
+    {
+        return new self($name, $type);
+    }
+
     /** A value that must never be echoed back: the input starts empty and is only sent when the person types one. */
     public static function secret(string $name): self
     {

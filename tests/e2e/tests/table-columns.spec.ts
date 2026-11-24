@@ -74,11 +74,7 @@ test('the rail of a table offers the columns and keeps it a table', async ({
     .locator(`${PANEL} .yw-form-group.form-field`)
     .filter({ hasText: 'Colonnes du tableau' })
   await expect(columns).toBeVisible()
-  await columns.locator('.vs__search').click()
-  await page
-    .locator('.vs__dropdown-option', { hasText: 'Type de ressource' })
-    .first()
-    .click()
+  await columns.getByRole('checkbox', { name: /Type de ressource/ }).check()
 
   await expect
     .poll(() => editorText(page), { message: 'the columns are written' })
@@ -146,19 +142,15 @@ test('the rail offers totals and averages once a table has columns', async ({
   await expect(setting('calculer la somme')).toBeHidden()
   await expect(setting('calculer la moyenne')).toBeHidden()
 
-  await setting('Colonnes du tableau').locator('.vs__search').click()
-  await page
-    .locator('.vs__dropdown-option', { hasText: 'Type de ressource' })
-    .first()
-    .click()
+  await setting('Colonnes du tableau')
+    .getByRole('checkbox', { name: /Type de ressource/ })
+    .check()
   await expect(setting('calculer la somme')).toBeVisible()
   await expect(setting('calculer la moyenne')).toBeVisible()
 
-  await setting('calculer la moyenne').locator('.vs__search').click()
-  await page
-    .locator('.vs__dropdown-option', { hasText: 'Type de ressource' })
-    .first()
-    .click()
+  await setting('calculer la moyenne')
+    .getByRole('checkbox', { name: /Type de ressource/ })
+    .check()
   await expect
     .poll(() => editorText(page), { message: 'the average is written' })
     .toContain('averagefieldsids="bf_type"')

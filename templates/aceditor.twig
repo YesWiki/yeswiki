@@ -22,9 +22,5 @@
   var pageTags = {{ pageTags|json_encode|raw }}
 </script>
 
-{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
-{{ include_javascript('javascripts/vendor/vue-select/vue-select.min.js') }}
-{{ include_css('styles/vendor/vue-select/vue-select.css') }}
-
 {{ include_javascript('javascripts/aceditor.js', false, true) }}
 {{ include_css('styles/yw-editor.css') }}

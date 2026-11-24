@@ -3089,4 +3089,10 @@ Confirme su eliminación marcando la casilla siguiente.
     'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => 'Actualización iniciada (espere)',
     'ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' => 'No se puede actualizar la lista de copias de seguridad',
     'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => 'Error: no se puede detener la copia de seguridad',
+    'ACTION_BUILDER_PREVIEW' => 'Vista previa (no se puede hacer clic)',
+    'ACTION_BUILDER_ONLINEDOC' => 'Documentación en línea',
+    'ACTION_BUILDER_OWNER' => 'El propietario del archivo',
+    'ACTION_BUILDER_MODIFICATION_DATE' => 'Fecha de modificación',
+    'ACTION_BUILDER_CREATION_DATE' => 'Fecha de creación',
+    'ACTION_BUILDER_FORM_ID' => 'Formulario',
 ];

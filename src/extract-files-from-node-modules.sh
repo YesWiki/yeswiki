@@ -10,10 +10,6 @@ copy_js() { sed '/^[[:space:]]*\/\/#[[:space:]]*sourceMappingURL=/d' "$1" > "$2"
 copy_css() { sed '/^[[:space:]]*\/\*#[[:space:]]*sourceMappingURL=/d' "$1" > "$2"; }
 
 node src/build-icon-sprite.mjs
-mkdir -p javascripts/vendor/vue && copy_js node_modules/vue/dist/vue.global.js javascripts/vendor/vue/vue.js
-copy_js node_modules/vue/dist/vue.global.prod.js javascripts/vendor/vue/vue.min.js
-mkdir -p javascripts/vendor/vue-select && copy_js node_modules/vue-select/dist/vue-select.umd.js javascripts/vendor/vue-select/vue-select.min.js
-mkdir -p styles/vendor/vue-select && copy_css node_modules/vue-select/dist/vue-select.css styles/vendor/vue-select/vue-select.css
 mkdir -p javascripts/vendor/sortablejs && copy_js node_modules/sortablejs/Sortable.min.js javascripts/vendor/sortablejs/sortable.js
 
 mkdir -p javascripts/vendor/compressorjs && copy_js node_modules/compressorjs/dist/compressor.esm.js javascripts/vendor/compressorjs/compressor.js

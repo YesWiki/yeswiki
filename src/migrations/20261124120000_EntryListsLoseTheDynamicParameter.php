@@ -5,7 +5,7 @@ use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Service\SearchIndexer;
 
-/** `dynamic` leaves the list actions: the template's folder says how it renders, and a Vue list's way of opening an entry is written out for the server one. */
+/** `dynamic` leaves the list actions: the template's folder says how it renders, and the way a list drawn in the browser opened an entry is written out for the server one. */
 class EntryListsLoseTheDynamicParameter extends YesWikiMigration
 {
     private const ACTIONS = 'entrylist|entrymap|calendar|entrytable|entryuserpage|bazarliste|bazarcarto|bazarcalendar|bazartableau';
@@ -48,7 +48,7 @@ class EntryListsLoseTheDynamicParameter extends YesWikiMigration
         }
     }
 
-    /** Drops `dynamic` from the list calls of $content, keeping how a Vue card, timeline or list opened its entries. */
+    /** Drops `dynamic` from the list calls of $content, keeping how a browser-drawn card, timeline or list opened its entries. */
     public static function rewrite(string $content): string
     {
         return (string)preg_replace_callback(self::CALL, static function (array $call): string {
@@ -64,13 +64,13 @@ class EntryListsLoseTheDynamicParameter extends YesWikiMigration
                 return $call[0];
             }
 
-            $wasVue = in_array(strtolower(trim($arguments['dynamic'])), self::TRUE, true);
+            $wasDynamic = in_array(strtolower(trim($arguments['dynamic'])), self::TRUE, true);
             unset($arguments['dynamic']);
             $template = (string)preg_replace('/\.(twig|tpl\.html)$/', '', $arguments['template'] ?? '');
-            if ($wasVue && in_array($template, ['list', 'liste_accordeon'], true)) {
+            if ($wasDynamic && in_array($template, ['list', 'liste_accordeon'], true)) {
                 $arguments['template'] = 'list';
                 $arguments['entrydisplay'] ??= 'accordion';
-            } elseif ($wasVue && in_array($template, ['card', 'timeline'], true)) {
+            } elseif ($wasDynamic && in_array($template, ['card', 'timeline'], true)) {
                 $arguments['entrydisplay'] ??= 'modal';
             }
 

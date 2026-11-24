@@ -168,7 +168,7 @@ class EntryListCardTest extends YesWikiTestCase
         $palette = \YesWiki\Content\Service\EntryDisplay::categoryColorFor('form');
 
         $html = $this->render('title=bf_titre', ['colorfield' => 'bf_type_act']);
-        $this->assertMatchesRegularExpression('#class="yw-item__title"[^>]*>\s*<span class="pellet" style="background-color: ' . preg_quote($palette, '#') . '"#', $html, 'a value with no stated colour takes its palette slot, as on the Vue card');
+        $this->assertMatchesRegularExpression('#class="yw-item__title"[^>]*>\s*<span class="pellet" style="background-color: ' . preg_quote($palette, '#') . '"#', $html, 'a value with no stated colour takes its palette slot, as on the map');
 
         $html = $this->render('title=bf_titre', ['colorfield' => 'bf_type_act', 'color' => '#c0ffee=form']);
         $this->assertStringContainsString('<span class="pellet" style="background-color: #c0ffee"', $html, 'a stated mapping wins');

@@ -13,7 +13,7 @@
 {{ include_javascript('javascripts/services/recurrence-calculator.js') }}
 {{ include_javascript('javascripts/entry-calendar.js', false, true) }}
 
-<div class="entry-list-dynamic-template-container yw-entry-calendar no-dblclick" id="entry-calendar-{{ listId }}"
+<div class="yw-entry-calendar no-dblclick" id="entry-calendar-{{ listId }}"
      data-fragment-url="{{ url({ tag: 'api/entries/html/__TAG__/fragment' }) }}">
   <div class="yw-calendar"></div>
   <aside class="entry-container yw-entry-calendar__side" hidden>

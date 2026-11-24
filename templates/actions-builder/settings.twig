@@ -1,0 +1,44 @@
+{# One component's settings, drawn from the whole state the panel posts on every change; `data-ab-code` is the tag they write. #}
+{% import "@core/actions-builder/_setting.twig" as ab %}
+{% set prefix = 'ab-' ~ session ~ '-' ~ rev|default(0) %}
+<form class="action-parameters-container" novalidate
+      hx-post="{{ url({ tag: 'api/actions-builder/settings' }) }}" hx-trigger="input[target.hasAttribute('hx-preserve')] delay:400ms, change[!target.hasAttribute('hx-preserve')], submit"
+      hx-target="find [data-ab-settings]" hx-select="[data-ab-settings]" hx-swap="outerHTML" hx-sync="this:queue last">
+<div data-ab-settings data-ab-session="{{ session }}" data-ab-code="{{ code }}" data-ab-title="{{ component.label|striptags }}" data-ab-editing="{{ editing ? '1' : '0' }}">
+  <input type="hidden" name="component" value="{{ component.id }}">
+  <input type="hidden" name="editing" value="{{ editing ? '1' : '0' }}">
+  <input type="hidden" name="session" value="{{ session }}">
+  <input type="hidden" name="rev" value="{{ rev|default(0) }}">
+  <input type="hidden" name="preview" value="{{ preview ? '1' : '0' }}">
+  {% for name, value in carried %}<input type="hidden" name="v[{{ name }}]" value="{{ value }}">{% endfor %}
+  {% for name, value in rest %}<input type="hidden" name="rest[{{ name }}]" value="{{ value }}">{% endfor %}
+
+  {% if component.hint %}<div class="alert alert-info">{{ component.hint|raw }}</div>{% endif %}
+
+  {% if preview and component.previewHeight != '0' %}
+    <div class="widget-iframe-container">
+      <h3>{{ _t('ACTION_BUILDER_PREVIEW') }}</h3>
+      <iframe class="iframe-preview" width="100%" height="{{ component.previewHeight ?: '350px' }}" frameborder="0"
+              title="{{ _t('ACTION_BUILDER_PREVIEW') }}" src="{{ url({ tag: 'wiki/render', params: { content: preview_code } }) }}"></iframe>
+      <div class="iframe-blocker"></div>
+    </div>
+  {% endif %}
+
+  <div class="panels-config-container">
+    {% for panel in panels %}
+      <div class="config-panel {{ panel.class }}" style="width: {{ panel.width ?: (panels|length == 1 ? '50%' : '33%') }}">
+        <h3>{{ panel.title ?: _t('ACTION_BUILDER_PARAMETERS') }}</h3>
+        <div class="config-panel-content">
+          {% for name, setting in panel.settings|default({}) %}
+            {% set span = setting.config.span|default(setting.type in ['class', 'field-mapping', 'query', 'columns-width', 'nav-links', 'facets', 'sort-fields', 'geo', 'divider', 'hint'] ? 6 : 3) %}
+            <div class="config-cell{{ span == 2 ? ' config-cell--third' : '' }}" style="--yw-span: {{ span }}" {{ setting.visible ? '' : 'hidden' }}>
+              {% if setting.config.intro is defined %}<div class="config-intro">{{ setting.config.intro|raw }}</div>{% endif %}
+              {{ ab.setting(setting, 'v[' ~ name ~ ']', prefix ~ '-' ~ name, 's[' ~ name ~ ']') }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+</form>

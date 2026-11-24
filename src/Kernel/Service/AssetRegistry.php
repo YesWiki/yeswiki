@@ -20,7 +20,6 @@ class AssetRegistry implements RequestScopedState
     // Backward compatibility : in case some extensions were using javascript code previously in
     // tools/templates (and which have been moved elsewhere), we handle it
     protected const BACKWARD_PATH_MAPPING = [
-        'tools/templates/libs/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.js',
         'tools/bazar/libs/vendor/leaflet/leaflet.js' => 'javascripts/vendor/leaflet/leaflet.min.js',
         'tools/bazar/libs/vendor/leaflet/leaflet-providers.js' => 'javascripts/vendor/leaflet-providers/leaflet-providers.js',
         'tools/bazar/libs/vendor/leaflet/leaflet.css' => 'styles/vendor/leaflet/leaflet.css',
@@ -39,10 +38,6 @@ class AssetRegistry implements RequestScopedState
         'tools/templates/javascripts/change-theme.js' => 'javascripts/change-theme.js',
         'tools/templates/javascripts/template-edit.js' => 'javascripts/template-edit.js',
         'tools/templates/javascripts/reload-gerer-droits.js' => 'javascripts/reload-gerer-droits.js',
-    ];
-
-    protected const PRODUCTION_PATH_MAPPING = [
-        'javascripts/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.min.js',
     ];
 
     protected ContainerInterface $container;
@@ -303,12 +298,6 @@ class AssetRegistry implements RequestScopedState
     {
         if (array_key_exists($file, self::BACKWARD_PATH_MAPPING)) {
             $file = self::BACKWARD_PATH_MAPPING[$file];
-        }
-
-        if (!$this->container->get(RuntimeConfig::class)->getValue('debug')) {
-            if (array_key_exists($file, self::PRODUCTION_PATH_MAPPING)) {
-                $file = self::PRODUCTION_PATH_MAPPING[$file];
-            }
         }
 
         return $this->instanceExtensionPath($file);

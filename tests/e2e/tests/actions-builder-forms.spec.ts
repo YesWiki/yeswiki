@@ -20,14 +20,13 @@ const formPicker = (page: Page) =>
 
 /** The forms it currently names -- it takes several, so this is a list. */
 const pickedForms = async (page: Page) =>
-  (await formPicker(page).locator('.vs__selected').allInnerTexts()).map((t) =>
-    t.trim(),
-  )
+  formPicker(page)
+    .locator('label:has(input:checked)')
+    .evaluateAll((labels) => labels.map((label) => label.textContent.trim()))
 
 /** Add one to the selection, by the name a webmaster knows it by. */
 const pickForm = async (page: Page, label: string) => {
-  await formPicker(page).locator('.vs__search').click()
-  await page.locator('.vs__dropdown-option', { hasText: label }).first().click()
+  await formPicker(page).getByRole('checkbox', { name: label }).check()
 }
 
 /** One of the selects made of the chosen form's fields. */
@@ -51,15 +50,14 @@ test("a list offers this wiki's forms, and writes the one picked", async ({
     .click()
   await expect(page.locator(SETTINGS)).toBeVisible()
 
-  await formPicker(page).locator('.vs__search').click()
-  const offered = page.locator('.vs__dropdown-option')
+  const offered = formPicker(page).locator('label')
   await expect(
     offered,
     'the seeded wiki has forms, and the picker lists them',
   ).not.toHaveCount(0)
   await expect(offered.first()).not.toHaveText(/^\s*$/)
 
-  await offered.filter({ hasText: 'Agenda' }).first().click()
+  await pickForm(page, 'Agenda')
   await expect
     .poll(() => editorText(page), {
       message: 'the form is written into the tag',
@@ -274,7 +272,7 @@ test('the card settings are laid out in pairs, with nothing hidden', async ({
     const byTop: Record<number, string[]> = {}
     document
       .querySelectorAll(
-        '#actions-builder-panel .config-cell label, #actions-builder-panel .multi-input-container.field-mapping > * label',
+        '#actions-builder-panel .config-cell label:not(.ab-choice), #actions-builder-panel .config-cell legend, #actions-builder-panel .multi-input-container.field-mapping > * label',
       )
       .forEach((label) => {
         const box = (label as HTMLElement).getBoundingClientRect()
@@ -365,7 +363,7 @@ test('a list of cards can be told to open its entries in a pop-up', async ({
   expect(watcher.errors(), 'the browser reported errors').toEqual([])
 })
 
-test('the form picker at the bottom of the rail opens where it can be seen', async ({
+test('the form picker at the bottom of the rail shows every form in the rail itself', async ({
   page,
 }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
@@ -380,9 +378,7 @@ test('the form picker at the bottom of the rail opens where it can be seen', asy
     .click()
   await expect(page.locator(SETTINGS)).toBeVisible()
 
-  await formPicker(page).locator('.vs__dropdown-toggle').click()
-
-  await expect(page.locator('.vs__dropdown-option').last()).toBeInViewport({
-    ratio: 1,
-  })
+  const last = formPicker(page).locator('label').last()
+  await last.scrollIntoViewIfNeeded()
+  await expect(last).toBeInViewport({ ratio: 1 })
 })

@@ -3057,4 +3057,10 @@ Je kunt de beheerders verwittigen om hen te helpen deze site te onderhouden door
     'TRANSLATIONS_TYPE_MENU' => 'menu',
     'ADMIN_MENUS_TRANSLATE_HINT' => 'Wissel van taal met de schakelaar onderaan de pagina om dit menu te vertalen.',
     'ADMIN_MENUS_TRANSLATING_HINT' => 'U vertaalt dit menu. Alleen de labels worden hier getypt; de volgorde, de links en de pictogrammen wijzigt u in de brontaal.',
+    'ACTION_BUILDER_PREVIEW' => 'Overview (niet klikken)',
+    'ACTION_BUILDER_ONLINEDOC' => 'Online documentatie',
+    'ACTION_BUILDER_OWNER' => 'Eigenaar van het dossier',
+    'ACTION_BUILDER_MODIFICATION_DATE' => 'Datum gewijzigd',
+    'ACTION_BUILDER_CREATION_DATE' => 'Creatie datum',
+    'ACTION_BUILDER_FORM_ID' => 'Formulieren',
 ];

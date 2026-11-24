@@ -24,7 +24,6 @@ export default defineConfig([
         ywInitEach: 'readable',
         ywAssets: 'readable',
         htmx: 'readable',
-        Vue: 'readable',
         Sortable: 'readable',
         L: 'readable',
         Vditor: 'readable',

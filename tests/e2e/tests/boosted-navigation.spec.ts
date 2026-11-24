@@ -10,10 +10,9 @@ const PAGE_WITH_EDITOR =
 /** A *mounted* editor, not merely present markup: vditor hides the original textarea and builds its own container beside it, so `textarea[data-vditor-ready]` is correctly invisible and asserting on it fails for the wrong reason. */
 const EDITOR = '.vditor, .aceditor-container .ace_editor'
 
-/** A widget that only exists once JavaScript has run — a Vue list, or leaflet having built its map. */
+/** A widget that only exists once JavaScript has run: leaflet having built its map. */
 const MOUNTED_WIDGET =
-  process.env.YESWIKI_WIDGET_SELECTOR ||
-  '.entry-list-dynamic-container > *, .leaflet-container'
+  process.env.YESWIKI_WIDGET_SELECTOR || '.leaflet-container'
 
 /** Mark the current document, then navigate by clicking. */
 const markDocument = (page: Page) =>
@@ -123,7 +122,7 @@ test.describe('boosted navigation', () => {
     expect(watcher.errors(), 'the browser reported errors').toEqual([])
   })
 
-  /** And the rail its component button opens, which is one Vue app for the session: a swap leaves it mounted on the page that is gone, so the palette comes up empty on every editor after the first. */
+  /** And the rail its component button opens, which is one rail for the session: a swap must not leave it bound to the page that is gone, or the palette comes up empty on every editor after the first. */
   test('the components rail mounts on an editor reached by a boosted navigation', async ({
     page,
   }, testInfo) => {
@@ -167,8 +166,8 @@ test.describe('boosted navigation', () => {
     expect(watcher.errors(), 'the browser reported errors').toEqual([])
   })
 
-  /** The same fault seen from the other side: the Vue list never mounted on the second visit. */
-  test('a dynamic bazar list mounts on a page reached by a boosted navigation', async ({
+  /** The same fault seen from the other side: the list's map never drew on the second visit. */
+  test('a map list draws on a page reached by a boosted navigation', async ({
     page,
   }, testInfo) => {
     const watcher = watchConsole(page)
@@ -190,16 +189,11 @@ test.describe('boosted navigation', () => {
     await navigateByLink(page, PAGE_WITH_LIST)
 
     const diagnostic = await page.evaluate(() => {
-      const holders = [
-        ...document.querySelectorAll('.entry-list-dynamic-container'),
-      ]
-
       const main = document.querySelector('#yw-main')
 
       return {
         url: window.location.href,
         title: document.title,
-        containers: holders.length,
         leafletContainers:
           document.querySelectorAll('.leaflet-container').length,
         mainContentChars: (main?.innerHTML || '').length,

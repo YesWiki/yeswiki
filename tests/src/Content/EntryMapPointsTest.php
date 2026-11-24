@@ -110,6 +110,6 @@ class EntryMapPointsTest extends YesWikiTestCase
             ->run('entrylist', 'action', ['id' => '1', 'template' => 'map']);
 
         $this->assertMatchesRegularExpression('#<script type="application/json" class="yw-entry-map__data">\{.*"points":\[#s', $html);
-        $this->assertStringNotContainsString('<Bazar-Map', $html, 'the Vue map is still drawn');
+        $this->assertStringNotContainsString('<Bazar-Map', $html, 'the map is drawn by a script of its own');
     }
 }

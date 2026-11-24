@@ -7,7 +7,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/** `dynamic` leaves the list calls, and what a Vue list did by default is written out for the server one. */
+/** `dynamic` leaves the list calls, and what a list drawn in the browser did by default is written out for the server one. */
 class EntryListsLoseTheDynamicParameterTest extends YesWikiTestCase
 {
     public static function setUpBeforeClass(): void
@@ -20,15 +20,15 @@ class EntryListsLoseTheDynamicParameterTest extends YesWikiTestCase
     public static function calls(): array
     {
         return [
-            'a Vue accordion list stays an accordion' => [
+            'a browser-drawn accordion list stays an accordion' => [
                 'Avant {{entrylist id="4" template="list" dynamic="true"}} après',
                 'Avant {{entrylist id="4" template="list" entrydisplay="accordion"}} après',
             ],
-            'the old accordion name in Vue was that same list' => [
+            'the old accordion name was that same list' => [
                 '{{bazarliste id="4" template="liste_accordeon" dynamic="1"}}',
                 '{{bazarliste id="4" template="list" entrydisplay="accordion"}}',
             ],
-            'a Vue card opened its entries in a modal' => [
+            'a browser-drawn card opened its entries in a modal' => [
                 '{{entrylist id="1" template="card" dynamic="true" columns="3"}}',
                 '{{entrylist id="1" template="card" columns="3" entrydisplay="modal"}}',
             ],

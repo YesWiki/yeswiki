@@ -1,8 +1,6 @@
 <?php
 
 return [
-    'CHOOSE_AN_IMAGE' => 'Choisir une image',
-    'REMOVE_IMAGE' => 'Retirer l’image',
     'CANCEL' => 'Annuler',
     'COPY' => 'Copier',
     'DUPLICATE' => 'Dupliquer',
@@ -62,22 +60,6 @@ return [
     'FORM_ID_IS_COMPATIBLE' => 'Un formulaire du même identifiant ({id}) existe sur l\'url indiqué et semble avoir au moins les champs obligatoires similaires. Il sera utilisé pour la duplication.',
     'SHOW_PASSWORD' => 'Afficher le mot de passe',
     'HIDE_PASSWORD' => 'Masquer le mot de passe',
-    'ACTION_BUILDER_PREVIEW' => 'Aperçu (non cliquable)',
-    'ACTION_BUILDER_ONLINEDOC' => 'Documentation en ligne',
-    'ACTION_BUILDER_OWNER' => 'Propriétaire de la fiche',
-    'ACTION_BUILDER_MODIFICATION_DATE' => 'Date de modification',
-    'ACTION_BUILDER_GENERATED_TITLE' => 'Titre généré',
-    'ACTION_BUILDER_CREATION_DATE' => 'Date de création',
-    'ACTION_BUILDER_FORM_ID' => 'Formulaire',
-    'ACTION_BUILDER_QUERY_AND' => 'Valider toutes ces conditions (ET)',
-    'ACTION_BUILDER_QUERY_OR' => 'Valider au moins une de ces conditions (OU)',
-    'ACTION_BUILDER_QUERY_ADD_CONDITION' => 'Ajouter une condition',
-    'ACTION_BUILDER_QUERY_ADD_GROUP' => 'Ajouter un groupe',
-    'ACTION_BUILDER_QUERY_EDIT_VISUAL' => 'Édition visuelle',
-    'ACTION_BUILDER_QUERY_CODE' => 'Code',
-    'ACTION_BUILDER_QUERY_FIELD' => 'Champ',
-    'ACTION_BUILDER_QUERY_VALUE' => 'Valeur',
-
     'CONTACT_REQUIRED_FIELD' => 'La saisie de ce champ est obligatoire.',
     'CONTACT_EMAIL_NOT_VALID' => 'L\'email saisi n\'est pas valide.',
 

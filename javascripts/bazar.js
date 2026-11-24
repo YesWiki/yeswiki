@@ -671,7 +671,7 @@ ywInitEach('body', () => {
   })
 
   const bazarList = []
-  ywInitEach('.facette-container:not(.dynamic) .filter-bazar', (filter) => {
+  ywInitEach('.facette-container .filter-bazar', (filter) => {
     filter.addEventListener('keyup', () => {
       const { target } = filter.dataset
       let searchstring = filter.value

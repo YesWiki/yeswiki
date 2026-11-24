@@ -4,7 +4,7 @@ import { watchConsole } from '../helpers/console'
 import { login, ADMIN_USERNAME, ADMIN_PASSWORD } from '../helpers/login'
 import { createEntry } from '../helpers/bazar'
 
-/** The recurrence of an event is edited without Vue: the chosen repetition shows its own controls, and what is saved comes back when the entry is edited again. */
+/** The recurrence of an event is drawn by the server: the chosen repetition shows its own controls, and what is saved comes back when the entry is edited again. */
 
 const START = '2030-01-07'
 

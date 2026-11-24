@@ -1,0 +1,22 @@
+{# The components a page can be given, under their group's heading; the box above asks the server for the ones whose name matches. #}
+<div class="yw-form-group">
+  <input type="text" class="yw-input" name="q" value="{{ filter }}" autocomplete="off"
+         placeholder="{{ _t('ACTION_BUILDER_PALETTE_FILTER') }}" aria-label="{{ _t('ACTION_BUILDER_PALETTE_FILTER') }}"
+         hx-get="{{ url({ tag: 'api/actions-builder/palette' }) }}" hx-trigger="input changed delay:150ms, search"
+         hx-target="next [data-ab-palette-list]" hx-select="[data-ab-palette-list]" hx-swap="outerHTML" hx-sync="this:replace">
+</div>
+<div data-ab-palette-list>
+  {% for group in palette %}
+    <h3 class="actions-builder-panel__palette-group">{{ group.label }}</h3>
+    <div class="actions-builder-panel__palette">
+      {% for component in group.components %}
+        <button type="button" class="actions-builder-panel__component" data-ab-component="{{ component.id }}" title="{{ component.label|striptags }}">
+          <span class="actions-builder-panel__component-icon">{{ iconFromLegacy(component.icon ?: 'stack-2') }}</span>
+          <span class="actions-builder-panel__component-label">{{ component.label|raw }}</span>
+        </button>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="actions-builder-panel__empty">{{ _t('ACTION_BUILDER_PALETTE_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

@@ -31,6 +31,7 @@ window.addEventListener('beforeunload', (event) => {
 document.addEventListener('htmx:confirm', (event) => {
   if (!dirty || event.detail.question) return
   if (guardedFormOf(event.detail.elt)) return
+  if (event.detail.elt?.closest?.('[data-yw-unsaved-ignore]')) return
 
   event.preventDefault()
   window

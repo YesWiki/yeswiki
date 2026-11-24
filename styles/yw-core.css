@@ -1438,35 +1438,6 @@ body {
   display: none !important;
 }
 
-.v-select {
-  border: 2px solid var(--yw-primary);
-  border-radius: var(--yw-radius-sm) !important;
-}
-
-.v-select .vs__dropdown-toggle {
-  border: none;
-}
-
-.spinner-loader {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.1;
-}
-
-.spinner-loader.overlay {
-  height: auto !important;
-  position: absolute;
-  inset: 0;
-  background-color: var(--yw-surface-sunken);
-  border-radius: var(--yw-radius-md);
-  opacity: 0.3;
-}
-
-.spinner-loader.overlay.super-overlay {
-  z-index: 1000;
-}
-
 section.pattern-border {
   border-width: 4px;
   border-style: solid;

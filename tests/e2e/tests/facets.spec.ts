@@ -177,8 +177,6 @@ test('facets can be laid out above the list rather than beside it', async ({
   const count = await page.locator('.results-info').boundingBox()
   if (!row || !count) throw new Error('no facets')
   expect(count.y).toBeGreaterThan(row.y)
-
-  expect(await page.evaluate(() => typeof window['Vue'])).toBe('undefined')
 })
 
 test('facets above the list sit in three columns, fewer on a narrow screen', async ({

@@ -36,9 +36,8 @@
    *
    * Leaving them to htmx meant two vendor libraries racing their own dependents inside a
    * single navigation: `vditor-textarea.js` ran before `vendor/vditor/index.min.js`
-   * ("Vditor is not defined"), and `vue-select` before Vue ("can't access property
-   * createElementVNode"). Both are the same shape -- a script executing before the global it
-   * needs -- and no amount of retrying afterwards makes the first attempt not fail.
+   * ("Vditor is not defined"): a script executing before the global it needs, and no amount
+   * of retrying afterwards makes the first attempt not fail.
    *
    * Loading them here makes the order deterministic: one at a time, each awaited, in exactly
    * the order the server declared them. Stylesheets are left in the fragment, because CSS has

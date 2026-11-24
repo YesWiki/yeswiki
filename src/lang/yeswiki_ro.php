@@ -3086,4 +3086,10 @@ Vă rugăm să confirmaţi eliminarea acestora bifând caseta de mai jos.
 
     'ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' => 'Imposibil de actualizat lista de backup',
     'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => 'Eroare: nu se poate opri backup',
+    'ACTION_BUILDER_PREVIEW' => 'Previzualizare (nu se poate face clic)',
+    'ACTION_BUILDER_ONLINEDOC' => 'Documentație online',
+    'ACTION_BUILDER_OWNER' => 'Proprietarul înregistrării',
+    'ACTION_BUILDER_MODIFICATION_DATE' => 'Data Schimbării',
+    'ACTION_BUILDER_CREATION_DATE' => 'Data creării',
+    'ACTION_BUILDER_FORM_ID' => 'Formular',
 ];

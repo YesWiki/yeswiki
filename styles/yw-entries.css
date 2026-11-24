@@ -624,57 +624,6 @@ a.yw-item__title:focus-visible {
   color: var(--yw-text);
 }
 
-.entry-list-dynamic-container.mounted {
-  opacity: 1 !important;
-}
-
-.entry-list-dynamic-container .panel-group.ready {
-  opacity: 1 !important;
-}
-
-.entry-list-dynamic-container .results-col {
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-}
-
-.entry-list-dynamic-container .pagination {
-  display: flex;
-  justify-content: center;
-}
-
-.entry-list-dynamic-container .pagination > li {
-  margin: 0 var(--yw-space-sm-x);
-}
-
-.entry-list-dynamic-container .pagination > li > button {
-  padding: 0 var(--yw-space-md-x);
-  border: 0;
-  border-radius: var(--yw-radius-sm);
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.entry-list-dynamic-container .pagination > li > button:hover {
-  font-weight: bold;
-}
-
-.entry-list-dynamic-container .pagination > li.active > button {
-  background-color: var(--yw-primary);
-  color: var(--yw-on-primary);
-  font-weight: bold;
-}
-
-.entry-list-dynamic-container .pagination > li.disabled {
-  opacity: 0.6;
-}
-
-.entry-list-dynamic-container .pagination > li.disabled > button {
-  cursor: default;
-}
-
 .entry-container.modal-body {
   padding-top: var(--yw-space-md-y);
 }
@@ -715,76 +664,6 @@ a.yw-item__title:focus-visible {
 
 .entry-list {
   margin-bottom: var(--yw-space-lg-y);
-}
-
-.entry-list.dynamic .panel-heading-container {
-  display: grid;
-  grid-template-areas:
-    'title floating'
-    'subtitle subtitle';
-  align-items: start;
-  grid-template-rows: max-content;
-}
-
-.entry-list.dynamic .panel-heading-container.with-image {
-  grid-template-areas:
-    'visual title floating'
-    'visual subtitle subtitle';
-  grid-template-columns: 11rem auto auto;
-}
-
-@media (width <= 1000px) {
-  .entry-list.dynamic .panel-heading-container.with-image {
-    grid-template-columns: 25% auto auto;
-  }
-}
-
-.entry-list.dynamic .panel-heading-container .visual-area {
-  grid-area: visual;
-  background-size: cover;
-  align-self: stretch;
-  margin-right: var(--yw-space-md-x);
-  background-position: center;
-  border-radius: var(--yw-radius-sm);
-  min-height: 100px;
-  background-color: var(--yw-surface-sunken);
-}
-
-.entry-list.dynamic .panel-heading-container .visual-area img {
-  object-fit: cover;
-  width: 100%;
-  min-height: 100px;
-  max-height: 170px;
-}
-
-.entry-list.dynamic .panel-heading-container .title-area {
-  grid-area: title;
-}
-
-.entry-list.dynamic .panel-heading-container .floating-area {
-  grid-area: floating;
-  float: right;
-  font-weight: normal;
-  color: var(--yw-primary);
-  font-size: 0.95em;
-  justify-self: right;
-  padding-right: var(--yw-space-lg-x);
-}
-
-.entry-list.dynamic .panel-heading-container .subtitle-area {
-  grid-area: subtitle;
-  font-size: 0.95em;
-  text-align: justify;
-  padding-top: var(--yw-space-md-y);
-}
-
-.entry-list.dynamic .panel-heading-container p {
-  margin: 0;
-}
-
-.entry-list.dynamic .panel-body {
-  font-size: 0.95em;
-  margin-top: var(--yw-space-md-y);
 }
 
 .list-form .nodes-container {
@@ -1221,7 +1100,7 @@ a.ical-export-button {
   }
 }
 
-.entry-list-dynamic-template-container .entry-container {
+.yw-entry-calendar .entry-container {
   position: relative;
   transition: all 0.3s;
   min-height: 50%;
@@ -1231,30 +1110,30 @@ a.ical-export-button {
   overflow: auto;
 }
 
-.entry-list-dynamic-template-container .entry-container .btn-close i {
+.yw-entry-calendar .entry-container .btn-close i {
   padding-right: var(--yw-space-md-x);
 }
 
-.facette-container.dynamic[data-filter-align='right']
-  .entry-list-dynamic-template-container
+.facette-container[data-filter-align='right']
+  .yw-entry-calendar
   .entry-container {
   padding-left: 0;
   padding-right: var(--yw-space-md-x);
 }
 
-.facette-container.dynamic:not([data-filter-align='right'])
-  .entry-list-dynamic-template-container
+.facette-container:not([data-filter-align='right'])
+  .yw-entry-calendar
   .entry-container
   .btn-close
   i {
   padding-right: 0;
 }
 
-.entry-list-dynamic-template-container .entry-container .btn-close {
+.yw-entry-calendar .entry-container .btn-close {
   height: 5.4rem;
 }
 
-.entry-list-dynamic-template-container.small-width .entry-container {
+.yw-entry-calendar.small-width .entry-container {
   position: absolute;
   inset: 0;
   z-index: 1000;
@@ -3164,21 +3043,6 @@ label input.filter-checkbox:focus ~ span {
 
 .bazar-map-container .entry-container .btn-close i {
   padding-right: var(--yw-space-md-x);
-}
-
-.facette-container.dynamic[data-filter-align='right']
-  .bazar-map-container
-  .entry-container {
-  padding-left: 0;
-  padding-right: var(--yw-space-md-x);
-}
-
-.facette-container.dynamic:not([data-filter-align='right'])
-  .bazar-map-container
-  .entry-container
-  .btn-close
-  i {
-  padding-right: 0;
 }
 
 .bazar-map-container .entry-container .btn-close {

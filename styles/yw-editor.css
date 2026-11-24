@@ -883,7 +883,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   margin-right: var(--yw-space-sm-x);
 }
 
-#actions-builder-app .yw-form-group:first-child {
+#actions-builder-panel .yw-form-group:first-child {
   margin: 0 0 var(--yw-space-md-y) 0 !important;
 }
 
@@ -902,10 +902,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 
 input[type='range'] {
   box-shadow: none !important;
-}
-
-#actions-builder-app {
-  overflow: clip !important;
 }
 
 .actions-builder-panel__back {
@@ -976,40 +972,40 @@ input[type='range'] {
   border-color: var(--yw-primary);
 }
 
-#actions-builder-app .yw-form-group .yw-form-label {
+#actions-builder-panel .yw-form-group .yw-form-label {
   left: 0.9rem !important;
 }
 
-#actions-builder-app .checkbox label {
+#actions-builder-panel .checkbox label {
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.3;
   opacity: 0.85;
 }
 
-#actions-builder-app [type='checkbox'] + span:not(.lever) {
+#actions-builder-panel [type='checkbox'] + span:not(.lever) {
   padding-left: 0;
 }
 
-#actions-builder-app .checkbox .checkbox__title {
+#actions-builder-panel .checkbox .checkbox__title {
   flex: 1 1 auto;
 }
 
-#actions-builder-app .checkbox {
+#actions-builder-panel .checkbox {
   column-gap: var(--yw-space-sm-x);
 }
 
-#actions-builder-app .checkbox > label:not(.checkbox__title) {
+#actions-builder-panel .checkbox > label:not(.checkbox__title) {
   display: block;
   flex: 1 1 100%;
 }
 
-#actions-builder-app .checkbox > label:not(.checkbox__title) input {
+#actions-builder-panel .checkbox > label:not(.checkbox__title) input {
   margin-right: var(--yw-space-sm-x);
   vertical-align: middle;
 }
 
-#actions-builder-app
+#actions-builder-panel
   :not(.multi-input-container)
   > *
   > .input-group:not(.iconpicker-container) {
@@ -1017,7 +1013,7 @@ input[type='range'] {
   align-items: center;
 }
 
-#actions-builder-app
+#actions-builder-panel
   :not(.multi-input-container)
   > *
   > .input-group:not(.iconpicker-container)
@@ -1026,7 +1022,7 @@ input[type='range'] {
   flex-grow: 1;
 }
 
-#actions-builder-app
+#actions-builder-panel
   :not(.multi-input-container)
   > *
   > .input-group:not(.iconpicker-container)
@@ -1034,7 +1030,7 @@ input[type='range'] {
   width: 100%;
 }
 
-#actions-builder-app
+#actions-builder-panel
   :not(.multi-input-container)
   > *
   > .input-group:not(.iconpicker-container)
@@ -1042,7 +1038,7 @@ input[type='range'] {
   margin-bottom: 0;
 }
 
-#actions-builder-app
+#actions-builder-panel
   :not(.multi-input-container)
   > *
   > .input-group:not(.iconpicker-container):not(.checkbox):has(
@@ -1053,7 +1049,7 @@ input[type='range'] {
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
 
-#actions-builder-app
+#actions-builder-panel
   :not(.multi-input-container)
   > *
   > .input-group:not(.iconpicker-container):not(.checkbox):has(> .yw-form-label)
@@ -1061,7 +1057,7 @@ input[type='range'] {
   flex-grow: 0;
 }
 
-#actions-builder-app
+#actions-builder-panel
   :not(.multi-input-container)
   > *
   > .input-group:not(.iconpicker-container):not(.checkbox):has(
@@ -1073,7 +1069,7 @@ input[type='range'] {
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
 
-#actions-builder-app
+#actions-builder-panel
   :not(.multi-input-container)
   > *
   > .input-group:not(.iconpicker-container):not(.checkbox):has(> .yw-form-label)
@@ -1130,8 +1126,28 @@ input[type='range'] {
   margin-bottom: var(--yw-space-lg-y);
 }
 
-#actions-builder-panel .vs__dropdown-menu {
-  position: static;
+#actions-builder-panel .ab-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-y) var(--yw-space-md-x);
+}
+
+#actions-builder-panel .ab-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--yw-space-sm-x);
+  font-weight: normal;
+}
+
+#actions-builder-panel fieldset.yw-form-group {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+#actions-builder-panel [data-ab-geo-map] {
+  height: 250px;
 }
 
 .config-panel-content {
@@ -1147,18 +1163,18 @@ input[type='range'] {
   min-width: 0;
 }
 
-#actions-builder-app .config-cell .yw-input,
-#actions-builder-app
+#actions-builder-panel .config-cell .yw-input,
+#actions-builder-panel
   .config-cell
   input:not([type='checkbox']):not([type='radio']),
-#actions-builder-app .config-cell select,
-#actions-builder-app .config-cell .yw-image-input {
+#actions-builder-panel .config-cell select,
+#actions-builder-panel .config-cell .yw-image-input {
   width: 100%;
   max-width: 100%;
   min-width: 0;
 }
 
-#actions-builder-app .config-cell input[type='checkbox'] {
+#actions-builder-panel .config-cell input[type='checkbox'] {
   width: auto;
   flex: 0 0 auto;
 }
@@ -1169,7 +1185,7 @@ input[type='range'] {
   }
 }
 
-#actions-builder-app .config-panel-content .yw-form-label {
+#actions-builder-panel .config-panel-content .yw-form-label {
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.2;
@@ -1314,14 +1330,14 @@ input[type='range'] {
   align-self: center;
 }
 
-#actions-builder-app .inline-form .input-group:has(> .yw-form-label) {
+#actions-builder-panel .inline-form .input-group:has(> .yw-form-label) {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
 
-#actions-builder-app
+#actions-builder-panel
   .inline-form
   .input-group:has(> .yw-form-label)
   > *:not(.addon-icon):not(.yw-form-label) {
@@ -1684,7 +1700,7 @@ input[type='range'] {
   resize: vertical;
 }
 
-#actions-builder-app .qb-input.form-control {
+#actions-builder-panel .qb-input.form-control {
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -1783,7 +1799,7 @@ input[type='range'] {
   flex: 0 0 3.6rem;
 }
 
-#actions-builder-app .query-builder__operator .qb-input.form-control {
+#actions-builder-panel .query-builder__operator .qb-input.form-control {
   padding: 0.4rem 0.1rem 0.4rem 0.3rem;
   text-align: center;
 }

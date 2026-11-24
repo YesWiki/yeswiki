@@ -56,13 +56,6 @@ return [
     'CONNECTED_BUT_NOT_ADMIN' => 'Utilizatorul este {user} bine conectat.e pe destinația YesWiki, dar nu are drepturi de administrare. Vă rugăm să vă conectați cu un cont de administrator.',
     'FORM_ID_IS_COMPATIBLE' => 'Un formular cu același identificator ({id}) există pe url-ul dat și pare să aibă cel puțin aceleași câmpuri obligatorii. Acesta va fi utilizat pentru duplicare.',
     'NOT_CONNECTED' => 'Trebuie să vă conectați la destinație YesWiki cu un cont care are drepturi administrative.',
-    'ACTION_BUILDER_PREVIEW' => 'Previzualizare (nu se poate face clic)',
-    'ACTION_BUILDER_ONLINEDOC' => 'Documentație online',
-    'ACTION_BUILDER_OWNER' => 'Proprietarul înregistrării',
-    'ACTION_BUILDER_MODIFICATION_DATE' => 'Data Schimbării',
-    'ACTION_BUILDER_CREATION_DATE' => 'Data creării',
-    'ACTION_BUILDER_FORM_ID' => 'Formular',
-
     'CONTACT_REQUIRED_FIELD' => 'Acest câmp este obligatoriu.',
     'CONTACT_EMAIL_NOT_VALID' => 'E-mailul introdus nu este valid.',
 

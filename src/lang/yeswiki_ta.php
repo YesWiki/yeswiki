@@ -3084,4 +3084,10 @@ Url: {{ baseUrl }}
     'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => 'பலப்படுத்தப்பட்ட புதுப்பிப்பு (தயவுசெய்து காத்திருங்கள்)',
     'ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' => 'காப்புப்பிரதிகளின் பட்டியலைப் புதுப்பிக்க இயலாது',
     'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => 'பிழை: காப்புப்பிரதியை நிறுத்த இயலாது',
+    'ACTION_BUILDER_PREVIEW' => 'கண்ணோட்டம் (சொடுக்க முடியாதது)',
+    'ACTION_BUILDER_ONLINEDOC' => 'நிகழ்நிலை ஆவணங்கள்',
+    'ACTION_BUILDER_OWNER' => 'கோப்பின் உரிமையாளர்',
+    'ACTION_BUILDER_MODIFICATION_DATE' => 'மாற்றியமைத்த தேதி',
+    'ACTION_BUILDER_CREATION_DATE' => 'உருவாக்கிய தேதி',
+    'ACTION_BUILDER_FORM_ID' => 'வடிவம்',
 ];

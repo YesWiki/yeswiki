@@ -1,0 +1,69 @@
+{# A group of the visual query: its AND/OR, its conditions and the groups nested in it; `path` is where it sits in the tree, for the buttons that change it. #}
+
+{% macro group(node, path, name, id, setting, fields, depth) %}
+  {% set where = path|join('.') %}
+  <div class="query-group {{ depth ? 'query-group--nested' : 'query-group--root' }}">
+    {% if node.children|length > 1 %}
+      <div class="query-group__header">
+        {{ icon('filter', 'query-group__icon') }}
+        <select class="form-control qb-input query-group__connector" name="{{ name }}[connector]" aria-label="{{ _t('ACTION_BUILDER_QUERY_AND') }} / {{ _t('ACTION_BUILDER_QUERY_OR') }}">
+          <option value="AND" {{ node.connector == 'AND' ? 'selected' : '' }}>{{ _t('ACTION_BUILDER_QUERY_AND') }}</option>
+          <option value="OR" {{ node.connector == 'OR' ? 'selected' : '' }}>{{ _t('ACTION_BUILDER_QUERY_OR') }}</option>
+        </select>
+      </div>
+    {% else %}
+      <input type="hidden" name="{{ name }}[connector]" value="{{ node.connector }}">
+    {% endif %}
+    <div class="query-group__body">
+      {% for index, child in node.children %}
+        {% set childPath = path|merge([index]) %}
+        {% set childName = name ~ '[children][' ~ index ~ ']' %}
+        {% set childId = id ~ '-' ~ childPath|join('-') %}
+        {% if child.children is defined %}
+          <div class="query-group__nested">
+            <button type="submit" name="op" value="query-remove:{{ setting }}:{{ childPath|join('.') }}" class="query-group__remove" aria-label="{{ _t('DELETE') }}">{{ icon('x') }}</button>
+            {{ _self.group(child, childPath, childName, id, setting, fields, depth + 1) }}
+          </div>
+        {% else %}
+          {% set options = (fields|filter(f => f.id == child.field)|first).options|default(null) %}
+          <div class="query-builder__condition">
+            <div class="qb-control query-builder__field">
+              <select class="form-control qb-input" id="{{ childId }}-field" name="{{ childName }}[field]">
+                <option value=""></option>
+                {% for field in fields %}
+                  <option value="{{ field.id }}" {{ child.field == field.id ? 'selected' : '' }}>{{ field.label|striptags }}</option>
+                {% endfor %}
+              </select>
+              <label class="qb-label" for="{{ childId }}-field">{{ _t('ACTION_BUILDER_QUERY_FIELD') }}</label>
+            </div>
+            <div class="qb-control query-builder__operator">
+              <select class="form-control qb-input" name="{{ childName }}[operator]" aria-label="{{ _t('ACTION_BUILDER_QUERY_OPERATOR') }}">
+                {% for operator in ['=', '!=', '<', '>', '<=', '>='] %}
+                  <option value="{{ operator }}" {{ child.operator == operator ? 'selected' : '' }}>{{ operator }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="qb-control query-builder__value">
+              {% if options is iterable %}
+                <select class="form-control qb-input" id="{{ childId }}-value" name="{{ childName }}[value]">
+                  <option value=""></option>
+                  {% for value, label in options %}
+                    <option value="{{ value }}" {{ child.value == value ? 'selected' : '' }}>{{ label|striptags }}</option>
+                  {% endfor %}
+                </select>
+              {% else %}
+                <input class="form-control qb-input" type="text" id="{{ childId }}-value" name="{{ childName }}[value]" value="{{ child.value }}" hx-preserve="true">
+              {% endif %}
+              <label class="qb-label" for="{{ childId }}-value">{{ _t('ACTION_BUILDER_QUERY_VALUE') }}</label>
+            </div>
+            <button type="submit" name="op" value="query-remove:{{ setting }}:{{ childPath|join('.') }}" class="query-builder__remove" aria-label="{{ _t('DELETE') }}">{{ icon('x') }}</button>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="query-group__actions">
+      <button type="submit" name="op" value="query-add-condition:{{ setting }}:{{ where }}" class="btn btn-info btn-sm btn-icon">{{ icon('plus') }} {{ _t('ACTION_BUILDER_QUERY_ADD_CONDITION') }}</button>
+      <button type="submit" name="op" value="query-add-group:{{ setting }}:{{ where }}" class="btn btn-default btn-sm btn-icon">{{ icon('plus') }} {{ _t('ACTION_BUILDER_QUERY_ADD_GROUP') }}</button>
+    </div>
+  </div>
+{% endmacro %}

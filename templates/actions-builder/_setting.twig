@@ -1,0 +1,202 @@
+{# One setting of the component rail, as ComponentSettings::view() describes it; `field` is its input's name, `special` the name a composite setting's parts hang under. #}
+
+{% macro hint(config) %}
+  {% if config.hint|default('') or config.doclink|default('') %}
+    <div class="hint-container">
+      {% if config.hint|default('') %}<div class="hint">{{ config.hint }}</div>{% endif %}
+      {% if config.doclink|default('') %}<div class="hint"><a target="_blank" rel="noopener" href="{{ config.doclink }}">{{ _t('ACTION_BUILDER_ONLINEDOC') }}</a></div>{% endif %}
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro label(config, id) %}
+  {% if config.icon|default('') and config.type != 'icon' %}<span class="input-group-addon addon-icon">{{ iconFromLegacy(config.icon) }}</span>{% endif %}
+  {% if config.label|default('') %}<label class="yw-form-label" for="{{ id }}">{{ config.label }}</label>{% endif %}
+{% endmacro %}
+
+{% macro setting(s, field, id, special) %}
+  {% set config = s.config %}
+  {% set type = s.type %}
+  {% set id = id|replace({'[': '-', ']': '', ' ': '-'}) %}
+
+  {% if type == 'divider' %}
+    <h5 class="text-center black" style="margin-top: 1.5rem">{{ config.label|default('') }}</h5>
+  {% elseif type == 'hint' %}
+    <p class="config-hint">{{ config.label|default('')|raw }}</p>
+  {% elseif type == 'hidden' %}
+    <input type="hidden" name="{{ field }}" value="{{ s.value }}">
+  {% elseif type == 'checkbox' %}
+    <div class="yw-form-group input-group checkbox" title="{{ config.hint|default('') }}">
+      {% if config.icon|default('') %}<span class="input-group-addon addon-icon">{{ iconFromLegacy(config.icon) }}</span>{% endif %}
+      {% if config.title|default('') %}<label class="yw-form-label checkbox__title" for="{{ id }}">{{ config.title }}</label>{% endif %}
+      <label>
+        <input type="hidden" name="{{ field }}" value="{{ config.uncheckedvalue ?? 'false' }}">
+        <input type="checkbox" id="{{ id }}" name="{{ field }}" value="{{ config.checkedvalue ?? 'true' }}" {{ s.checked ? 'checked' : '' }}>
+        <span>{{ config.label|default('') }}</span>
+      </label>
+      {{ _self.hint(config) }}
+    </div>
+  {% elseif type == 'list' or type == 'menu-list' %}
+    <div class="yw-form-group input-group {{ type }}" title="{{ config.hint|default('') }}">
+      {{ _self.label(config, id) }}
+      <select id="{{ id }}" name="{{ field }}" class="yw-input" {{ config.required|default(false) ? 'required' : '' }}>
+        {% if '' not in s.options|keys %}<option value=""></option>{% endif %}
+        {% for value, label in s.options %}
+          <option value="{{ value }}" {{ s.value == value ? 'selected' : '' }}>{{ label|striptags }}</option>
+        {% endfor %}
+      </select>
+      {{ _self.hint(config) }}
+    </div>
+  {% elseif type == 'form-list' %}
+    <fieldset class="yw-form-group input-group form-list" title="{{ config.hint|default('') }}">
+      {% if config.label|default('') %}<legend class="yw-form-label">{{ config.label }}</legend>{% endif %}
+      <div class="ab-choices">
+        {% for value, label in s.options %}
+          <label class="ab-choice">
+            <input type="checkbox" name="{{ field }}[]" value="{{ value }}" {{ value in s.picked ? 'checked' : '' }}>
+            <span>{{ label }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      {{ _self.hint(config) }}
+    </fieldset>
+  {% elseif type == 'form-field' and config.multiple|default(false) %}
+    <fieldset class="yw-form-group form-field" title="{{ config.hint|default('') }}">
+      {% if config.label|default('') %}<legend class="yw-form-label">{{ config.label }}</legend>{% endif %}
+      <div class="ab-choices">
+        {% for option in s.options %}
+          <label class="ab-choice">
+            <input type="checkbox" name="{{ field }}[]" value="{{ option.id }}" {{ option.id in s.picked ? 'checked' : '' }}>
+            <span>{{ option.label|striptags }} - {{ option.id }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      {{ _self.hint(config) }}
+    </fieldset>
+  {% elseif type == 'form-field' %}
+    <div class="yw-form-group form-field" title="{{ config.hint|default('') }}">
+      {% if config.label|default('') %}<label class="yw-form-label" for="{{ id }}">{{ config.label }}</label>{% endif %}
+      <select id="{{ id }}" name="{{ field }}" class="yw-input">
+        <option value=""></option>
+        {% for option in s.options %}
+          <option value="{{ option.id }}" {{ s.value == option.id ? 'selected' : '' }}>{{ option.label|striptags }} - {{ option.id }}</option>
+        {% endfor %}
+      </select>
+      {{ _self.hint(config) }}
+    </div>
+  {% elseif type == 'color' or type == 'range' %}
+    <div class="yw-form-group input-group {{ type }}" title="{{ config.hint|default('') }}">
+      {{ _self.label(config, id) }}
+      <input type="{{ type }}" id="{{ id }}" class="yw-input" value="{{ s.value }}" data-ab-sync="{{ id }}-value" hx-preserve="true"
+             {% if type == 'range' %}min="{{ config.min|default('') }}" max="{{ config.max|default('') }}" step="{{ config.step|default('') }}"{% endif %}>
+      <input type="hidden" id="{{ id }}-value" name="{{ field }}" value="{{ s.value }}" hx-preserve="true">
+      {% if type == 'color' %}
+        <button type="button" class="yw-btn yw-btn--sm yw-eyedropper" data-yw-eyedropper="#{{ id }}" hidden
+                title="{{ _t('PICK_COLOUR_FROM_SCREEN') }}" aria-label="{{ _t('PICK_COLOUR_FROM_SCREEN') }}">{{ icon('color-picker') }}</button>
+      {% endif %}
+      {{ _self.hint(config) }}
+    </div>
+  {% elseif type == 'icon' %}
+    <div class="yw-form-group icon" title="{{ config.hint|default('') }}">
+      {% if config.label|default('') %}<span class="yw-form-label">{{ config.label }}</span>{% endif %}
+      <input type="hidden" name="{{ field }}" value="{{ s.value }}" data-ab-icon-value>
+      <button type="button" class="yw-input yw-icon-field__button" data-ab-icon="{{ (config.sources|default(['sprite']))|json_encode }}"
+              aria-label="{{ config.label|default(_t('ICON_PICKER_TITLE')) }}">
+        <span class="yw-icon-field__preview">{% if s.value %}{{ iconFromLegacy(s.value) ?: s.value }}{% endif %}</span>
+      </button>
+      {{ _self.hint(config) }}
+    </div>
+  {% elseif type == 'image' %}
+    <div class="yw-form-group input-group image" title="{{ config.hint|default('') }}">
+      {{ _self.label(config, id) }}
+      <input type="hidden" name="{{ field }}" value="{{ s.value }}" data-ab-image-value>
+      <div class="yw-image-input">
+        {% if s.value %}
+          {% if s.imageUrl %}<img class="yw-image-input__thumb" src="{{ s.imageUrl }}" alt="{{ s.value }}" title="{{ s.value }}">{% else %}<span class="yw-image-input__name">{{ s.value }}</span>{% endif %}
+          <button type="button" class="yw-btn yw-btn--sm yw-image-input__remove" data-ab-image-clear title="{{ _t('REMOVE_IMAGE') }}" aria-label="{{ _t('REMOVE_IMAGE') }}">&times;</button>
+        {% else %}
+          <button type="button" class="yw-btn yw-btn--sm" data-ab-image-choose>{{ _t('CHOOSE_AN_IMAGE') }}</button>
+        {% endif %}
+      </div>
+      {{ _self.hint(config) }}
+    </div>
+  {% elseif type == 'class' or type == 'field-mapping' %}
+    <div class="multi-input-container {{ type }}">
+      {% for sub, view in s.subs %}
+        <div {{ view.visible ? '' : 'hidden' }}>{{ _self.setting(view, special ~ '[sub][' ~ sub ~ ']', id ~ '-' ~ sub, special ~ '[sub][' ~ sub ~ ']') }}</div>
+      {% endfor %}
+      {{ _self.hint(config) }}
+    </div>
+  {% elseif type in ['facets', 'sort-fields', 'nav-links', 'reaction', 'columns-width'] %}
+    <div class="multi-input-container {{ s.name }}">
+      {% if config.label|default('') %}<span class="yw-form-label">{{ config.label }}</span>{% endif %}
+      {% for index, row in s.rows %}
+        <div class="inline-form">
+          {% for sub, view in row %}
+            <div {{ view.visible ? '' : 'hidden' }}>{{ _self.setting(view, special ~ '[rows][' ~ index ~ '][' ~ sub ~ ']', id ~ '-' ~ index ~ '-' ~ sub, '') }}</div>
+          {% endfor %}
+          <div class="yw-form-group btn-close-container">
+            <button type="submit" name="op" value="remove-row:{{ s.name }}:{{ index }}" class="btn btn-default btn-icon" aria-label="{{ _t('DELETE') }}">{{ icon('x', 'btn-remove-group') }}</button>
+          </div>
+        </div>
+      {% endfor %}
+      <button type="submit" name="op" value="add-row:{{ s.name }}" class="btn btn-info btn-icon btn-add-element">
+        {% if config['btn-label-add'] is defined %}<span>{{ config['btn-label-add'] }}</span>{% else %}{{ icon('plus') }}{% endif %}
+      </button>
+      {{ _self.hint(config) }}
+    </div>
+  {% elseif type == 'query' %}
+    {% import "@core/actions-builder/_query.twig" as query %}
+    <div class="query-builder {{ s.name }}">
+      <input type="hidden" name="{{ special }}[mode]" value="{{ s.query.mode }}">
+      <div class="query-builder__tabs">
+        <button type="submit" name="op" value="query-visual:{{ s.name }}" class="query-builder__tab{{ s.query.mode == 'visual' ? ' is-active' : '' }}">{{ _t('ACTION_BUILDER_QUERY_EDIT_VISUAL') }}</button>
+        <button type="submit" name="op" value="query-raw:{{ s.name }}" class="query-builder__tab{{ s.query.mode == 'raw' ? ' is-active' : '' }}">{{ _t('ACTION_BUILDER_QUERY_CODE') }}</button>
+      </div>
+      {% if s.query.mode == 'raw' %}
+        <div class="query-builder__raw">
+          <textarea class="form-control qb-input" id="{{ id }}-raw" name="{{ special }}[raw]" rows="3" hx-preserve="true" aria-label="{{ _t('ACTION_BUILDER_QUERY_CODE') }}">{{ s.query.raw }}</textarea>
+        </div>
+      {% else %}
+        <input type="hidden" name="{{ special }}[raw]" value="{{ s.query.raw }}">
+        {{ query.group(s.query.tree, [], special ~ '[tree]', id, s.name, s.fields, 0) }}
+      {% endif %}
+    </div>
+  {% elseif type == 'geo' %}
+    <div class="yw-form-group geo" title="{{ config.hint|default('') }}">
+      {% if config.label|default('') %}<span class="text-center">{{ config.label }}</span>{% endif %}
+      <div id="{{ id }}" class="ab-geo" data-ab-geo hx-preserve="true">
+        <div class="ab-geo__map" data-ab-geo-map></div>
+        <input type="hidden" name="v[lat]" value="{{ s.lat }}" data-ab-geo-lat>
+        <input type="hidden" name="v[lon]" value="{{ s.lon }}" data-ab-geo-lon>
+        <input type="hidden" name="v[zoom]" value="{{ s.zoom }}" data-ab-geo-zoom>
+      </div>
+      {{ _self.hint(config) }}
+    </div>
+  {% elseif type in ['page-list', 'entry-list'] %}
+    <div class="yw-form-group input-group {{ type }}" title="{{ config.hint|default('') }}">
+      {{ _self.label(config, id) }}
+      <input type="text" id="{{ id }}" name="{{ field }}" value="{{ s.value }}" class="yw-input" autocomplete="off" hx-preserve="true"
+             data-ab-autocomplete="{{ type == 'page-list' ? 'pages' : 'entries' }}" {{ config.required|default(false) ? 'required' : '' }}>
+      {{ _self.hint(config) }}
+    </div>
+  {% else %}
+    {% set custom = type in ['text', 'number', 'url', 'email', 'secret'] ? '' : include('@core/actions-builder/inputs/' ~ type ~ '.twig', { setting: s, field: field, id: id, special: special }, ignore_missing = true) %}
+    {% if custom|trim is not empty %}
+      {{ custom|raw }}
+    {% else %}
+    <div class="yw-form-group input-group {{ type }}" title="{{ config.hint|default('') }}">
+      {{ _self.label(config, id) }}
+      {% if config.multiline|default(false) %}
+        <textarea id="{{ id }}" name="{{ field }}" class="yw-input" rows="4" hx-preserve="true" {{ config.required|default(false) ? 'required' : '' }}>{{ type == 'secret' ? '' : s.value }}</textarea>
+      {% else %}
+        <input type="{{ type == 'secret' ? 'password' : (type in ['number', 'url', 'email'] ? type : 'text') }}" id="{{ id }}" name="{{ field }}"
+               value="{{ type == 'secret' ? '' : s.value }}" class="yw-input" hx-preserve="true" {{ config.required|default(false) ? 'required' : '' }}
+               {% if config.min is defined %}min="{{ config.min }}"{% endif %} {% if config.max is defined %}max="{{ config.max }}"{% endif %}
+               {% if config.step is defined %}step="{{ config.step }}"{% endif %} {% if type == 'secret' %}autocomplete="new-password"{% endif %}>
+      {% endif %}
+      {{ _self.hint(config) }}
+    </div>
+    {% endif %}
+  {% endif %}
+{% endmacro %}
