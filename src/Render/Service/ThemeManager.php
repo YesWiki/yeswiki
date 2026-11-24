@@ -347,6 +347,7 @@ class ThemeManager implements EventSubscriberInterface
             $this->getFavoriteBackgroundImage(),
             (string)($this->container->get(LanguageService::class)->preferredLanguage() ?? ''),
             $this->container->get(LayoutService::class)->navbarPosition(),
+            hash('xxh3', $this->container->get(LayoutService::class)->pageCustomCss()),
             $this->container->get(LayoutService::class)->headerPosition(),
             (string)$this->container->get(LayoutService::class)->navbarHeight(),
             ...array_map(

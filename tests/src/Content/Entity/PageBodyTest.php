@@ -138,4 +138,23 @@ class PageBodyTest extends TestCase
 
         $this->assertFalse(PageBody::equals(['n' => '1'], ['n' => 1]));
     }
+
+    /** @return array<string, array{string, string}> */
+    public static function headings(): array
+    {
+        return [
+            'a level one heading' => ["# Compte rendu\n\nPrésents :", 'Compte rendu'],
+            'a level two heading with closing hashes' => ["texte\n\n## Ordre du jour ##", 'Ordre du jour'],
+            'a heading inside a code block is skipped' => ["```\n# pas un titre\n```\n# Le vrai titre", 'Le vrai titre'],
+            'a hashtag is no heading' => ["#reunion du jour\n", ''],
+            'a legacy heading still counts' => ['======Ancien titre======', 'Ancien titre'],
+            'no heading at all' => ['du texte', ''],
+        ];
+    }
+
+    #[DataProvider('headings')]
+    public function testTheHeadingIsTheFirstMarkdownTitle(string $content, string $heading): void
+    {
+        $this->assertSame($heading, PageBody::heading($content));
+    }
 }

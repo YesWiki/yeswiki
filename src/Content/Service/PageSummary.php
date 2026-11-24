@@ -31,17 +31,10 @@ class PageSummary
         if ($entryTitle !== '') {
             $title = $entryTitle;
         } else {
-            preg_match_all("/\={6}(.*)\={6}/U", $content, $titles);
-            if (isset($titles[1][0]) && $titles[1][0] != '') {
-                $title = $this->services->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
-            } else {
-                preg_match_all('/={5}(.*)={5}/U', $content, $titles);
-                if (isset($titles[1][0]) && $titles[1][0] != '') {
-                    $title = $this->services->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
-                } else {
-                    $title = $page['tag'];
-                }
-            }
+            $heading = PageBody::heading($content);
+            $title = $heading === ''
+                ? $page['tag']
+                : $this->services->get(MarkdownFormatterService::class)->format($heading);
         }
 
         return strip_tags($title);

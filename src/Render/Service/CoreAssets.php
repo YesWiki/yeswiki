@@ -33,6 +33,7 @@ class CoreAssets implements RequestScopedState
         private readonly LanguageService $languages,
         private readonly Storage $storage,
         private readonly ProgramFiles $programFiles,
+        private readonly LayoutService $layout,
         #[AutowireServiceClosure(AuthenticationService::class)]
         private readonly ?\Closure $authentication = null,
     ) {
@@ -139,6 +140,8 @@ class CoreAssets implements RequestScopedState
         if ($this->customCss->exists()) {
             $this->assets->addCssFile($customCss);
         }
+
+        $this->assets->addCss($this->layout->pageCustomCss());
     }
 
     private function registerBackgroundImage(): void

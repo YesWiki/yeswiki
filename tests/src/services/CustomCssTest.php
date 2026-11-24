@@ -11,6 +11,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\CoreAssets;
 use YesWiki\Render\Service\CustomCssService;
+use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -130,6 +131,7 @@ class CustomCssTest extends YesWikiTestCase
             $services->get(LanguageService::class),
             $services->get(Storage::class),
             $services->get(ProgramFiles::class),
+            $services->get(LayoutService::class),
         ))->register();
 
         return $registry->drain()->toHtml();

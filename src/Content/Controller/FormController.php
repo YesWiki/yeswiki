@@ -25,6 +25,7 @@ use YesWiki\Federation\Service\ActivityPubInbox;
 use YesWiki\Federation\Service\ActivityPubProfiles;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\WebFingerService;
+use YesWiki\Identity\Service\AccountGroups;
 use YesWiki\Identity\Service\AclOptions;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
@@ -344,6 +345,11 @@ class FormController extends YesWikiController
             $data['max_entries'] = $limit > 0 ? (string)$limit : null;
         }
 
+        if (array_key_exists(AccountGroups::FORM_PROPERTY, $data)) {
+            $accountGroups = trim((string)$data[AccountGroups::FORM_PROPERTY]);
+            $data[AccountGroups::FORM_PROPERTY] = $accountGroups === '' ? null : $accountGroups;
+        }
+
         foreach (['entry_creates_user', 'entry_bookmarklet'] as $property) {
             if (empty($data[$property . '_enable'])) {
                 $data[$property] = null;
@@ -568,6 +574,7 @@ class FormController extends YesWikiController
             'groupsList' => $this->getGroupsListIfEnabled(),
             'lockedFields' => ContentTypeSchema::lockedFieldNames($contentType),
             'entryOnlyPropertiesAvailable' => ContentTypeSchema::acceptsEntryOnlyProperties($contentType),
+            'accountPropertiesAvailable' => ContentTypeSchema::acceptsAccountProperties($contentType),
             'fieldRoles' => $this->fieldRolesForDesigner($form),
             'aclOptions' => [
                 AclOptions::READ => $aclOptions->for(AclOptions::READ, true),

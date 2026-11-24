@@ -632,10 +632,11 @@ class PageManager implements CachesTheDatabase
      * @param bool                       $bypass_acls
      * @param string|null                $forcedDate
      * @param array<string, string>|null $acls
+     * @param array<string, mixed>|null  $metadata Metadata keys this revision sets, a null value removing its key
      */
-    public function save($tag, array $body, $parent = '', $bypass_acls = false, $forcedDate = null, ?string $type = null, ?array $acls = null): int
+    public function save($tag, array $body, $parent = '', $bypass_acls = false, $forcedDate = null, ?string $type = null, ?array $acls = null, ?array $metadata = null): int
     {
-        return $this->store($tag, $body, $parent, $bypass_acls, $forcedDate, $type, $acls, false);
+        return $this->store($tag, $body, $parent, $bypass_acls, $forcedDate, $type, $acls, false, $metadata);
     }
 
     /**
@@ -655,8 +656,9 @@ class PageManager implements CachesTheDatabase
      * @param bool                       $bypass_acls
      * @param string|null                $forcedDate
      * @param array<string, string>|null $acls
+     * @param array<string, mixed>|null  $metadata
      */
-    private function store($tag, array $body, $parent, $bypass_acls, $forcedDate, ?string $type, ?array $acls, bool $setsAccountLink): int
+    private function store($tag, array $body, $parent, $bypass_acls, $forcedDate, ?string $type, ?array $acls, bool $setsAccountLink, ?array $metadata = null): int
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -690,6 +692,9 @@ class PageManager implements CachesTheDatabase
                     'read' => $defaultRead,
                     'comment' => $parent ? '' : $defaultComment,
                 ]];
+                if ($metadata !== null) {
+                    $initialMetadata = self::mergedMetadata($initialMetadata, $metadata);
+                }
 
                 if ($this->authenticationService->getLoggedUser()) {
                     $owner = $user;
@@ -709,7 +714,14 @@ class PageManager implements CachesTheDatabase
                 $type ??= (string)($oldPage['type'] ?? PageType::DEFAULT);
                 $body = $setsAccountLink ? $body : $this->guardedAccountLinks($tag, $body, $type);
 
-                if (PageBody::equals($oldPage['body'], $body)) {
+                if ($metadata !== null) {
+                    $merged = self::mergedMetadata($oldPage['metadatas'] ?? [], $metadata);
+                    if ($merged != ($oldPage['metadatas'] ?? [])) {
+                        $initialMetadata = $merged;
+                    }
+                }
+
+                if ($initialMetadata === null && PageBody::equals($oldPage['body'], $body)) {
                     return 0;
                 }
             }
@@ -904,9 +916,7 @@ class PageManager implements CachesTheDatabase
         }
 
         $previousMetadata = $oldPage['metadatas'] ?? null;
-        if ($previousMetadata) {
-            $metadata = array_merge($previousMetadata, $metadata);
-        }
+        $metadata = self::mergedMetadata($previousMetadata ?? [], $metadata);
 
         if ($metadata == $previousMetadata) {
             return false;
@@ -933,6 +943,12 @@ class PageManager implements CachesTheDatabase
         ]);
 
         return true;
+    }
+
+    /** @param array<string, mixed> $current @param array<string, mixed> $changes @return array<string, mixed> $current with $changes over it, a null removing its key */
+    private static function mergedMetadata(array $current, array $changes): array
+    {
+        return array_filter(array_merge($current, $changes), fn (mixed $value): bool => $value !== null);
     }
 
     /**

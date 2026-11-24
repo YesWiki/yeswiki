@@ -12,7 +12,7 @@ test.beforeEach(async () => {
 const TEMPLATE = 'ModeleCompteRendu'
 
 const markAsTemplate = async (page: Page) => {
-  await setPageContent(page, TEMPLATE, '======Compte rendu======\n\nPrésents :')
+  await setPageContent(page, TEMPLATE, '# Compte rendu\n\nPrésents :')
   await page.goto(`/?${TEMPLATE}/edit`)
   await editorReady(page)
   await page.getByLabel('Proposer cette page comme modèle').check()

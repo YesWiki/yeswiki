@@ -21,8 +21,10 @@ use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\EditZone;
+use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\PageLayout;
 use YesWiki\Render\Service\TemplateHelperService;
 
 /** `{{include}}` -- converted from the procedural actions/include.php by ticket 06. */
@@ -57,6 +59,9 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
 
     public function run(): string
     {
+        if ($this->dropsChromePage()) {
+            return '';
+        }
         ob_start();
         try {
             $this->emitBefore();
@@ -68,6 +73,15 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
         }
 
         return $this->emitAfter((string)ob_get_clean());
+    }
+
+    /** Whether this includes a header or footer the current page asked to go without. */
+    private function dropsChromePage(): bool
+    {
+        $page = trim((string)$this->getService(PerformableArguments::class)->get('page'));
+
+        return in_array($page, LayoutService::PAGES, true)
+            && ($this->getService(PageContext::class)->getMetadata()[$page] ?? null) === PageLayout::NONE;
     }
 
     /** Ran as a before-callback until ticket 06 merged it in. */

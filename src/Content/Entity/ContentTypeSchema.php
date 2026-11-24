@@ -53,6 +53,9 @@ class ContentTypeSchema
     /** Form properties (ADR-0010) that only mean anything on an ordinary bazar form. */
     private const ENTRY_ONLY_PROPERTIES = ['entry_creates_user', 'entry_bookmarklet', 'max_entries', 'max_entries_message', 'max_entries_count_message'];
 
+    /** Form properties that only mean anything on the User form. */
+    private const ACCOUNT_ONLY_PROPERTIES = ['account_groups'];
+
     /** Whether this is one of core's own Content types rather than an ordinary bazar form. */
     public static function isBuiltIn(?string $contentType): bool
     {
@@ -64,6 +67,11 @@ class ContentTypeSchema
         return !self::isBuiltIn($contentType);
     }
 
+    public static function acceptsAccountProperties(?string $contentType): bool
+    {
+        return $contentType === self::TYPE_USER;
+    }
+
     /**
      * Drop the properties a Content type cannot answer for.
      *
@@ -73,15 +81,12 @@ class ContentTypeSchema
      */
     public static function stripInapplicableProperties(array $body, ?string $contentType): array
     {
-        if (self::acceptsEntryOnlyProperties($contentType)) {
-            return $body;
-        }
+        $inapplicable = array_merge(
+            self::acceptsEntryOnlyProperties($contentType) ? [] : self::ENTRY_ONLY_PROPERTIES,
+            self::acceptsAccountProperties($contentType) ? [] : self::ACCOUNT_ONLY_PROPERTIES,
+        );
 
-        foreach (self::ENTRY_ONLY_PROPERTIES as $property) {
-            unset($body[$property]);
-        }
-
-        return $body;
+        return array_diff_key($body, array_flip($inapplicable));
     }
 
     /** The starting `entry_title_template` of a built-in type, or null for a bazar form. */

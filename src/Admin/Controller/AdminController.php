@@ -158,7 +158,7 @@ class AdminController extends YesWikiController
             'navbarHeightMin' => LayoutService::NAVBAR_HEIGHT_MIN,
             'navbarHeightMax' => LayoutService::NAVBAR_HEIGHT_MAX,
             'navbarPositions' => LayoutService::NAVBAR_POSITIONS,
-            'navbarPosition' => $layout->navbarPosition(),
+            'navbarPosition' => $layout->wikiNavbarPosition(),
             'headerPositions' => LayoutService::HEADER_POSITIONS,
             'headerPosition' => $layout->headerPosition(),
             'pages' => $pages,

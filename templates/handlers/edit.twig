@@ -43,6 +43,8 @@
 
   {% for input in fieldsAfterContent %}{{ input|raw }}{% endfor %}
 
+  {{ layoutPanel|default('')|raw }}
+
   {% if fromTemplate|default('') is not empty %}
     <input type="hidden" name="from_template" value="{{ fromTemplate }}"/>
   {% endif %}
@@ -65,19 +67,6 @@
 
   {% if request.get.newpage is same as '1' %}
     <input type="hidden" name="newpage" value="1"/>
-    {% for key in [
-          'theme',
-          'style',
-          'squelette',
-          'bgimg',
-          'PageFooter',
-          'PageHeader',
-          'favorite_preset'
-          ] %}
-      {% if request[key] is not empty %}
-          <input type="hidden" name="{{key}}" value="{{request[key]}}"/>
-      {% endif %}
-    {% endfor %}
   {% endif %}
 
   {{ botGuardFields|default('')|raw }}
@@ -101,9 +90,7 @@
     {% endif %}
 
     {% if not preview %}
-      <span class="theme-container">
-
-      </span>
+      <span class="theme-container"></span>
     {% endif %}
   </div>
 

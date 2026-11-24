@@ -83,23 +83,29 @@ class LayoutService
     ) {
     }
 
-    /** Which page plays a chrome role on the page being rendered. */
+    /** Which page plays a chrome role on the page being rendered, empty when that page asks for none. */
     public function pageFor(string $role): string
     {
         if (!in_array($role, self::PAGES, true)) {
             return $role;
         }
 
-        $tag = $this->pageContext->getTag();
-        if (empty($tag)) {
-            return $role;
+        $override = $this->pageMetadata()[$role] ?? null;
+        if ($override === PageLayout::NONE) {
+            return '';
         }
-
-        $override = $this->pageManager->getMetadata($tag)[$role] ?? null;
 
         return (is_string($override) && preg_match('/^' . WN_CAMEL_CASE_EVOLVED . '$/u', $override) === 1)
             ? $override
             : $role;
+    }
+
+    /** @return array<string, mixed> the Metadata of the page being rendered */
+    private function pageMetadata(): array
+    {
+        $tag = $this->pageContext->getTag();
+
+        return empty($tag) ? [] : ($this->pageManager->getMetadata($tag) ?? []);
     }
 
     /** The name in the navbar -- the wiki's own name unless the layout overrides it. */
@@ -205,8 +211,24 @@ class LayoutService
         return max(self::NAVBAR_HEIGHT_MIN, min(self::NAVBAR_HEIGHT_MAX, (int)$value));
     }
 
-    /** Where the main menu sits: a top bar, or a column down one side. */
+    /** Where the main menu sits on the page being rendered: a top bar, a column down one side, or nowhere. */
     public function navbarPosition(): string
+    {
+        $own = $this->pageMetadata()[PageLayout::NAVBAR] ?? null;
+
+        return in_array($own, PageLayout::NAVBAR_POSITIONS, true) ? $own : $this->wikiNavbarPosition();
+    }
+
+    /** The custom CSS of the page being rendered, empty when it has none or when it could close its style tag. */
+    public function pageCustomCss(): string
+    {
+        $css = $this->pageMetadata()[PageLayout::CUSTOM_CSS] ?? '';
+
+        return is_string($css) && !str_contains($css, '<') ? $css : '';
+    }
+
+    /** Where the main menu sits on every page that does not say otherwise. */
+    public function wikiNavbarPosition(): string
     {
         return $this->oneOf($this->string(self::NAVBAR_POSITION), self::NAVBAR_POSITIONS);
     }

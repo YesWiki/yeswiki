@@ -81,7 +81,7 @@ class BoostedNavigationTest extends YesWikiTestCase
         $themeManager = $this->getWiki()->services->get(ThemeManager::class);
         $identity = $themeManager->layoutIdentity();
 
-        $this->assertCount(16, $identity);
+        $this->assertCount(17, $identity);
         $this->assertNotSame('', $this->boosted()->fingerprint());
     }
 

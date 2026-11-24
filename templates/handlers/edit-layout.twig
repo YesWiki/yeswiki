@@ -1,0 +1,122 @@
+{# The layout options of a page, under its editor; every field is posted with the page. #}
+{% set navbarLabels = {
+  top: _t('PAGE_LAYOUT_NAVBAR_TOP'),
+  left: _t('PAGE_LAYOUT_NAVBAR_LEFT'),
+  right: _t('PAGE_LAYOUT_NAVBAR_RIGHT'),
+  none: _t('PAGE_LAYOUT_NAVBAR_NONE'),
+} %}
+{% set roleLabels = { PageHeader: _t('PAGE_LAYOUT_HEADER'), PageFooter: _t('PAGE_LAYOUT_FOOTER') } %}
+{% set summary = [] %}
+{% if navbar %}{% set summary = summary|merge([_t('PAGE_LAYOUT_MENU') ~ ' : ' ~ navbarLabels[navbar]|lower]) %}{% endif %}
+{% for role, state in roles %}
+  {% if state.mode == 'none' %}
+    {% set summary = summary|merge([roleLabels[role] ~ ' : ' ~ _t('PAGE_LAYOUT_ROLE_NONE')|lower]) %}
+  {% elseif state.mode == 'page' %}
+    {% set summary = summary|merge([roleLabels[role] ~ ' : ' ~ state.page]) %}
+  {% endif %}
+{% endfor %}
+{% if ownTheme %}{% set summary = summary|merge([_t('PAGE_LAYOUT_OWN_THEME')]) %}{% endif %}
+{% if css %}{% set summary = summary|merge([_t('PAGE_LAYOUT_CSS')]) %}{% endif %}
+{% if ogTitle or ogDescription or ogImage %}{% set summary = summary|merge(['OpenGraph']) %}{% endif %}
+
+<details class="yw-page-layout yw-accordion__item" data-yw-page-layout{% if open %} open{% endif %}>
+  <summary class="yw-accordion__summary">
+    {{ icon('layout-rows') }}
+    <span>{{ _t('PAGE_LAYOUT') }}</span>
+    <span class="yw-page-layout__summary">{{ summary is empty ? _t('PAGE_LAYOUT_FOLLOWS_WIKI') : summary|join(', ') }}</span>
+  </summary>
+  <div class="yw-accordion__body">
+    <input type="hidden" name="layout_shown" value="1"/>
+
+    <fieldset class="yw-page-layout__group">
+      <legend>{{ _t('PAGE_LAYOUT_CHROME') }}</legend>
+
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="yw-layout-navbar">{{ _t('PAGE_LAYOUT_MENU') }}</label>
+        <select class="yw-input" id="yw-layout-navbar" name="layout_navbar_position">
+          <option value="">{{ _t('PAGE_LAYOUT_LIKE_WIKI', { value: navbarLabels[wikiNavbar]|lower }) }}</option>
+          {% for position in navbarPositions %}
+            <option value="{{ position }}"{% if position == navbar %} selected{% endif %}>{{ navbarLabels[position] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% for role, state in roles %}
+        <div class="yw-form-group" data-yw-layout-role>
+          <label class="yw-form-label" for="yw-layout-{{ role }}">{{ roleLabels[role] }}</label>
+          <div class="yw-page-layout__role">
+            <select class="yw-input" id="yw-layout-{{ role }}" name="{{ role }}_mode" data-yw-layout-role-mode>
+              <option value="">{{ _t('PAGE_LAYOUT_ROLE_WIKI', { page: role }) }}</option>
+              <option value="page"{% if state.mode == 'page' %} selected{% endif %}>{{ _t('PAGE_LAYOUT_ROLE_PAGE') }}</option>
+              <option value="none"{% if state.mode == 'none' %} selected{% endif %}>{{ _t('PAGE_LAYOUT_ROLE_NONE') }}</option>
+            </select>
+            <input class="yw-input" type="text" name="{{ role }}_page" value="{{ state.page }}"
+                   list="yw-layout-pages" autocomplete="off" aria-label="{{ roleLabels[role] }}"
+                   placeholder="{{ _t('PAGE_LAYOUT_ROLE_PAGE_PLACEHOLDER') }}"
+                   data-yw-layout-role-page{% if state.mode != 'page' %} hidden{% endif %}/>
+          </div>
+        </div>
+      {% endfor %}
+      <datalist id="yw-layout-pages">
+        {% for tag in pages %}<option value="{{ tag }}"></option>{% endfor %}
+      </datalist>
+    </fieldset>
+
+    {% if showsTheme %}
+      <fieldset class="yw-page-layout__group">
+        <legend>{{ _t('TEMPLATE_THEME') }}</legend>
+        <label class="yw-checkbox-inline">
+          <input type="checkbox" name="layout_own_theme" value="1" data-yw-layout-own-theme{% if ownTheme %} checked{% endif %}/>
+          <span>{{ _t('PAGE_LAYOUT_OWN_THEME') }}</span>
+        </label>
+        <div class="yw-page-layout__theme" data-yw-layout-theme{% if not ownTheme %} hidden{% endif %}>
+          {% embed '@core/theme-selector.twig' %}
+            {% block firstoptionpreset %}
+              <option value=""{% if presetsData.selectedPresetName is empty and presetsData.selectedCustomPresetName is empty %} selected{% endif %}>{{ _t('TEMPLATE_DEFAULT_PRESET') }}</option>
+            {% endblock %}
+          {% endembed %}
+          <input type="hidden" name="bgimg" value="{{ bgimg }}" data-yw-layout-bgimg/>
+          {{ bgselector|raw }}
+        </div>
+      </fieldset>
+    {% endif %}
+
+    <div class="yw-form-group">
+      <label class="yw-form-label" for="yw-layout-lang">{{ _t('PAGE_LANGUAGE') }}</label>
+      <select class="yw-input" id="yw-layout-lang" name="lang">
+        <option value="">{{ _t('PAGE_LAYOUT_LIKE_WIKI_PLAIN') }}</option>
+        {% for code in availableLanguages %}
+          <option value="{{ code }}"{% if code == lang %} selected{% endif %}>{{ languagesList[code]['nativeName']|default(code)|capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <fieldset class="yw-page-layout__group">
+      <legend>{{ _t('PAGE_LAYOUT_OG') }}</legend>
+      <p class="yw-form-help">{{ _t('PAGE_LAYOUT_OG_HELP') }}</p>
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="yw-layout-og-title">{{ _t('PAGE_LAYOUT_OG_TITLE') }}</label>
+        <input class="yw-input" type="text" id="yw-layout-og-title" name="og_title" value="{{ ogTitle }}" maxlength="{{ ogTitleMax }}"/>
+      </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="yw-layout-og-description">{{ _t('PAGE_LAYOUT_OG_DESCRIPTION') }}</label>
+        <textarea class="yw-input" id="yw-layout-og-description" name="og_description" rows="3" maxlength="{{ ogDescriptionMax }}">{{ ogDescription }}</textarea>
+      </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="yw-layout-og-image">{{ _t('PAGE_LAYOUT_OG_IMAGE') }}</label>
+        <input class="yw-input" type="text" id="yw-layout-og-image" name="og_image" value="{{ ogImage }}"/>
+        <p class="yw-form-help">{{ _t('PAGE_LAYOUT_OG_IMAGE_HELP') }}</p>
+      </div>
+    </fieldset>
+
+    {% if mayEditCss %}
+      <fieldset class="yw-page-layout__group">
+        <legend>{{ _t('PAGE_LAYOUT_CSS') }}</legend>
+        <textarea class="yw-input yw-page-layout__css" id="yw-layout-css" name="custom_css" rows="8" spellcheck="false">{{ css }}</textarea>
+        <p class="yw-form-help">{{ _t('PAGE_LAYOUT_CSS_HELP') }}</p>
+      </fieldset>
+    {% endif %}
+  </div>
+</details>
+
+{{ include_javascript('javascripts/page-layout.js', false, true) }}

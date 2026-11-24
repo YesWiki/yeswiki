@@ -362,6 +362,19 @@
       {% endembed %}
     {% endif %}
 
+    {% if accountPropertiesAvailable %}
+      {% embed '@core/_accordion-item.twig' with { summary: _t('FORM_EDIT_ACCOUNT_GROUPS'), open: form.account_groups is not empty } %}
+        {% block body %}
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="account-groups">{{ _t('BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL') }}</label>
+            <input class="yw-input" id="account-groups" name="account_groups" type="text" value="{{ form.account_groups ?? '' }}"
+              placeholder="@membres,bf_groupes" />
+            <p class="yw-form-hint">{{ _t('FORM_EDIT_ACCOUNT_GROUPS_HINT') }}</p>
+          </div>
+        {% endblock %}
+      {% endembed %}
+    {% endif %}
+
     {% embed '@core/_accordion-item.twig' with { summary: _t('FORM_EDIT_ACTIVITYPUB'), open: form.activitypub_enable } %}
       {% block body %}
         <div class="yw-form-group">

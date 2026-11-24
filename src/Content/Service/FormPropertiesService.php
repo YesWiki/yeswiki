@@ -14,10 +14,10 @@ use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TagsField;
 use YesWiki\Identity\Exception\UserFieldException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Service\AccountGroups;
 use YesWiki\Identity\Service\AccountJustCreated;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -39,25 +39,24 @@ class FormPropertiesService
 
     protected UrlFormatter $urlFormatter;
 
-    /** Every entry_* form property except entry_title_template (which is required). */
+    /** Every optional form property: entry_title_template is required. */
     public const OPTIONAL_PROPERTIES = [
         'entry_read_access', 'entry_write_access', 'entry_comment_access',
         'entry_permit_activate_comments', 'entry_metadatas', 'entry_creates_user',
         'entry_bookmarklet', 'max_entries', 'max_entries_message', 'max_entries_count_message',
+        AccountGroups::FORM_PROPERTY,
     ];
 
     protected ContainerInterface $container;
     protected ParameterBagInterface $params;
     protected AclService $aclService;
     protected PageManager $pageManager;
-    protected GroupOperationsService $groupOperationsService;
 
     public function __construct(
         ContainerInterface $container,
         ParameterBagInterface $params,
         AclService $aclService,
         PageManager $pageManager,
-        GroupOperationsService $groupOperationsService,
         UrlFormatter $urlFormatter,
     ) {
         $this->urlFormatter = $urlFormatter;
@@ -65,7 +64,6 @@ class FormPropertiesService
         $this->params = $params;
         $this->aclService = $aclService;
         $this->pageManager = $pageManager;
-        $this->groupOperationsService = $groupOperationsService;
     }
 
     /**
@@ -488,7 +486,7 @@ class FormPropertiesService
                 throw new UserFieldException(_t('BAZ_USER_FIELD_NOT_YOUR_ACCOUNT'));
             }
             $wikiName = $value;
-            $this->addUserToGroups($wikiName, $entry, $addToGroup);
+            $this->getService(AccountGroups::class)->add($wikiName, $addToGroup, $entry, $entry['form_id'] ?? null);
             $this->updateEmailIfNeeded($wikiName, $entry[$emailField] ?? null, $autoUpdateMail);
         } else {
             $wikiName = $entry[$nameField] ?? '';
@@ -532,7 +530,7 @@ class FormPropertiesService
                 throw new UserFieldException($ex->getMessage() . ' User: ' . $wikiName . ' - Email: ' . $entry[$emailField], $ex->getCode(), $ex);
             }
 
-            $this->addUserToGroups($wikiName, $entry, $addToGroup);
+            $this->getService(AccountGroups::class)->add($wikiName, $addToGroup, $entry, $entry['form_id'] ?? null);
 
             if (!$isImport) {
                 $notifier->notifyNewUser($wikiName, $entry[$emailField]);
@@ -596,79 +594,6 @@ class FormPropertiesService
                 }
             }
         }
-    }
-
-    /**
-     * @param array<string, mixed>|null $entry
-     */
-    private function addUserToGroups(string $wikiName, ?array $entry, string $addToGroup): void
-    {
-        if ($addToGroup === '') {
-            return;
-        }
-        $groups = explode(',', $addToGroup);
-        $groupsNames = [];
-        $existingsGroups = $this->groupOperationsService->getAll();
-        $formManager = $this->getService(FormManager::class);
-        $userManager = $this->getService(UserManager::class);
-        foreach ($groups as $group) {
-            $group = trim($group);
-            $forceGroupCreation = (substr($group, 0, 1) === '+');
-            $groupName = substr($group, $forceGroupCreation ? 1 : 0);
-            if (substr($groupName, 0, 1) !== '@') {
-                $field = $formManager->findFieldFromNameOrPropertyName($groupName, $entry['form_id'] ?? null);
-                if (!empty($field) && !empty($entry[$field->getPropertyName()])) {
-                    $groupsNamesFromField = explode(',', $entry[$field->getPropertyName()]);
-                    foreach ($groupsNamesFromField as $groupNameFromField) {
-                        if ($this->userMustBeAddedToGroup($wikiName, $groupNameFromField, $forceGroupCreation, $userManager, $existingsGroups)) {
-                            $groupsNames[] = $groupNameFromField;
-                        }
-                    }
-                }
-            } else {
-                $groupName = substr($groupName, 1);
-                if ($this->userMustBeAddedToGroup($wikiName, $groupName, $forceGroupCreation, $userManager, $existingsGroups)) {
-                    $groupsNames[] = $groupName;
-                }
-            }
-        }
-
-        $groupsNames = array_unique($groupsNames);
-
-        foreach ($groupsNames as $groupName) {
-            $previousACL = !in_array($groupName, $existingsGroups, true)
-                ? ''
-                : $this->groupOperationsService->getMembersText($groupName) . "\n";
-            $this->groupOperationsService->setMembersFromAclText($groupName, $previousACL . $wikiName);
-        }
-    }
-
-    /**
-     * @param array<string> $existingsGroups the names of every group that already exists
-     */
-    private function userMustBeAddedToGroup(
-        string $wikiName,
-        string $groupName,
-        bool $forceGroupCreation,
-        UserManager $userManager,
-        array $existingsGroups
-    ): bool {
-        if (!preg_match('/^[A-Za-z0-9]+$/', $groupName)) {
-            return false;
-        }
-        if (strtolower($groupName) === ADMIN_GROUP && !$this->aclService->isAdmin()) {
-            return false;
-        }
-
-        if (in_array($groupName, $existingsGroups, true)) {
-            if (!$userManager->isInGroup($groupName, $wikiName, false)) {
-                return true;
-            }
-        } elseif ($forceGroupCreation) {
-            return true;
-        }
-
-        return false;
     }
 
     private function findANewNotExistingUserName(string $firstWikiName): string

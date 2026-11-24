@@ -5,6 +5,7 @@ namespace YesWiki\Content\Api;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
@@ -23,6 +24,7 @@ use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\PageLayout;
 
 class PageApiController extends YesWikiController
 {
@@ -116,9 +118,7 @@ class PageApiController extends YesWikiController
         return new ApiResponse($page, Response::HTTP_OK);
     }
 
-    /**
-     * Relocated from tools/templates's savemetadatas AJAX handler (ticket 12) - saves per-page theme/style/squelette/background-image overrides.
-     */
+    /** Sets layout keys of a page's Metadata, checked by the rules of its edit screen, an empty value removing its key. */
     #[Route('/api/pages/{tag}/metadatas', methods: ['POST'], options: ['acl' => ['+']])]
     public function savePageMetadatas(Request $request, string $tag): ApiResponse
     {
@@ -129,8 +129,16 @@ class PageApiController extends YesWikiController
             return new ApiResponse(['error' => "'metadatas' should not be empty"], Response::HTTP_BAD_REQUEST);
         }
 
+        try {
+            $changes = $this->getService(PageLayout::class)->checked($metadatas, $tag);
+        } catch (AccessDeniedException $refused) {
+            return new ApiResponse(['error' => $refused->getMessage()], Response::HTTP_FORBIDDEN);
+        } catch (\InvalidArgumentException $invalid) {
+            return new ApiResponse(['error' => $invalid->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+
         $pageManager = $this->getService(PageManager::class);
-        $pageManager->setMetadata($tag, $metadatas);
+        $pageManager->setMetadata($tag, $changes);
 
         return new ApiResponse($pageManager->getMetadata($tag), Response::HTTP_OK);
     }

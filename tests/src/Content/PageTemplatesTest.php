@@ -34,7 +34,7 @@ class PageTemplatesTest extends YesWikiTestCase
         $this->admin = (string)$admins[0];
         self::actAs($this->admin);
         $pages = self::getWiki()->services->get(PageManager::class);
-        $pages->save(self::TEMPLATE, [PageBody::CONTENT => "======Compte rendu======\n\n{{attach file=\"plan.png\" desc=\"plan\"}}\n\nPrésents :", PageBody::KEYWORDS => ['reunion']], '', true);
+        $pages->save(self::TEMPLATE, [PageBody::CONTENT => "# Compte rendu\n\n{{attach file=\"plan.png\" desc=\"plan\"}}\n\nPrésents :", PageBody::KEYWORDS => ['reunion']], '', true);
         $pages->setMetadata(self::TEMPLATE, ['theme' => 'margot', 'style' => 'margot.css', 'squelette' => '1col.twig', 'acls' => ['write' => '@admins']]);
         $pages->save(self::HIDDEN, [PageBody::CONTENT => 'Réservé'], '', true);
         self::getWiki()->services->get(AclService::class)->save(self::HIDDEN, 'read', '@admins');

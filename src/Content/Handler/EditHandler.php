@@ -27,6 +27,7 @@ use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -36,8 +37,8 @@ use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\LanguageSwitch;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\PageLayout;
 use YesWiki\Render\Service\TemplateEngine;
-use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
 use YesWiki\Search\Service\TagsManager;
 
@@ -111,7 +112,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         }
 
         if (isset($_GET['body']) && !isset($_POST['body'])) {
-            $_POST['body'] = '======' . $_GET['body'] . '======';
+            $_POST['body'] = '# ' . $_GET['body'];
         }
 
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/change-theme.js');
@@ -336,45 +337,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $plugin_output_new
         ) ?? $plugin_output_new;
 
-        $themeManager = $this->getService(ThemeManager::class);
-
-        if (empty($this->getService(RuntimeConfig::class)['hide_action_template'])
-            && $this->getService(AclService::class)->hasAccess('write')
-            && $this->getService(AclService::class)->hasAccess('read')
-        ) {
-            $selecteur = '
-        <div id="graphical_options" class="yw-modal">' . "\n" .
-                '  <div class="yw-modal__dialog">' . "\n" .
-                '    <div class="yw-modal__content">' . "\n" .
-                '      <div class="yw-modal__header">' . "\n" .
-                '        <a class="yw-close" data-yw-dismiss="modal">&times;</a>' . "\n" .
-                '        <h3 class="yw-modal__title">' . _t('TEMPLATE_CUSTOM_GRAPHICS') . ' ' . $this->getService(PageContext::class)->getTag() . '</h3>' . "\n" .
-                '      </div>' . "\n" .
-                '      <div class="yw-modal__body">' . "\n";
-            $selecteur .= $this->getService(ThemeSelectorRenderer::class)->showFormThemeSelector('edit');
-            $selecteur .= '
-              </div>' . "\n" .
-                '      <div class="yw-modal__footer">' . "\n" .
-                '        <a href="#" class="yw-btn button_cancel" data-yw-dismiss="modal">' . _t('TEMPLATE_CANCEL') . '</a>' . "\n" .
-                '        <a href="#" class="yw-btn yw-btn--primary button_save" data-yw-dismiss="modal">' . _t('TEMPLATE_APPLY') . '</a>' . "\n" .
-                '      </div>' . "\n" .
-                '    </div>' . "\n" .
-                '  </div>' . "\n" .
-                '</div> <!-- /#graphical_options -->' . "\n";
-
-            $selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="' . $themeManager->getFavoriteTheme() . '" />' . "\n";
-            $selecteur .= '<input id="hiddensquelette" type="hidden" name="squelette" value="' . $themeManager->getFavoriteSquelette() . '" />' . "\n";
-            $selecteur .= '<input id="hiddenstyle" type="hidden" name="style" value="' . $themeManager->getFavoriteStyle() . '" />' . "\n";
-            $selecteur .= '<input id="hiddenbgimg" type="hidden" name="bgimg" value="' . $themeManager->getFavoriteBackgroundImage() . '" />' . "\n";
-
-            $plugin_output_new = preg_replace('/<\/body>/', $selecteur . "\n" . '</body>', $plugin_output_new) ?? $plugin_output_new;
-            $changetheme = true;
-        } else {
-            $changetheme = false;
-        }
-
-        $hidden = '';
-
         if (isset($_SERVER['HTTP_REFERER'])) {
             $pagetag = str_replace($this->getService(RuntimeConfig::class)['base_url'], '', $_SERVER['HTTP_REFERER']);
             if ($this->getService(UrlFormatter::class)->isWikiName($pagetag) && in_array(
@@ -382,15 +344,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 LayoutService::PAGES
             )) {
                 $hidden = '<input type="hidden" name="returnto" value="' . $this->getService(UrlFormatter::class)->href('', $pagetag) . '" />' . "\n";
+                $plugin_output_new = str_replace('<span class="theme-container">', '<span class="theme-container">' . $hidden, $plugin_output_new);
             }
         }
-
-        $html = $hidden;
-        $target = '<span class="theme-container">';
-        if ($changetheme) {
-            $html .= '<a class="yw-btn" data-yw-modal-target="#graphical_options">' . _t('TEMPLATE_THEME') . '</a>';
-        }
-        $plugin_output_new = str_replace($target, $target . $html, $plugin_output_new);
 
         if (!$this->getService(AclService::class)->hasAccess('write')) {
             $body = '<div class="yeswiki-page-widget page-widget page">' . "\n"
@@ -472,6 +428,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     'fieldsAfterContent' => $this->renderContentFields($pageFields['after'], $editedBody),
                     'fromTemplate' => $fromTemplate,
                     'templateMark' => $this->templateMarkState($isNewPage),
+                    'layoutPanel' => $this->layoutPanel($isNewPage, false),
                 ]);
                 $this->getService(InclusionStack::class)->replace($temp);
             } else {
@@ -483,6 +440,19 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE && ($refusal = $this->getService(BotGuard::class)->check($request)) !== null) {
                     $error = $this->getService(BotGuard::class)->message($refusal);
                     $submit = false;
+                }
+
+                $layoutChanges = [];
+                if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
+                    try {
+                        $layoutChanges = PageLayout::changes(
+                            $this->getService(PageManager::class)->getMetadata((string)$this->getService(PageContext::class)->getTag()) ?? [],
+                            $this->getService(PageLayout::class)->fromForm($request->request->all(), (string)$this->getService(PageContext::class)->getTag())
+                        );
+                    } catch (\InvalidArgumentException $invalid) {
+                        $error = $invalid->getMessage();
+                        $submit = false;
+                    }
                 }
 
                 if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
@@ -501,7 +471,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         );
                     }
 
-                    $unchanged = !empty($previousBody) && PageBody::equals(
+                    $unchanged = $layoutChanges === [] && !empty($previousBody) && PageBody::equals(
                         array_merge($previousBody, $pageFields['hasContent']
                             ? [PageBody::CONTENT => rtrim(PageBody::content($previousBody))]
                             : []),
@@ -516,7 +486,16 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $this->getService(Redirector::class)->redirect($after);
                     } else {
                         $parent = (string)($this->getService(PageContext::class)->getPage()['parent'] ?? '');
-                        $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, $parent);
+                        $this->getService(PageManager::class)->save(
+                            $this->getService(PageContext::class)->getTag(),
+                            $newBody,
+                            $parent,
+                            false,
+                            null,
+                            null,
+                            null,
+                            $layoutChanges === [] ? null : $layoutChanges
+                        );
                         if ($fromTemplate !== '') {
                             $this->getService(PageTemplates::class)->copyFiles($fromTemplate, (string)$this->getService(PageContext::class)->getTag());
                         }
@@ -554,6 +533,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         'fieldsAfterContent' => $this->renderContentFields($pageFields['after'], $editedBody),
                         'fromTemplate' => $fromTemplate,
                         'templateMark' => $this->templateMarkState($isNewPage),
+                        'layoutPanel' => $this->layoutPanel($isNewPage, isset($error)),
                     ]);
                 }
             }
@@ -571,6 +551,65 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         } else {
             echo $output;
         }
+    }
+
+    /** The page layout options under the editor, filled from what was just posted, the link that opened a new page, or the page's Metadata. */
+    private function layoutPanel(bool $isNewPage, bool $open): string
+    {
+        $request = $this->getService(CurrentRequest::class)->get();
+        $tag = (string)$this->getService(PageContext::class)->getTag();
+        $pageLayout = $this->getService(PageLayout::class);
+        $values = $isNewPage
+            ? array_intersect_key($request->query->all(), array_flip(PageLayout::KEYS))
+            : ($this->getService(PageManager::class)->getMetadata($tag) ?? []);
+        if ($request->request->get('layout_shown') === '1') {
+            try {
+                $values = array_merge($values, $pageLayout->fromForm($request->request->all(), $tag));
+            } catch (\InvalidArgumentException) {
+                foreach ([PageLayout::CUSTOM_CSS, PageLayout::OG_TITLE, PageLayout::OG_DESCRIPTION, PageLayout::OG_IMAGE] as $key) {
+                    $values[$key] = (string)$request->request->get($key, '');
+                }
+            }
+        }
+        $value = fn (string $key): string => is_string($values[$key] ?? null) ? $values[$key] : '';
+
+        $roles = [];
+        foreach (LayoutService::PAGES as $role) {
+            $roles[$role] = [
+                'mode' => match ($value($role)) {
+                    '' => '',
+                    PageLayout::NONE => PageLayout::NONE,
+                    default => 'page',
+                },
+                'page' => $value($role) === PageLayout::NONE ? '' : $value($role),
+            ];
+        }
+        $languages = $this->getService(LanguageService::class);
+        $showsTheme = empty($this->getService(RuntimeConfig::class)['hide_action_template']);
+        $selector = $this->getService(ThemeSelectorRenderer::class);
+
+        return $selector->renderWithThemeSelector('@core/handlers/edit-layout.twig', [
+            'open' => $open,
+            'navbar' => $value(PageLayout::NAVBAR),
+            'navbarPositions' => PageLayout::NAVBAR_POSITIONS,
+            'wikiNavbar' => $this->getService(LayoutService::class)->wikiNavbarPosition(),
+            'roles' => $roles,
+            'pages' => $this->getService(PageManager::class)->tagsOfType(PageType::DEFAULT),
+            'showsTheme' => $showsTheme,
+            'ownTheme' => $value('theme') !== '' && $value('style') !== '' && $value('squelette') !== '',
+            'bgimg' => $value('bgimg'),
+            'bgselector' => $showsTheme ? $selector->backgroundSelector() : '',
+            'lang' => $value(PageLayout::LANG),
+            'availableLanguages' => $languages->availableLanguages(),
+            'languagesList' => $languages->languagesList(),
+            'mayEditCss' => $pageLayout->mayEditCss($tag),
+            'css' => $value(PageLayout::CUSTOM_CSS),
+            'ogTitle' => $value(PageLayout::OG_TITLE),
+            'ogDescription' => $value(PageLayout::OG_DESCRIPTION),
+            'ogImage' => $value(PageLayout::OG_IMAGE),
+            'ogTitleMax' => PageLayout::OG_TITLE_MAX_LENGTH,
+            'ogDescriptionMax' => PageLayout::OG_DESCRIPTION_MAX_LENGTH,
+        ]);
     }
 
     /** Shows the choice between a blank page and the templates, before a new page's editor, when there are templates and none was chosen yet. */

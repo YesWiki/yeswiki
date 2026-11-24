@@ -331,6 +331,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
 
         $this->container->get(AclService::class)->save($tag, 'write', "%\n@admins");
 
+        $this->container->get(AccountGroups::class)->applyUserForm($tag, $body);
+
         return true;
     }
 
@@ -485,6 +487,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
                     $body[$key] = $newValues[$key];
                 }
                 $pageManager->save($user['name'], $body, '', true);
+                $this->container->get(AccountGroups::class)->applyUserForm((string)$user['name'], $body);
             }
         }
 

@@ -37,19 +37,24 @@
       Aller au contenu principal
     </a>
 
+    {% set headerPage = layout_page('PageHeader') %}
     {% set headerHtml %}
+      {% if headerPage %}
       <header id="yw-header">
-        {{ action('include page="' ~ layout_page('PageHeader') ~ '" class="yw-headerpage" doubleclick="1"')|raw }}
+        {{ action('include page="' ~ headerPage ~ '" class="yw-headerpage" doubleclick="1"')|raw }}
       </header>
+      {% endif %}
     {% endset %}
 
     {% if layout_position('header') == 'before' %}{{ headerHtml|raw }}{% endif %}
 
+    {% if layout_position('navbar') != 'none' %}
     <nav id="yw-topnav" class="fixable" role="navigation">
       <div class="container" id="yw-layout-chrome">
         {{ layout_chrome()|raw }}
       </div>
     </nav>
+    {% endif %}
 
     {% if layout_position('header') != 'before' %}{{ headerHtml|raw }}{% endif %}
 
@@ -59,13 +64,16 @@
       {{editbar /}}
     </div>
 
+    {% set footerPage = layout_page('PageFooter') %}
+    {% if footerPage %}
     <footer id="yw-footer" class="yw-chrome-editable">
 
       {{ layout_edit('footer')|raw }}
       <div class="container">
-        {{ action('include page="' ~ layout_page('PageFooter') ~ '" class="footerpage" doubleclick="1"')|raw }}
+        {{ action('include page="' ~ footerPage ~ '" class="footerpage" doubleclick="1"')|raw }}
       </div> <!-- /.container -->
     </footer><!-- /#yw-footer -->
+    {% endif %}
   </div> <!-- /#yw-container -->
 
   {{ layout_tools()|raw }}

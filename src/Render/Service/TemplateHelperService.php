@@ -380,16 +380,8 @@ class TemplateHelperService
 
             if (preg_match('/<h[12].*>\s*(.*)\s*<\/h[12]>/iUs', $content, $titles)) {
                 $title = $titles[1];
-            } else {
-                preg_match_all("/\={6}(.*)\={6}/U", $content, $titles);
-                if (isset($titles[1][0]) && $titles[1][0] != '') {
-                    $title = $this->container->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
-                } else {
-                    preg_match_all('/={5}(.*)={5}/U', $content, $titles);
-                    if (isset($titles[1][0]) && $titles[1][0] != '') {
-                        $title = $this->container->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
-                    }
-                }
+            } elseif (($heading = PageBody::heading($content)) !== '') {
+                $title = $this->container->get(MarkdownFormatterService::class)->format($heading);
             }
         }
 

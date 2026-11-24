@@ -88,14 +88,7 @@ class ThemeSelectorRenderer extends YesWikiController
     {
         if ($mode == 'edit') {
             $id = 'form_graphical_options';
-            $backgrounds = $this->prepareBackgrounds();
-            $bgselector =
-            !empty($backgrounds)
-            ? $this->render('@core/background-selector.twig', [
-                'backgrounds' => $backgrounds,
-                'favoriteBackgroundImage' => $this->themeManager->getFavoriteBackgroundImage(),
-            ])
-            : '';
+            $bgselector = $this->backgroundSelector();
         } else {
             $id = 'form_theme_selector';
             $bgselector = '';
@@ -123,6 +116,17 @@ class ThemeSelectorRenderer extends YesWikiController
             'page' => $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage(),
             'updateUrl' => ($mode !== 'edit'),
         ] + $this->pagesOwnThemeNotice($mode));
+    }
+
+    /** The carousel of background images a page can pick from, empty when the wiki has none. */
+    public function backgroundSelector(): string
+    {
+        $backgrounds = $this->prepareBackgrounds();
+
+        return empty($backgrounds) ? '' : $this->render('@core/background-selector.twig', [
+            'backgrounds' => $backgrounds,
+            'favoriteBackgroundImage' => $this->themeManager->getFavoriteBackgroundImage(),
+        ]);
     }
 
     /** @return array<string, mixed> this page's own theme and how many pages keep one, for an admin choosing the site theme */

@@ -56,6 +56,22 @@ class PageBody
         return (string)($body[self::CONTENT] ?? '');
     }
 
+    /** The text of the first `#` or `##` heading outside code blocks, or of a legacy `======` one, '' when there is none. */
+    public static function heading(string $content): string
+    {
+        $prose = (string)preg_replace('/^(`{3,}|~{3,}).*?^\1[ \t]*$/ms', '', $content);
+        if (preg_match('/^ {0,3}#{1,2}[ \t]+(.+?)[ \t]*#*[ \t]*$/m', $prose, $match) === 1) {
+            return trim($match[1]);
+        }
+        foreach (['/={6}(.*)={6}/U', '/={5}(.*)={5}/U'] as $legacy) {
+            if (preg_match($legacy, $content, $match) === 1 && trim($match[1]) !== '') {
+                return trim($match[1]);
+            }
+        }
+
+        return '';
+    }
+
     /**
      * Whether two decoded bodies hold the same data, ignoring key order.
      *

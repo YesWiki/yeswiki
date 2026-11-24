@@ -5364,6 +5364,52 @@ figcaption *:last-child {
   color: var(--yw-text-muted);
 }
 
+.yw-page-layout {
+  margin: var(--yw-space-md-y) 0;
+}
+
+.yw-page-layout > .yw-accordion__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--yw-space-sm-x);
+}
+
+.yw-page-layout__summary {
+  color: var(--yw-text-muted);
+  font-weight: normal;
+}
+
+.yw-page-layout__group {
+  margin: 0 0 var(--yw-space-md-y);
+  padding: 0;
+  border: 0;
+}
+
+.yw-page-layout__group > legend {
+  font-weight: 600;
+  margin-bottom: var(--yw-space-sm-y);
+}
+
+.yw-page-layout__role {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-x);
+}
+
+.yw-page-layout__role > .yw-input {
+  flex: 1 1 12rem;
+}
+
+.yw-page-layout__role > [hidden],
+.yw-page-layout__theme[hidden] {
+  display: none;
+}
+
+.yw-page-layout__css {
+  font-family: var(--yw-font-mono, monospace);
+}
+
 .yw-bot-guard {
   display: none;
 }

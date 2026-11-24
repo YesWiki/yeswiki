@@ -56,8 +56,8 @@ class MailSubscriptionsTest extends YesWikiTestCase
             }
         }
         $pageManager = $this->wiki->services->get(PageManager::class);
-        $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => "====== Mail subscriptions title ======\nMAIL_SUBSCRIPTIONS_MARKER\n{{mailperiod}}"], '', true);
-        $pageManager->save(self::OTHER_PAGE_TAG, [PageBody::CONTENT => "====== Other subscriptions title ======\nOTHER_MARKER"], '', true);
+        $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => "# Mail subscriptions title\nMAIL_SUBSCRIPTIONS_MARKER\n{{mailperiod}}"], '', true);
+        $pageManager->save(self::OTHER_PAGE_TAG, [PageBody::CONTENT => "# Other subscriptions title\nOTHER_MARKER"], '', true);
         $current = $this->wiki->services->get(CurrentRequest::class);
         $this->previousRequest = $current->has() ? $current->get() : null;
     }
