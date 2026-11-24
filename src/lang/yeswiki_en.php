@@ -195,6 +195,8 @@ You are on %{CURRENTPHPVERSION}.
     'SORT_LABEL' => 'Sort',
     'SORT_DEFAULT' => 'Sort',
     'SORT_RELEVANCE' => 'Relevance',
+    'SORT_FIELD_ASC' => '{label} ↑',
+    'SORT_FIELD_DESC' => '{label} ↓',
     'SORT_TITLE_ASC' => 'Title A → Z',
     'SORT_TITLE_DESC' => 'Title Z → A',
     'SORT_UPDATED_DESC' => 'Recently updated',

@@ -1,5 +1,5 @@
 {# Every list's toolbar: search, sort, presentation switch and exports on one row, then the facets.
-   `inputAttrs`, `controlAttrs` and `buttonAttrs` say how each control fires; `facets` and `exports` are HTML slots. #}
+   `inputAttrs`, `controlAttrs` and `buttonAttrs` say how each control fires; `controls`, `facets` and `exports` are HTML slots. #}
 {% set sortOptions = sortOptions|default([
   { value: 'title:asc', label: _t('SORT_TITLE_ASC') },
   { value: 'title:desc', label: _t('SORT_TITLE_DESC') },
@@ -15,6 +15,7 @@
   {% endfor %}
 
   <div class="yw-list-toolbar__search">
+    {% if showSearch ?? true %}
     {% include '@core/_searchbox.twig' with {
       name: searchName|default('keywords'),
       id: inputId|default(id ~ '-phrase'),
@@ -26,8 +27,11 @@
       attrs: inputAttrs|default({}),
       button_attrs: buttonAttrs|default({})
     } only %}
+    {% endif %}
 
     <div class="yw-list-toolbar__side">
+      {{ controls|default('')|raw }}
+      {% if showSort ?? true %}
       <label class="sr-only" for="{{ id }}-sort">{{ _t('SORT_LABEL') }}</label>
       <select class="yw-input yw-list-toolbar__sort" name="sort" id="{{ id }}-sort"
               {% for attribute, attributeValue in controlAttrs|default({}) %}{{ attribute }}="{{ attributeValue }}" {% endfor %}>
@@ -36,7 +40,9 @@
           <option value="{{ option.value }}" {{ sort|default('') == option.value ? 'selected' : '' }}>{{ option.label }}</option>
         {% endfor %}
       </select>
+      {% endif %}
 
+      {% if switcher|default([]) is not empty %}
       <fieldset class="yw-display-switch" id="{{ id }}-display">
         <legend class="sr-only">{{ _t('FORM_SCREEN_DISPLAY') }}</legend>
         {% for category in switcher %}
@@ -64,6 +70,7 @@
           </div>
         {% endfor %}
       </fieldset>
+      {% endif %}
 
       {{ exports|default('')|raw }}
     </div>

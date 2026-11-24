@@ -632,7 +632,7 @@ class PageManager implements CachesTheDatabase
      * @param bool                       $bypass_acls
      * @param string|null                $forcedDate
      * @param array<string, string>|null $acls
-     * @param array<string, mixed>|null  $metadata Metadata keys this revision sets, a null value removing its key
+     * @param array<string, mixed>|null  $metadata    Metadata keys this revision sets, a null value removing its key
      */
     public function save($tag, array $body, $parent = '', $bypass_acls = false, $forcedDate = null, ?string $type = null, ?array $acls = null, ?array $metadata = null): int
     {
@@ -945,7 +945,14 @@ class PageManager implements CachesTheDatabase
         return true;
     }
 
-    /** @param array<string, mixed> $current @param array<string, mixed> $changes @return array<string, mixed> $current with $changes over it, a null removing its key */
+    /**
+     * $current with $changes over it, a null removing its key.
+     *
+     * @param array<string, mixed> $current
+     * @param array<string, mixed> $changes
+     *
+     * @return array<string, mixed>
+     */
     private static function mergedMetadata(array $current, array $changes): array
     {
         return array_filter(array_merge($current, $changes), fn (mixed $value): bool => $value !== null);

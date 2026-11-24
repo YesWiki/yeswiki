@@ -226,10 +226,11 @@ class BazarListService
      * @param array<array-key, array<string, mixed>> $entries
      * @param array<int|string, mixed>               $forms
      * @param bool                                   $withIdIndexes key the filters by property name rather than by position
+     * @param array<array-key, array<string, mixed>>|null $countedEntries the entries the counts are over, when the facets come from a wider set
      *
      * @return array<array-key, array<string, mixed>>
      */
-    public function getFilters($options, $entries, $forms, $withIdIndexes = false): array
+    public function getFilters($options, $entries, $forms, $withIdIndexes = false, ?array $countedEntries = null): array
     {
         $options = array_merge([
             'groups' => [],
@@ -358,7 +359,7 @@ class BazarListService
             if ($options['dynamic'] == false) {
                 $checkedValues = $this->checkedFacets();
 
-                $entriesValues = array_column($entries, $propName);
+                $entriesValues = array_column($countedEntries ?? $entries, $propName);
 
                 $entriesValues = array_map(function ($val) {
                     return is_array($val) ? array_map('strval', $val) : explode(',', (string)($val ?? ''));

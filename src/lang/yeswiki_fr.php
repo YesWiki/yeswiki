@@ -58,6 +58,8 @@ return [
     'SORT_LABEL' => 'Trier',
     'SORT_DEFAULT' => 'Trier',
     'SORT_RELEVANCE' => 'Pertinence',
+    'SORT_FIELD_ASC' => '{label} ↑',
+    'SORT_FIELD_DESC' => '{label} ↓',
     'SORT_TITLE_ASC' => 'Titre A → Z',
     'SORT_TITLE_DESC' => 'Titre Z → A',
     'SORT_UPDATED_DESC' => 'Modifié récemment',

@@ -46,7 +46,13 @@ class PageLayout
         return $this->aclService->isAdmin() || $this->aclService->isOwner($tag);
     }
 
-    /** @param array<string, mixed> $post @return array<string, ?string> what the panel asks for, null going back to the wiki's, empty without the panel */
+    /**
+     * What the panel asks for, null going back to the wiki's, empty without the panel.
+     *
+     * @param array<string, mixed> $post
+     *
+     * @return array<string, ?string>
+     */
     public function fromForm(array $post, string $tag): array
     {
         if (($post['layout_shown'] ?? '') !== '1') {
@@ -84,7 +90,13 @@ class PageLayout
         return $this->checked($wanted, $tag);
     }
 
-    /** @param array<array-key, mixed> $metadata @return array<string, ?string> the keys checked, '' read as null; throws on an unknown key, a bad value or someone else's CSS */
+    /**
+     * The keys checked, '' read as null; throws on an unknown key, a bad value or someone else's CSS.
+     *
+     * @param array<array-key, mixed> $metadata
+     *
+     * @return array<string, ?string>
+     */
     public function checked(array $metadata, string $tag): array
     {
         $checked = [];
@@ -105,9 +117,7 @@ class PageLayout
                 continue;
             }
             if (!$this->accepts($key, $value)) {
-                throw new \InvalidArgumentException($key === self::CUSTOM_CSS
-                    ? _t('PAGE_LAYOUT_CSS_REFUSED')
-                    : _t('PAGE_LAYOUT_INVALID_VALUE', ['key' => $key]));
+                throw new \InvalidArgumentException($key === self::CUSTOM_CSS ? _t('PAGE_LAYOUT_CSS_REFUSED') : _t('PAGE_LAYOUT_INVALID_VALUE', ['key' => $key]));
             }
             $checked[$key] = $value;
         }
@@ -115,7 +125,14 @@ class PageLayout
         return $checked;
     }
 
-    /** @param array<string, mixed> $current @param array<string, ?string> $wanted @return array<string, ?string> only the keys whose value would change */
+    /**
+     * Only the keys whose value would change.
+     *
+     * @param array<string, mixed>   $current
+     * @param array<string, ?string> $wanted
+     *
+     * @return array<string, ?string>
+     */
     public static function changes(array $current, array $wanted): array
     {
         return array_filter(

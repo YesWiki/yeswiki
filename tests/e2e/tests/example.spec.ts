@@ -10,7 +10,7 @@ test.beforeEach(async () => {
 test('has title', async ({ page }) => {
   await page.goto('/')
 
-  await expect(page).toHaveTitle(/MyTestWiki : PagePrincipale/)
+  await expect(page).toHaveTitle('MyTestWiki : MyTestWiki')
 })
 
 test('can edit main page title', async ({ page }) => {

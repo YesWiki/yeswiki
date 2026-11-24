@@ -80,6 +80,7 @@ class PageLayoutTest extends YesWikiTestCase
         $services = self::getWiki()->services;
         $this->onPage($tag, 'edit');
         $page = $services->get(PageManager::class)->getOne($tag);
+        $this->assertNotNull($page, "the page {$tag} should exist before it is edited");
         $_POST = ['submit' => 'Sauver', 'previous' => $page['id']] + $post + self::validBotGuardFields(self::getWiki());
         $services->get(CurrentRequest::class)->replace(Request::createFromGlobals());
         try {

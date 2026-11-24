@@ -83,6 +83,9 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     ];
 
     /** What a `table` with columns means by default: one column per field, labels, the same link as any Presentation. */
+    /** The query parameters a list's own controls write. */
+    private const LIST_STATE_KEYS = ['facet', 'pageID', 'keywords', 'q', 'sort', 'field', 'order', 'selectedID'];
+
     private const TABLE_COLUMNS_DEFAULTS = [
         'checkboxfieldsincolumns' => 'false',
         'displayvaluesinsteadofkeys' => 'true',
@@ -1496,8 +1499,9 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             );
 
         $blogMode = $bareTemplate === 'blog';
-        $order = $get->get('order') ?? $arg['order'] ?? ((empty($arg['field']) && ($agendaMode || $blogMode)) ? 'desc' : 'asc');
-        $sortField = $get->get('field') ?? $arg['field'] ?? ($agendaMode ? 'bf_date_debut_evenement' : ($blogMode ? 'created_at' : PageBody::TITLE));
+        $requestedSort = self::requestedSort($get->get('sort'));
+        $order = $requestedSort[1] ?? $get->get('order') ?? $arg['order'] ?? ((empty($arg['field']) && ($agendaMode || $blogMode)) ? 'desc' : 'asc');
+        $sortField = $requestedSort[0] ?? $get->get('field') ?? $arg['field'] ?? ($agendaMode ? 'bf_date_debut_evenement' : ($blogMode ? 'created_at' : PageBody::TITLE));
 
         $vSearchManager = $this->getService(SearchManager::class);
 
@@ -1513,6 +1517,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 
             'queries' => $vSearchManager->aggregateQueries($arg, $get->all()),
             'keywords' => $vKeywords,
+            'fixedKeywords' => $vSearchManager->aggregateKeywords($arg['keywords'] ?? null),
             'dateMin' => $this->formatDateMin($get->get('period') ?? $arg['period'] ?? null),
 
             'random' => $this->formatBoolean($arg, false, 'random'),
@@ -1608,7 +1613,10 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             ]);
         }
         $entries = $bazarListService->getEntries($this->arguments, $vForms);
-        $filters = $bazarListService->getFilters($this->arguments, $entries, $vForms, true);
+        $facetScope = $this->arguments['keywords'] === $this->arguments['fixedKeywords']
+            ? $entries
+            : $bazarListService->getEntries(['keywords' => $this->arguments['fixedKeywords']] + $this->arguments, $vForms);
+        $filters = $bazarListService->getFilters($this->arguments, $facetScope, $vForms, true, $entries);
         $entries = $bazarListService->filterEntriesOnFacets($entries);
 
         $listIndex = $this->getService(ListIndex::class)->next();
@@ -1616,8 +1624,16 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
 
+        $sortOptions = $this->sortOptions();
+        $showToolbar = !empty($this->arguments['search']) || $sortOptions !== [];
+        $query = $this->getRequest()->query;
+
         return $this->render('@core/entries/index.twig', [
             'listId' => $listIndex,
+            'showToolbar' => $showToolbar,
+            'sortOptions' => $sortOptions,
+            'currentSort' => $this->arguments['field'] . ':' . $this->arguments['order'],
+            'searchedKeywords' => (string)($query->get('keywords') ?? $query->get('q') ?? ''),
             'filters' => $filters,
             'entries' => $entries,
             'renderedEntries' => $this->renderEntries($entries, $filters, $vForms),
@@ -1629,23 +1645,52 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             'forms' => $vForms,
             'selectedID' => $this->arguments['selectedID'] ?? null,
             'facet' => $this->getRequest()->query->all()['facet'] ?? null,
-            'facetForm' => $this->facetForm(),
+            'facetForm' => $this->facetForm($showToolbar),
         ]);
     }
 
+    /** @return array{0?: string, 1?: string} the field and order a `sort=field:order` query asks for */
+    private static function requestedSort(mixed $sort): array
+    {
+        if (!is_string($sort) || preg_match('/^([A-Za-z0-9_.-]+):(asc|desc)$/', $sort, $matches) !== 1) {
+            return [];
+        }
+
+        return [$matches[1], $matches[2]];
+    }
+
+    /** @return list<array{value: string, label: string}> each of the action's sortfields, ascending then descending */
+    private function sortOptions(): array
+    {
+        $titles = $this->arguments['sortfieldstitles'] ?? [];
+        $options = [];
+        foreach ($this->arguments['sortfields'] ?? [] as $index => $field) {
+            $field = trim((string)$field);
+            if ($field === '') {
+                continue;
+            }
+            $label = trim((string)($titles[$index] ?? '')) ?: $field;
+            $options[] = ['value' => "{$field}:asc", 'label' => _t('SORT_FIELD_ASC', ['label' => $label])];
+            $options[] = ['value' => "{$field}:desc", 'label' => _t('SORT_FIELD_DESC', ['label' => $label])];
+        }
+
+        return $options;
+    }
+
     /**
-     * Where checking a facet goes, in the two spellings the form needs.
+     * Where checking a facet goes, in the two spellings the form needs; with the toolbar, the search and the sort travel in the toolbar's own fields.
      *
      * @return array{url: string, action: string, params: array<string, string>}
      */
-    private function facetForm(): array
+    private function facetForm(bool $withToolbar): array
     {
+        $excluded = $withToolbar ? self::LIST_STATE_KEYS : ['facet', 'pageID'];
         $uri = $this->getRequest()->getRequestUri();
         [$path, $queryString] = array_pad(explode('?', $uri, 2), 2, '');
         $kept = array_values(array_filter(
             explode('&', (string)$queryString),
             static fn (string $part): bool => $part !== ''
-                && preg_match('/^(facet(%5B|\[|=)|pageID=)/i', $part) !== 1
+                && !in_array((string)preg_replace('/\[.*$/', '', urldecode(explode('=', $part, 2)[0])), $excluded, true)
         ));
 
         $params = [];
@@ -1685,7 +1730,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         if (!empty($this->arguments['pagination']) && $this->arguments['pagination'] > 0) {
             $query = $this->getRequest()->query->all();
             unset($query['wiki']);
-            $paginationUrl = $this->getService(UrlFormatter::class)->getBaseUrl() . '/' . basename((string)($_SERVER['PHP_SELF'] ?? 'index.php'));
+            $paginationUrl = (string)strtok($this->getRequest()->getRequestUri(), '?');
 
             $paginator = new Paginator(
                 $data['entries'],
@@ -1701,7 +1746,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             ]);
             $data['pager_links'] = $links === ''
                 ? ''
-                : '<div class="bazar_numero yw-text-center"><ul class="yw-pagination">' . $links . '</ul></div>';
+                : '<div class="bazar_numero yw-text-center" hx-boost="true" hx-target="#entry-list-results-' . $this->arguments['listindex'] . '" hx-select="#entry-list-results-' . $this->arguments['listindex'] . '" hx-swap="outerHTML show:top"><ul class="yw-pagination">' . $links . '</ul></div>';
         }
 
         $data['entries'] = $this->getService(EntryOrigin::class)->describeAll($data['entries']);

@@ -1,33 +1,78 @@
-
 {{ include_css('styles/yw-entries.css') }}
-{% if params.search %}
-  {{ include("@core/entries/index/_search_input.twig") }}
-{% endif %}
+{% set rootId = 'entry-list-root-' ~ listId %}
+{% set resultsId = 'entry-list-results-' ~ listId %}
+{% set toolbarId = 'entry-list-toolbar-' ~ listId %}
+{% set facetsFormId = 'entry-list-facets-' ~ listId %}
+{% set swapResults = {
+  'hx-target': '#' ~ resultsId,
+  'hx-select': '#' ~ resultsId,
+  'hx-swap': 'outerHTML',
+  'hx-push-url': 'true',
+} %}
 
-{% if filters %}
+<div id="{{ rootId }}" class="yw-entry-list">
+  {% if showToolbar %}
+    {% set formChoice %}
+      {% if forms|length > 1 %}
+        <label class="sr-only" for="{{ toolbarId }}-form">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</label>
+        <select class="yw-input" id="{{ toolbarId }}-form" name="selectedID">
+          <option value="">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</option>
+          {% for form in forms %}
+            <option value="{{ form.id }}" {{ form.id == selectedID ? 'selected' : '' }}>{{ form.label }}</option>
+          {% endfor %}
+        </select>
+      {% endif %}
+    {% endset %}
+    {{ include('@core/_list_toolbar.twig', {
+      id: toolbarId,
+      class: 'yw-entry-list__toolbar',
+      action: facetForm.action,
+      hidden: facetForm.params|map((value, name) => { name: name, value: value })|merge(params.search is empty and searchedKeywords is not empty ? [{ name: 'keywords', value: searchedKeywords }] : []),
+      formAttrs: swapResults|merge({
+        'hx-get': facetForm.action,
+        'hx-trigger': "input changed delay:350ms from:find input[name='keywords'], search from:find input[name='keywords'], change from:find select, submit",
+        'hx-include': '#' ~ facetsFormId ~ ' [name^=facet]',
+        'hx-sync': 'this:replace',
+        'hx-indicator': '#' ~ toolbarId ~ '-spinner',
+      }),
+      showSearch: params.search is not empty,
+      searchName: 'keywords',
+      keywords: searchedKeywords,
+      spinnerId: toolbarId ~ '-spinner',
+      showSort: sortOptions is not empty,
+      sortOptions: sortOptions,
+      sort: currentSort,
+      controls: formChoice,
+      switcher: [],
+    }) }}
+  {% endif %}
 
-  {% set beside = params.filterposition != 'top' and params.filtercolsize|number_format < 12 %}
+  <div id="{{ resultsId }}" class="yw-entry-list__results">
+    {% if filters %}
 
-  <div id="facette-container-{{ listId }}" class="facette-container {{ beside ? '' : 'facette-container-fullwidth' }}"
-       data-filter-align="{{ params.filterposition }}" data-template="{{ params.template }}"
-       {% if beside %}style="--yw-filters-width: {{ (params.filtercolsize|number_format / 12 * 100)|round(2) }}%"{% endif %}>
+      {% set beside = params.filterposition != 'top' and params.filtercolsize|number_format < 12 %}
 
-    {% if params.groups %}
-      {{ include("@core/entries/index/_filters.twig") }}
-    {% endif %}
+      <div id="facette-container-{{ listId }}" class="facette-container {{ beside ? '' : 'facette-container-fullwidth' }}"
+           data-filter-align="{{ params.filterposition }}" data-template="{{ params.template }}"
+           {% if beside %}style="--yw-filters-width: {{ (params.filtercolsize|number_format / 12 * 100)|round(2) }}%"{% endif %}>
 
-    <div class="results-col">
+        {% if params.groups %}
+          {{ include("@core/entries/index/_filters.twig") }}
+        {% endif %}
+
+        <div class="results-col">
+          {{ include("@core/entries/index/_entries.twig") }}
+          {% if not params.isInIframe and params.showexportbuttons %}
+            {{ include("@core/entries/index/_export_buttons.twig") }}
+          {% endif %}
+        </div>
+
+      </div>
+    {% else %}
       {{ include("@core/entries/index/_entries.twig") }}
       {% if not params.isInIframe and params.showexportbuttons %}
         {{ include("@core/entries/index/_export_buttons.twig") }}
       {% endif %}
-    </div>
-
+    {% endif %}
   </div>
-{% else %}
-  {{ include("@core/entries/index/_entries.twig") }}
-  {% if not params.isInIframe and params.showexportbuttons %}
-    {{ include("@core/entries/index/_export_buttons.twig") }}
-  {% endif %}
-{% endif %}
-
+</div>
