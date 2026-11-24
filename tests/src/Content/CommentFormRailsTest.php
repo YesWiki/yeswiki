@@ -34,7 +34,7 @@ class CommentFormRailsTest extends YesWikiTestCase
             ]);
 
             $this->assertStringContainsString('aceditor-container', $output, 'the comment form renders an editor');
-            $this->assertStringContainsString('actions-builder-app', $output, 'and the actions builder rail');
+            $this->assertStringContainsString('id="actions-builder-panel"', $output, 'and the actions builder rail');
             $this->assertStringContainsString('YesWikiLinkPanel', $output, 'and the link rail');
             $this->assertStringContainsString('YesWikiFilePickerPanel', $output, 'and the file picker rail');
         } finally {
