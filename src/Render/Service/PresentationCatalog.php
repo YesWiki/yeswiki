@@ -13,13 +13,21 @@ use YesWiki\Render\Entity\Presentation;
 class PresentationCatalog
 {
     public const SHARED_DIR = 'templates/presentations';
-    public const DYNAMIC_DIR = 'templates/entries/index-dynamic-templates';
     public const CUSTOM_PREFIX = 'custom/templates/core/';
 
-    /** The server templates that draw entries rather than Items, so the global search cannot offer them. */
+    /** The core server templates that draw entries rather than Items, so the global search cannot offer them. */
     public const ENTRY_PRESENTATIONS = ['map', 'map-and-table', 'calendar'];
 
-    /** Templates outside the two folders that still cannot do without a role (ticket 11). */
+    /** Whether $template is a server template a wiki or an extension added: drawn over the listed entries' Items, which carry the entry itself. */
+    public function isCustomServer(string $template): bool
+    {
+        $presentation = $this->get($template);
+
+        return $presentation !== null && !$presentation->shared
+            && !in_array($presentation->name, self::ENTRY_PRESENTATIONS, true);
+    }
+
+    /** Templates outside `presentations/` that still cannot do without a role (ticket 11). */
     private const LEGACY_REQUIREMENTS = [
         'agenda' => [FieldRole::START_DATE],
         'gogocarto' => [FieldRole::GEOLOCATION],
@@ -136,19 +144,10 @@ class PresentationCatalog
 
         $found = [];
         foreach ($this->files(self::SHARED_DIR) as $name => [$contents, $custom]) {
-            if (PresentationRenderer::knows($name) || in_array($name, self::ENTRY_PRESENTATIONS, true)) {
-                $found[$name] = $this->describe($name, $contents, PresentationRenderer::knows($name), $custom, false);
-            }
+            $found[$name] = $this->describe($name, $contents, PresentationRenderer::knows($name), $custom);
         }
-        foreach ($this->files(self::DYNAMIC_DIR) as $name => [$contents, $custom]) {
-            if (!isset($found[$name])) {
-                $found[$name] = $this->describe($name, $contents, false, $custom, true);
-            }
-        }
-        foreach ($this->extensionFiles() as $name => $contents) {
-            if (!isset($found[$name])) {
-                $found[$name] = $this->describe($name, $contents, false, false, true);
-            }
+        foreach ($this->extensionFiles(self::SHARED_DIR) as $name => $contents) {
+            $found[$name] ??= $this->describe($name, $contents, false, false);
         }
 
         return $this->presentations = $found;
@@ -183,10 +182,10 @@ class PresentationCatalog
         return $files;
     }
 
-    /** @return array<string, string> name => contents of the dynamic templates the active extensions add under their `templates/core/` */
-    private function extensionFiles(): array
+    /** @return array<string, string> name => contents of the templates the active extensions add to $directory under their `templates/core/` */
+    private function extensionFiles(string $directory): array
     {
-        $relative = 'templates/core/' . substr(self::DYNAMIC_DIR, \strlen('templates/'));
+        $relative = 'templates/core/' . substr($directory, \strlen('templates/'));
         $files = [];
         foreach (array_keys($this->extensions->all()) as $extension) {
             if ($extension === 'custom') {
@@ -221,7 +220,7 @@ class PresentationCatalog
         return $matches[1];
     }
 
-    private function describe(string $name, string $contents, bool $shared, bool $custom, bool $dynamic): Presentation
+    private function describe(string $name, string $contents, bool $shared, bool $custom): Presentation
     {
         $header = self::header($contents);
         $category = strtolower($header['category'] ?? '');
@@ -238,7 +237,6 @@ class PresentationCatalog
             $requires,
             $shared,
             $custom,
-            $dynamic,
         );
     }
 

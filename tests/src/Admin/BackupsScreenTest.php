@@ -2,7 +2,7 @@
 
 namespace YesWiki\Test\Admin;
 
-use YesWiki\Admin\Api\BackupsScreenController;
+use YesWiki\Admin\Api\BackupsApiController;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Render\Service\Performer;
@@ -35,9 +35,9 @@ class BackupsScreenTest extends YesWikiTestCase
         parent::tearDown();
     }
 
-    private function screen(): BackupsScreenController
+    private function screen(): BackupsApiController
     {
-        return $this->getWiki()->services->get(BackupsScreenController::class);
+        return $this->getWiki()->services->get(BackupsApiController::class);
     }
 
     public function testTheScreenIsDrawnWithoutVue(): void
@@ -66,9 +66,9 @@ class BackupsScreenTest extends YesWikiTestCase
 
     public function testSizesReadAsPeopleSayThem(): void
     {
-        $this->assertSame('0', BackupsScreenController::readableSize(0));
-        $this->assertSame('512 ', BackupsScreenController::readableSize(512));
-        $this->assertSame('3 M', BackupsScreenController::readableSize(3 * 1024 * 1024));
+        $this->assertSame('0', BackupsApiController::readableSize(0));
+        $this->assertSame('512 ', BackupsApiController::readableSize(512));
+        $this->assertSame('3 M', BackupsApiController::readableSize(3 * 1024 * 1024));
     }
 
     public function testAFetchFinishedWhileFollowedSaysSoAndReloadsTheList(): void

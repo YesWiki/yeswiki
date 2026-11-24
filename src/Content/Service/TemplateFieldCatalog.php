@@ -10,7 +10,7 @@ use YesWiki\Content\Field\TextareaField;
 class TemplateFieldCatalog
 {
     private const ENTRY_TEMPLATE = '~^core/fiche-(\d+)\.twig$~';
-    private const LIST_TEMPLATE = '~^core/entries/index-dynamic-templates/[^/]+\.twig$~';
+    private const LIST_TEMPLATE = '~^core/presentations/[^/_][^/]*\.twig$~';
 
     public function __construct(private readonly FormManager $formManager)
     {
@@ -53,13 +53,9 @@ class TemplateFieldCatalog
     public function fieldsReadBy(string $source): array
     {
         preg_match_all('/\b(?:entry|html|formFields)\.([a-zA-Z_]\w*)/', $source, $reads);
-        $declared = [];
-        if (preg_match_all('/necessary_fields\s*=[^%]*%\}/', $source, $sets) > 0) {
-            preg_match_all('/[\'"]([a-zA-Z_]\w*)[\'"]/', implode(' ', $sets[0]), $names);
-            $declared = $names[1];
-        }
+        preg_match_all('/entryField\(\s*item\.entry\s*,\s*[\'"]([a-zA-Z_]\w*)[\'"]/', $source, $rendered);
 
-        return array_values(array_unique([...$reads[1], ...$declared]));
+        return array_values(array_unique([...$reads[1], ...$rendered[1]]));
     }
 
     /**

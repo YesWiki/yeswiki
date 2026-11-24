@@ -57,9 +57,9 @@ class TemplateFieldCatalogTest extends YesWikiTestCase
 
     public function testAListTemplateFindsItsFormFromWhatItReads(): void
     {
-        $source = "{% set necessary_fields = ['bf_catalogue_long'] %}\n<a v-text=\"entry.bf_catalogue_titre\"></a>";
+        $source = "{{ entryField(item.entry, 'bf_catalogue_long') }}\n<a>{{ item.entry.bf_catalogue_titre }}</a>";
 
-        $found = $this->catalog()->forTemplate('core/entries/index-dynamic-templates/probe.twig', $source);
+        $found = $this->catalog()->forTemplate('core/presentations/probe.twig', $source);
 
         $this->assertNotNull($found);
         $this->assertSame('list', $found['kind']);
@@ -72,6 +72,11 @@ class TemplateFieldCatalogTest extends YesWikiTestCase
 
         $this->assertNotNull($found);
         $this->assertSame([false, true], array_column($found['forms'][0]['fields'], 'html'));
+    }
+
+    public function testAPartialOfTheListTemplatesHasNoFields(): void
+    {
+        $this->assertNull($this->catalog()->forTemplate('core/presentations/_item-fields.twig', '{{ item.entry.bf_titre }}'));
     }
 
     public function testAnyOtherTemplateHasNoFields(): void

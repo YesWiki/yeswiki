@@ -13,7 +13,7 @@ require_once 'tests/YesWikiTestCase.php';
 /** A list template declares itself in its own header, and the form screen offers the ones a form can draw. */
 class PresentationCatalogTest extends YesWikiTestCase
 {
-    private const CUSTOM_DIR = PresentationCatalog::CUSTOM_PREFIX . 'entries/index-dynamic-templates';
+    private const CUSTOM_DIR = PresentationCatalog::CUSTOM_PREFIX . 'presentations';
     private const WITH_HEADER = self::CUSTOM_DIR . '/zz-probe-gallery.twig';
     private const BARE = self::CUSTOM_DIR . '/zz-probe-bare.twig';
 
@@ -35,7 +35,7 @@ class PresentationCatalogTest extends YesWikiTestCase
     {
         @unlink(self::WITH_HEADER);
         @unlink(self::BARE);
-        $this->getWiki()->services->get(\YesWiki\Render\Service\TemplateOverrides::class)->delete('core/entries/index-dynamic-templates/zz-probe-saved.twig');
+        $this->getWiki()->services->get(\YesWiki\Render\Service\TemplateOverrides::class)->delete('core/presentations/zz-probe-saved.twig');
         parent::tearDown();
     }
 
@@ -54,12 +54,15 @@ class PresentationCatalogTest extends YesWikiTestCase
         );
     }
 
-    public function testAnActiveExtensionsDynamicTemplateIsOfferedAndAnInactiveOnesIsNot(): void
+    public function testAnActiveExtensionsTemplateIsOfferedAndAnInactiveOnesIsNot(): void
     {
         $names = fn (PresentationCatalog $catalog): array => array_map(fn ($p) => $p->name, $catalog->all());
 
-        $this->assertNotContains('dynamic-links-example', $names($this->catalog()));
-        $this->assertContains('dynamic-links-example', $names($this->catalog(['helloworld' => YESWIKI_PROGRAM_DIR . '/extensions/helloworld/'])));
+        $this->assertNotContains('links-example', $names($this->catalog()));
+        $withExtension = $this->catalog(['helloworld' => YESWIKI_PROGRAM_DIR . '/extensions/helloworld/']);
+        $this->assertContains('links-example', $names($withExtension));
+        $this->assertTrue($withExtension->isCustomServer('links-example'), 'a template in an extension\'s presentations/ is drawn on the server');
+        $this->assertSame('Liens (exemple)', $withExtension->get('links-example')?->label);
     }
 
     public function testTheShippedTemplatesAreListedAsTheirHeadersSay(): void
@@ -84,7 +87,6 @@ class PresentationCatalogTest extends YesWikiTestCase
             $this->assertSame($requires, $byName[$name]->requires, "{$name} requires the wrong roles");
             $this->assertSame($shared, $byName[$name]->shared, "{$name} is (not) a shared shape");
             $this->assertFalse($byName[$name]->custom);
-            $this->assertFalse($byName[$name]->dynamic, "{$name} is drawn by Vue");
         }
         $this->assertSame(_t('PRESENTATION_MAP_AND_TABLE'), $byName['map-and-table']->label, 'the label is not translated');
         $this->assertSame('pin', $byName['map-and-table']->icon, 'an explicit icon is not kept');
@@ -102,8 +104,8 @@ class PresentationCatalogTest extends YesWikiTestCase
     public function testACustomTemplateIsListedWithWhatItsHeaderDeclares(): void
     {
         $this->makeDirectory(self::CUSTOM_DIR);
-        file_put_contents(self::WITH_HEADER, "{# presentation\n   label: Galerie photo\n   category: card\n   icon: photo\n   requires: image, description\n#}\n{% extends '@core/entries/index-dynamic.twig' %}\n");
-        file_put_contents(self::BARE, "{% extends '@core/entries/index-dynamic.twig' %}\n");
+        file_put_contents(self::WITH_HEADER, "{# presentation\n   label: Galerie photo\n   category: card\n   icon: photo\n   requires: image, description\n#}\n<ul>{% for item in items %}<li>{{ item.title }}</li>{% endfor %}</ul>\n");
+        file_put_contents(self::BARE, "<ul>{% for item in items %}<li>{{ item.title }}</li>{% endfor %}</ul>\n");
 
         $catalog = $this->catalog();
 
@@ -115,7 +117,7 @@ class PresentationCatalogTest extends YesWikiTestCase
         $this->assertSame([FieldRole::IMAGE, FieldRole::DESCRIPTION], $gallery->requires);
         $this->assertTrue($gallery->custom);
         $this->assertFalse($gallery->shared);
-        $this->assertTrue($gallery->dynamic, 'a template in the Vue folder is not drawn by Vue');
+        $this->assertTrue($this->catalog()->isCustomServer('zz-probe-gallery'), 'a wiki\'s template is drawn on the server');
 
         $bare = $catalog->get('zz-probe-bare.twig');
         $this->assertNotNull($bare, 'a template with no header is not listed');
@@ -128,8 +130,8 @@ class PresentationCatalogTest extends YesWikiTestCase
     public function testAPresentationSavedInTheDatabaseIsListed(): void
     {
         $this->getWiki()->services->get(\YesWiki\Render\Service\TemplateOverrides::class)->save(
-            'core/entries/index-dynamic-templates/zz-probe-saved.twig',
-            "{# presentation\n   label: Enregistrée\n   category: list\n#}\n{% extends '@core/entries/index-dynamic.twig' %}\n"
+            'core/presentations/zz-probe-saved.twig',
+            "{# presentation\n   label: Enregistrée\n   category: list\n#}\n<ul></ul>\n"
         );
 
         $byName = array_column(array_map(fn ($p) => ['name' => $p->name, 'p' => $p], $this->catalog()->all()), 'p', 'name');

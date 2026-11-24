@@ -792,15 +792,19 @@ a.yw-item__title:focus-visible {
 }
 
 .list-form
-  .list-node-container:not([data-depth='1'][data-index='0'])
+  .list-node-container:not([data-list-root] > :first-child)
   > .list-node
   > .yw-input,
 .list-form
-  .list-node-container:not([data-depth='1'][data-index='0'])
+  .list-node-container:not([data-list-root] > :first-child)
   > .list-node
   > .input-color-field
   > .yw-input {
   border-top: 0;
+}
+
+.list-form [data-list-children][hidden] {
+  display: none;
 }
 
 .list-form .list-node .input-id {

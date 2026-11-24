@@ -72,7 +72,7 @@ class MarkerColourTest extends YesWikiTestCase
             ->markerColorFor($parameter, $field, ['form_id' => self::FORM_ID, 'bf_theme' => $values]);
     }
 
-    public function testTheHashMatchesTheBrowsers(): void
+    public function testEachValueAlwaysLandsOnTheSameToken(): void
     {
         $this->assertSame('var(--yw-category-5)', EntryDisplay::categoryColorFor('1'));
         $this->assertSame('var(--yw-category-6)', EntryDisplay::categoryColorFor('2'));

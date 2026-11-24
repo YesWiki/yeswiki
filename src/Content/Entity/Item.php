@@ -8,6 +8,7 @@ final class Item
     /**
      * @param list<string>                                                                       $categories
      * @param array{filename: string, width: int, height: int, mode: string, token: string}|null $imageResize
+     * @param array<string, mixed>                                                               $entry       the entry the Item stands for, when it is one: what a wiki's own presentation reads its fields from
      */
     public function __construct(
         public readonly string $id,
@@ -26,6 +27,7 @@ final class Item
         public readonly ?array $imageResize = null,
         public readonly ?string $color = null,
         public readonly ?string $icon = null,
+        public readonly array $entry = [],
     ) {
     }
 
@@ -49,6 +51,7 @@ final class Item
             'imageResize' => $this->imageResize,
             'color' => $this->color,
             'icon' => $this->icon,
+            'entry' => $this->entry,
         ];
     }
 }

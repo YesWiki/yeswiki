@@ -3,7 +3,7 @@
 namespace YesWiki\Admin\Action;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Admin\Api\BackupsScreenController;
+use YesWiki\Admin\Api\BackupsApiController;
 use YesWiki\Admin\Entity\PackageTool;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\AutoUpdateService;
@@ -165,7 +165,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
 
                             if (!$vArchiveService->hasValidatedBackup($vForcedUpdateToken)) {
                                 return $this->render('@core/preupdate-backup.twig', [
-                                    'archive' => $this->getService(BackupsScreenController::class)->archiveHtml(['state' => 'autostart', 'package' => (string)$vPackageName]),
+                                    'archive' => $this->getService(BackupsApiController::class)->archiveHtml(['state' => 'autostart', 'package' => (string)$vPackageName]),
                                 ]);
                             }
 

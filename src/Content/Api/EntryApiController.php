@@ -7,13 +7,10 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Content\Controller\EntryController;
-use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\TagAlreadyUsedException;
-use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\CSVManager;
-use YesWiki\Content\Service\EntryExtraFieldsService;
 use YesWiki\Content\Service\EntryFastAccessService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
@@ -29,7 +26,6 @@ use YesWiki\Kernel\Asset\AssetSet;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\SearchManager;
 
 class EntryApiController extends YesWikiController
@@ -315,99 +311,5 @@ class EntryApiController extends YesWikiController
             'Link: <http://www.w3.org/ns/ldp#Resource>; rel="type"',
             'Location: ' . $this->getService(UrlFormatter::class)->href('', $entry['tag']),
         ]);
-    }
-
-    #[Route('/api/entries/bazarlist', methods: ['GET'], options: ['acl' => ['public']], priority: 2)]
-    public function getBazarListData(): ApiResponse
-    {
-        $vBazarListService = $this->getService(BazarListService::class);
-
-        $queryAll = $this->getRequest()->query->all();
-        $formattedGet = array_map(function ($value) {
-            return ($value === 'true') ? true : (($value === 'false') ? false : $value);
-        }, $queryAll);
-
-        $searchfields = $queryAll['searchfields'] ?? null;
-        $searchfields = is_string($searchfields) ? explode(',', urldecode($searchfields)) : $searchfields;
-        $searchfields = $searchfields === null ? [] : (array)$searchfields;
-
-        $vKeywords = isset($queryAll['keywords']) && is_string($queryAll['keywords'])
-            ? urldecode($queryAll['keywords'])
-            : '';
-
-        $formattedGet['keywords'] = $vKeywords;
-        $formattedGet['searchfields'] = $searchfields;
-        $formattedGet['id'] = $queryAll['id'] ?? null;
-
-        $refreshVal = $queryAll['refresh'] ?? null;
-        $forms = $vBazarListService->getForms($formattedGet + ['refresh' => isset($refreshVal) ? in_array($refreshVal, [1, true, '1', 'true'], true) : false]);
-
-        $entries = $vBazarListService->getEntries($formattedGet, $forms);
-
-        $filters = $vBazarListService->getFilters($formattedGet, $entries, $forms);
-
-        $formIds = array_unique(array_map(function ($entry) {
-            return $entry['form_id'];
-        }, $entries));
-        $usedForms = array_filter($forms, function ($form) use ($formIds) {
-            return in_array($form['id'], $formIds);
-        });
-        $usedForms = array_map(function ($f) {
-            return $f['prepared'];
-        }, $usedForms);
-
-        $fieldList = ['tag', PageBody::TITLE, 'bf_titre', 'url', '-is-external-', 'external-data'];
-
-        if (!isset($queryAll['id'])) {
-            $fieldList[] = 'form_id';
-        }
-
-        $colorfield = $queryAll['colorfield'] ?? null;
-        $fieldList = array_merge($fieldList, is_string($colorfield) && $colorfield !== '' ? [$colorfield] : []);
-        $iconfield = $queryAll['iconfield'] ?? null;
-        $fieldList = array_merge($fieldList, is_string($iconfield) && $iconfield !== '' ? [$iconfield] : []);
-
-        $fieldList = array_merge($fieldList, $searchfields);
-
-        foreach (['sortfields', 'displayfields', 'necessary_fields', 'necessaryfields'] as $key) {
-            $fieldList = array_merge($fieldList, (array)($queryAll[$key] ?? []));
-        }
-
-        foreach ($filters as $filter) {
-            $fieldList[] = $filter['propName'];
-        }
-
-        $fieldList = array_values(array_unique(array_filter($fieldList)));
-
-        $entryFieldsService = $this->getService(EntryExtraFieldsService::class);
-
-        $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService) {
-            $entryFieldsService->setEntryId($entry['tag']);
-            $result = [];
-            foreach ($fieldList as $fieldName) {
-                $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['form_id']);
-
-                if ($field instanceof TextareaField && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
-                    $entry[$fieldName] = $this->getService(MarkdownFormatterService::class)->format($entry[$fieldName]);
-                }
-
-                if (!isset($entry[$fieldName]) || (is_string($entry[$fieldName]) && trim($entry[$fieldName]) == '')) {
-                    $entry[$fieldName] = $entryFieldsService->get($fieldName);
-                }
-                $result[] = $entry[$fieldName] ?? null;
-            }
-
-            return $result;
-        }, $entries);
-
-        return new ApiResponse(
-            [
-                'entries' => $entries,
-                'fieldMapping' => $fieldList,
-                'filters' => $filters,
-                'forms' => $usedForms,
-            ],
-            Response::HTTP_OK
-        );
     }
 }

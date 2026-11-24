@@ -846,8 +846,8 @@ constructeur graphique permet de lister les options possibles.
 
 #### 3.1.2. Carte
 
-- **Cluster et facettes** Les options affichage en cluster et filtre par facette
-  ne sont compatibles qu'en activant le rendu dynamique
+- **Cluster et facettes** La carte regroupe les marqueurs proches (`cluster`)
+  et se filtre par facette comme les autres listes.
 - **Afficher les contours de département** (à completer)
 
 ### 3.2. Paramètres des visualisations
@@ -860,11 +860,11 @@ données. Ces filtres sont basés sur les listes, les cases à cocher et les
 boutons radios. Les filtres peuvent être configurés via l'interface composant
 **Afficher les données d'un formulaire**
 
-#### 3.2.2. Tri dynamique des fiches
+#### 3.2.2. Tri des fiches
 
 Accessible en mode avancé lors du paramétrage du composant "Afficher les données
-d'un formulaire". L'option "tri dynamique" permet à l'utilisateurice de trier
-les fiches par n'importe quel champ (titre, date,...).
+d'un formulaire". L'option de tri permet à l'utilisateurice de trier les fiches
+par les champs choisis (titre, date…).
 
 Il conviendra lors du paramètrage de l'affichage du composant de spécifier quels
 champs peuvent servir à l'utilisateurice à trier.

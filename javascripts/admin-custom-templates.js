@@ -1,9 +1,8 @@
 import AceWrapper from './ace-wrapper.js'
 import {
   fillFieldMenu,
+  listInsertions,
   twigInsertions,
-  vueInsertions,
-  withNecessaryField,
 } from './field-picker.js'
 
 /** The field picker of the template being edited, when it has a form behind it. */
@@ -12,33 +11,9 @@ function initFieldPicker(editor) {
   if (!picker) return
   const { kind, forms } = JSON.parse(picker.dataset.ywTemplateFields)
   const select = picker.querySelector('select')
-  const notice = picker.querySelector('[data-yw-template-fields-notice]')
   const menu = picker.querySelector('[data-yw-fb-template-fields]')
-
-  const requireField = (name) => {
-    const source = editor.getValue()
-    const next = withNecessaryField(source, name)
-    notice.hidden = next !== null
-    if (next === null) {
-      notice.textContent = _t('ADMIN_TEMPLATES_NECESSARY_FIELD', {
-        field: name,
-      })
-      return
-    }
-    if (next === source) return
-    const cursor = editor.ace.getCursorPosition()
-    editor.setValue(next)
-    const added = next.split('\n').length - source.split('\n').length
-    editor.ace.moveCursorToPosition({
-      row: cursor.row + added,
-      column: cursor.column,
-    })
-    editor.ace.clearSelection()
-  }
-
-  const insert = ({ text, needs }) => {
+  const insert = ({ text }) => {
     editor.ace.insert(text)
-    if (needs) requireField(needs)
     editor.ace.focus()
   }
 
@@ -49,7 +24,7 @@ function initFieldPicker(editor) {
       fillFieldMenu(
         menu,
         form.fields,
-        kind === 'list' ? vueInsertions : twigInsertions,
+        kind === 'list' ? listInsertions : twigInsertions,
         insert,
       )
     })

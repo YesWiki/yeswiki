@@ -35,7 +35,7 @@ DynTable/BazarMap/BazarCalendar and the actions-builder app) was grandfathered
 as-is in ticket 24 (user-confirmed boundary): this ADR governs new core JS,
 which remains vanilla + htmx; the Vue island neither grew nor was it ported to
 something heavier — its jQuery/DataTables usage was removed like everywhere
-else. Since then the lists, the map and the calendar moved to server templates
-with vanilla JS (`entry-map.js`, `entry-calendar.js`); Vue still draws the
-custom templates a wiki keeps in `index-dynamic-templates/` and the other
-screens it was already used on.
+else. Since then every list template moved to the server, with vanilla JS
+where a template needs some (`entry-map.js`, `entry-calendar.js`), and the
+Vue "dynamic entries index" is gone; a wiki writes its own list templates in
+`presentations/`. Vue remains only in the actions builder.

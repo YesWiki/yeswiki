@@ -15,7 +15,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
  * The backups screen's parts as HTML for htmx: making a backup, fetching one from another wiki, restoring one, and the list.
  * A part that follows a job asks for itself again every second until the job ends; the list reloads on `ywBackupsChanged`.
  */
-class BackupsScreenController extends YesWikiController
+class BackupsApiController extends YesWikiController
 {
     private const ADMIN_ACL = ['@admins'];
     private const CHANGED = 'ywBackupsChanged';

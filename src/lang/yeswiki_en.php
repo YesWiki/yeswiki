@@ -331,8 +331,6 @@ You are on %{CURRENTPHPVERSION}.
     'AB_bazartableau_displayimagesasthumbnails_label' => 'Display images as thumbnails',
     'AB_LEFT' => 'Left',
     'AB_bazar_commons_colorfield_label' => 'Field for color',
-    'AB_bazar_commons_dynamic_label' => 'Dynamic rendering',
-    'AB_bazar_commons_search_label_dynamic' => 'Dynamic search',
     'AB_bazar_commons_title' => 'Display',
     'AB_RIGHT' => 'Right',
     'AB_bazar_commons2_filter_on_date_on_current_month' => 'in the coming month',

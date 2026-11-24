@@ -1,0 +1,15 @@
+{# presentation
+   label: Liens (exemple)
+   category: list
+#}
+{# An extension's own list template: each entry as a link, with one of its fields rendered as its form shows it. #}
+<ul class="helloworld-links">
+  {% for item in items %}
+    <li>
+      <a href="{{ item.url }}">{{ item.title }}</a>
+      {{ entryField(item.entry, params.helloworldfield|default('bf_description')) }}
+    </li>
+  {% else %}
+    <li>{{ _t('BAZ_NO_RESULT') }}</li>
+  {% endfor %}
+</ul>

@@ -112,7 +112,7 @@ class EntryDisplay
     }
 
     /**
-     * The colour a map draws an entry in, by the order category-colour.js follows, or '' for the stylesheet's.
+     * The colour a list or a map draws an entry in: the mapped one, then the list's, then a palette token; '' for the stylesheet's.
      *
      * @param array<string, mixed> $entry
      */

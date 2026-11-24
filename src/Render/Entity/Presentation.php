@@ -27,7 +27,6 @@ final class Presentation
         public readonly array $requires = [],
         public readonly bool $shared = false,
         public readonly bool $custom = false,
-        public readonly bool $dynamic = false,
     ) {
     }
 
@@ -41,7 +40,7 @@ final class Presentation
         return _t('PRESENTATION_' . strtoupper($category));
     }
 
-    /** @return array{name: string, label: string, icon: string, category: string, requires: list<string>, shared: bool, custom: bool, dynamic: bool} */
+    /** @return array{name: string, label: string, icon: string, category: string, requires: list<string>, shared: bool, custom: bool} */
     public function toArray(): array
     {
         return [
@@ -52,7 +51,6 @@ final class Presentation
             'requires' => $this->requires,
             'shared' => $this->shared,
             'custom' => $this->custom,
-            'dynamic' => $this->dynamic,
         ];
     }
 }

@@ -44,8 +44,7 @@
     "temporal-polyfill": "^1.0.8",
     "vditor": "^4.0.1",
     "vue": "^3.2.47",
-    "vue-select": "4.0.0-beta.6",
-    "vuedraggable": "^4.1.0"
+    "vue-select": "4.0.0-beta.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

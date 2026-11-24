@@ -310,6 +310,15 @@ class TemplateEngine
             return $this->legacyIconToSprite(is_string($classString) ? $classString : null, $extraClass);
         }, ['is_safe' => ['html']]));
 
+        $this->twig->addFunction(new \Twig\TwigFunction('entryField', function ($entry, $name) {
+            if (!is_array($entry) || !is_string($name) || $name === '') {
+                return '';
+            }
+            $field = $this->container->get(FormManager::class)->findFieldFromNameOrPropertyName($name, (string)($entry['form_id'] ?? $entry['id_typeannonce'] ?? ''));
+
+            return $field === null ? '' : (string)$field->renderStaticIfPermitted($entry);
+        }, ['is_safe' => ['html']]));
+
         $this->twig->addFunction(new \Twig\TwigFunction('nodeIcon', function ($source, $value) {
             return $this->renderNodeIcon((string)$source, (string)$value) ?? '';
         }, ['is_safe' => ['html']]));

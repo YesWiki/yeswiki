@@ -28,7 +28,7 @@
         {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
         {{ slot.cta(item, params) }}
       </div>
-      {{ slot.footer(item) }}
+      {% block item_footer %}{{ slot.footer(item) }}{% endblock %}
     </article>
   {% else %}
     <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>

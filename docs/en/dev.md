@@ -52,12 +52,57 @@ A list is rendered on the server. Search, sort, facets and pages swap the result
 
 #### List templates
 
-A list template is a Twig file in one of two folders, and the wiki reads what it is from the file itself:
+A list template is a Twig file in `templates/presentations/`. The wiki reads what it is from the file itself. The shared shapes `card`, `list`, `table` and `timeline` are drawn over Items and work for every Source, a form or a feed alike. `map`, `map-and-table` and `calendar` are drawn over entries, so the global search does not offer them.
 
-- `templates/presentations/` holds the server templates. The shared shapes `card`, `list`, `table` and `timeline` are drawn over Items and work for every Source, a form or a feed alike. `map`, `map-and-table` and `calendar` are drawn over entries, so the global search does not offer them.
-- `templates/entries/index-dynamic-templates/` holds the Vue templates. Core ships none any more, only the partials `_card.twig` and `_table.twig` that a Vue template can extend.
+A wiki adds its own template, or overrides a shipped one, under `custom/templates/core/presentations/`. An extension does the same under its own `templates/core/presentations/`. Files whose name starts with `_` are partials and are never listed. The actions builder offers every template a wiki or an extension adds, under its label.
 
-A wiki adds its own or overrides a shipped one under `custom/templates/core/` at the same path: `custom/templates/core/entries/index-dynamic-templates/my-template.twig`. Files whose name starts with `_` are partials and are never listed.
+Use a template with `{{entrylist id="1" template="my-template"}}`. Search, sort, facets and pages work around it as they do for the shipped shapes.
+
+##### What a template gets
+
+- `items`: the listed entries, already searched, filtered, sorted and cut to the page.
+- `params`: the action's arguments, so a template can read its own settings, such as `{{entrylist template="my-template" mysetting="x"}}`.
+
+Each item has these keys:
+
+| Key                                                           | Value                                                                                            |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `title`, `url`                                                | The entry's title and address.                                                                   |
+| `subtitle`, `description`, `image`, `date`, `badge`, `footer` | Filled from the `displayfields` the action sets, empty otherwise.                                |
+| `color`, `icon`                                               | The colour and the icon `colorfield` and `iconfield` give the entry.                             |
+| `entry`                                                       | The entry itself, with every field the reader may read: `item.entry.bf_ville`, `item.entry.tag`. |
+
+`entryField(item.entry, 'bf_name')` renders one field as the entry's page shows it, label included, and renders nothing for a field the reader may not see.
+
+The macros in `@core/presentations/_item-fields.twig` draw the title, the image, the badge and the button the way the shipped shapes do. While writing a template, `{{ dump(items|first) }}` shows what one item holds.
+
+##### Example
+
+```twig
+{# custom/templates/core/presentations/my-template.twig #}
+{# presentation
+   label: My cards
+   category: card
+   requires: image
+#}
+{% import "@core/presentations/_item-fields.twig" as slot %}
+{{ include_css('custom/styles/my-template.css') }}
+<div class="my-cards">
+  {% for item in items %}
+    <article>
+      {{ slot.image(item, item.title, 400) }}
+      {{ slot.title(item, params) }}
+      {{ entryField(item.entry, 'bf_ville') }}
+    </article>
+  {% else %}
+    <p>{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>
+```
+
+The `helloworld` extension ships one, `links-example`.
+
+##### The header
 
 Every template opens with a header comment that names it and says what it needs:
 
@@ -68,7 +113,6 @@ Every template opens with a header comment that names it and says what it needs:
    icon: map-2
    requires: geolocation
 #}
-{% extends "@core/entries/index-dynamic.twig" %}
 ```
 
 | Key        | Meaning                                                                                                                                                        |
@@ -80,130 +124,27 @@ Every template opens with a header comment that names it and says what it needs:
 
 `PresentationCatalog` reads these headers. A form's own screen (`/?MyForm`) offers every template whose `requires` the form's fields satisfy, grouped by category, and a list rendered over a form that lacks a required role shows a warning naming it instead of coming out empty. A file with no header is still listed, under its file name, in the `list` category.
 
-Use a template with `{{entrylist id="1" template="my-template"}}`. The folder it lives in decides how it renders: a shared shape on the server, a Vue template in the browser. A template name means one file only, so a Vue template cannot be called `card`, `list`, `table` or `timeline`.
+##### Extending a shipped template
 
-##### VueJs Template
-
-The content inside block display_entries is a `VueJs` template, check Vue documentation.
-
-Because the syntax `{{ }}` is used by both `twig` and `vuejs`, when you need to display content in VueJs should do either `<span v-html="entry.bf_titre"></span>` or `{{ "{{ entry.bf_titre }}" }}`
-
-Also, because twig downcase all the html, when using vue syntax you cannot use PascalCase, you should use dash-case instead
-Example: `<DemoComponent :myPop="test" />` should be written `<Demo-Component :my-prop="test" />`
-
-You should istall VueJS browser extensions (the legacy version because we are using Vue 2), it will help you for debugging
-
-##### Configure the data to be loaded
-
-In order to optimize the request, dynamic bazalist loads by default only the minimal amount of data for each entry. You can add more data with `necessary_fields`
+`card.twig` has a block, `item_footer`, under each card. A template can extend it and add to that block:
 
 ```twig
-{% extends "@bazar/entries/index-dynamic.twig" %}
+{# custom/templates/core/presentations/my-cards.twig #}
+{# presentation
+   label: Cards with a note
+   category: card
+#}
+{% extends "@core/presentations/card.twig" %}
 
-{% set necessary_fields = ['bf_description'] %}
-
-{% block display_entries %}
-  <div v-for="entry in entriesToDisplay">
-    <h2 v-html="entry.bf_titre"></h2>
-    <span v-html="entry.bf_description"></span>
-  </div>
-{% endblock %}
-```
-
-| **Default Data Sent**            |
-| -------------------------------- |
-| `id_fiche`                       |
-| `bf_titre`                       |
-| `url`                            |
-| Alls fields needed for searching |
-| Alls fields needed for filtering |
-| Alls fields needed for sorting   |
-
-| **Available Fields**                                              |
-| ----------------------------------------------------------------- |
-| Alls fields configured in your form. For example `bf_description` |
-
-| **Available Metadata Fields** |
-| ----------------------------- |
-| `owner`                       |
-| `date_creation_fiche`         |
-| `date_maj_fiche`              |
-| `comments`                    |
-| `comments_count`              |
-| `reactions`                   |
-| `reactions_count`             |
-| `triples`                     |
-
-##### Debuging
-
-Tip: You can display the currently loaded data with `<pre v-html="entry"></pre>`
-
-```twig
-{% extends "@bazar/entries/index-dynamic.twig" %}
-
-{% block display_entries %}
-  <div v-for="entry in entriesToDisplay">
-    <pre v-html="entry"></pre>
-  </div>
-{% endblock %}
-```
-
-##### Override existing template
-
-Existing yeswiki templates contains block declaration so you can easily override specific parts, for example
-
-```twig
-{# custom/templates/core/entries/index-dynamic-templates/my-template.twig #}
-{% extends "@core/entries/index-dynamic-templates/_card.twig" %}
-
-{% block area_footer %}
-  My custom card footer
+{% block item_footer %}
   {{ parent() }}
-{% endblock %}
-
-{% block extra %}
-  Something more
+  <p class="my-note">{{ item.entry.bf_note }}</p>
 {% endblock %}
 ```
 
-See the code of [existing templates](https://github.com/YesWiki/yeswiki/tree/doryphore-dev/tools/bazar/templates/entries/index-dynamic-templates)
+##### Adding behaviour
 
-##### More complex templates
-
-You can also include dedicated Vue components, in order to introduce your own VueJs javascript code.
-
-```twig
-{# custom/templates/core/entries/index-dynamic-templates/my-template.twig #}
-{% extends "@bazar/entries/index-dynamic.twig" %}
-
-{% block assets %}
-  {{ include_javascript('custom/javascripts/bazar/DemoComponent.js', false, true) }}
-{% endblock %}
-
-{% block display_entries %}
-  <Demo-Component v-for="entry in entries" :entry="entry"/>
-{% endblock %}
-```
-
-```js
-// custom/javascripts/bazar/DemoComponent.js
-Vue.component('DemoComponent', {
-  props: ['entry'],
-  computed: {
-    title() {
-      // this.$root will let you access all properties from index-dynamic-templates.js
-      if ((this.$root.params.greeting = 'yes'))
-        return `Hello ${this.entry.given_name}`
-      return this.entry.bf_titre
-    },
-  },
-  template: `
-    <div>
-      {{ title }}
-    </div>
-  `,
-})
-```
+A template that needs JavaScript includes a module with `include_javascript('custom/javascripts/my-template.js', false, true)` and writes plain JavaScript: a custom element, or `ywInitEach('.my-cards', (element) => …)`, which also runs on the results htmx swaps in after a search or a facet. Something slow to compute for each item can be loaded once the item comes into view, with htmx: `<div hx-get="{{ url({ tag: 'api/my/route/' ~ item.entry.tag }) }}" hx-trigger="revealed" hx-swap="outerHTML"></div>`.
 
 ### Customize any templates from the codebase
 

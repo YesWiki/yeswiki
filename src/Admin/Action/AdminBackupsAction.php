@@ -2,7 +2,7 @@
 
 namespace YesWiki\Admin\Action;
 
-use YesWiki\Admin\Api\BackupsScreenController;
+use YesWiki\Admin\Api\BackupsApiController;
 use YesWiki\Admin\Service\ArchiveSchedule;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\JobsOverview;
@@ -68,7 +68,7 @@ class AdminBackupsAction extends YesWikiAction implements RegisteredAction, Prov
             ]);
         }
 
-        $screen = $this->getService(BackupsScreenController::class);
+        $screen = $this->getService(BackupsApiController::class);
         $remoteStatus = $this->getService(RemoteBackupService::class)->status();
 
         return $this->render('@core/actions/admin-backups.twig', [

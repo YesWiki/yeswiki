@@ -245,14 +245,14 @@ test('an entry template offers the fields of the form in its name', async ({
   expect(await editorText(page)).toContain('{{ html.bf_nom|raw }}')
 })
 
-test('a list template finds its form from what it reads, and loads what it inserts', async ({
+test('a list template finds its form from what it reads, and inserts what the server draws', async ({
   page,
 }) => {
-  const probe = 'core/entries/index-dynamic-templates/picker-probe.twig'
+  const probe = 'core/presentations/picker-probe.twig'
   await writeProbe(
     page,
     probe,
-    `{% extends "@core/entries/index-dynamic.twig" %}\n{% set necessary_fields = ['bf_prenom', 'bf_fonction'] %}\n`,
+    `{% for item in items %}{{ item.entry.bf_prenom }} {{ entryField(item.entry, 'bf_fonction') }}\n{% endfor %}\n`,
   )
   await openProbe(page, probe)
 
@@ -261,26 +261,7 @@ test('a list template finds its form from what it reads, and loads what it inser
   )
   await pickFirstField(page, 'Valeur brute')
 
-  const source = await editorText(page)
-  expect(source).toContain('<span v-text="entry.bf_nom"></span>')
-  expect(source).toContain("['bf_prenom', 'bf_fonction', 'bf_nom']")
-})
-
-test('a computed necessary_fields is left alone, with a word about it', async ({
-  page,
-}) => {
-  const probe = 'core/entries/index-dynamic-templates/picker-probe.twig'
-  await writeProbe(
-    page,
-    probe,
-    `{% extends "@core/entries/index-dynamic.twig" %}\n{% set necessary_fields = (necessary_fields|default([]))|merge(['bf_prenom']) %}\n`,
-  )
-  await openProbe(page, probe)
-  await pickFirstField(page, 'Valeur brute')
-
-  await expect(page.locator('[data-yw-template-fields-notice]')).toContainText(
-    'necessary_fields',
-  )
+  expect(await editorText(page)).toContain('{{ item.entry.bf_nom }}')
 })
 
 test('a template with no form behind it has no field picker', async ({

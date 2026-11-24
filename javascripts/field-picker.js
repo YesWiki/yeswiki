@@ -35,48 +35,26 @@ export function twigInsertions({ name, key, stored }) {
   ]
 }
 
-/** What a list template can write for a field: Vue reads stored values, and only long text may be read as HTML. */
-export function vueInsertions({ key, label, html }) {
-  const path = twigAccess('entry', key)
-  const quoted = path.replace(/"/g, '&quot;')
+/** What a list template can write for a field: the label, the field as the entry shows it, and the stored value. */
+export function listInsertions({ name, key, label, stored }) {
   return [
     {
       label: _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_LABEL'),
       text: escapeHtml(label),
     },
-    ...(html
+    {
+      label: _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_HTML'),
+      text: `{{ entryField(item.entry, '${String(name).replace(/'/g, "\\'")}') }}`,
+    },
+    ...(stored
       ? [
           {
-            label: _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_HTML'),
-            text: `<span v-html="${quoted}"></span>`,
-            needs: key,
+            label: _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_RAW'),
+            text: `{{ ${twigAccess('item.entry', key)} }}`,
           },
         ]
       : []),
-    {
-      label: _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_RAW'),
-      text: `<span v-text="${quoted}"></span>`,
-      needs: key,
-    },
   ]
-}
-
-/** The source with $name in its necessary_fields, or null when that list is not a literal this can rewrite. */
-export function withNecessaryField(source, name) {
-  const literal =
-    /(\{%-?\s*set\s+necessary_fields\s*=\s*\[)([^\]]*)(\]\s*-?%\})/.exec(source)
-  if (literal) {
-    const listed = literal[2].match(/[\w-]+/g) || []
-    if (listed.includes(name)) return source
-    const items = literal[2].trim()
-    const list = items ? `${items}, '${name}'` : `'${name}'`
-    return source.replace(literal[0], `${literal[1]}${list}${literal[3]}`)
-  }
-  if (source.includes('necessary_fields')) return null
-  const parent = /\{%-?\s*extends\s[^%]*%\}[^\n]*\n/.exec(source)
-  if (!parent) return null
-  const at = parent.index + parent[0].length
-  return `${source.slice(0, at)}\n{% set necessary_fields = ['${name}'] %}\n${source.slice(at)}`
 }
 
 /** Fill the dropdown with a row per field and a button per thing it can write. */

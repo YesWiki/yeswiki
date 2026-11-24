@@ -389,6 +389,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 imageResize: $imageResize,
                 color: $this->itemColor($entry),
                 icon: $this->itemIcon($entry),
+                entry: $entry,
             );
         }
 
@@ -1252,6 +1253,20 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings());
         }
+        foreach ($this->getService(PresentationCatalog::class)->all() as $presentation) {
+            if ($presentation->shared || in_array($presentation->name, PresentationCatalog::ENTRY_PRESENTATIONS, true) || in_array($presentation->name . '.twig', $files, true)) {
+                continue;
+            }
+            $components[] = Component::for('list-template-' . $presentation->name)
+                ->writes('entrylist')
+                ->pin('template', $presentation->name)
+                ->category(Category::Lists)
+                ->label($presentation->label)
+                ->icon($presentation->icon)
+                ->previewHeight('450px')
+                ->settings(self::formSetting())
+                ->group(self::commonSettings(), self::commonDisplaySettings());
+        }
 
         return $components;
     }
@@ -1265,7 +1280,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             Setting::choice('search', [
                 'true' => _t('AB_attach_yes'),
                 'false' => _t('AB_attach_no'),
-                'dynamic' => _t('AB_bazar_commons_search_label_dynamic'),
             ])
                 ->label(_t('AB_bazar_commons_search_label'))
                 ->withIcon('search'),
@@ -1274,7 +1288,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ->default('bf_titre')
                 ->multiple()
                 ->showIf([
-                    'search' => 'dynamic',
+                    'search' => 'true',
                 ])
                 ->onlyFor([
                     'entrylist',
@@ -1505,24 +1519,12 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         }
 
         $bareTemplate = (string)preg_replace('/\.(twig|tpl\.html)$/', '', (string)$template);
-        $presentation = $this->getService(PresentationCatalog::class)->get($bareTemplate);
-        $dynamic = $presentation !== null && $presentation->dynamic;
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
         $searchfields = empty($searchfields) ? [PageBody::TITLE] : $searchfields;
 
         $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || str_starts_with($template, 'agenda'));
 
-        $search = !isset($arg['search'])
-            ? null
-            : (
-                $arg['search'] === 'dynamic'
-                ? $arg['search']
-                : (
-                    in_array($arg['search'], ['true', true, '1', 1], true)
-                    ? 'true'
-                    : null
-                )
-            );
+        $search = in_array($arg['search'] ?? null, ['true', true, '1', 1, 'dynamic'], true) ? 'true' : null;
 
         $blogMode = $bareTemplate === 'blog';
         $requestedSort = self::requestedSort($get->get('sort'));
@@ -1561,7 +1563,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             'agenda' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
             'datefilter' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
 
-            'dynamic' => $dynamic,
             'displayfields' => $displayFields,
 
             'necessary_fields' => $this->formatArray($get->get('necessaryfields') ?? $arg['necessaryfields'] ?? $get->get('necessary_fields') ?? $arg['necessary_fields'] ?? []),
@@ -1624,20 +1625,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         $bazarListService = $this->getService(BazarListService::class);
         $vForms = $bazarListService->getForms($this->arguments);
 
-        if ($this->arguments['dynamic']) {
-            if (isset($this->arguments['zoom'])) {
-                $this->arguments['zoom'] = intval($this->arguments['zoom']);
-            }
-            $currentUser = $this->getService(AuthenticationService::class)->getLoggedUser();
-
-            return $this->render("@core/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
-                'param' => $this->arguments,
-                'params' => $this->arguments,
-                'keywords' => $this->arguments['keywords'],
-                'forms' => $vForms,
-                'currentUserName' => empty($currentUser['name']) ? '' : $currentUser['name'],
-            ]);
-        }
         $entries = $bazarListService->getEntries($this->arguments, $vForms);
         $facetScope = $this->arguments['keywords'] === $this->arguments['fixedKeywords']
             ? $entries
@@ -1792,6 +1779,12 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             }
             if ($templateBaseName === 'tableau') {
                 return $warning . $this->renderTableau($data);
+            }
+            if ($this->getService(PresentationCatalog::class)->isCustomServer((string)$templateBaseName)) {
+                return $warning . $this->render("@core/presentations/{$templateBaseName}.twig", [
+                    'items' => array_map(static fn (Item $item): array => $item->toArray(), $this->itemsFrom($data['entries'])),
+                    'params' => $this->arguments,
+                ]) . $data['pager_links'];
             }
             if (in_array($templateBaseName, PresentationCatalog::ENTRY_PRESENTATIONS, true)) {
                 return $warning . $this->renderEntryPresentation((string)$templateBaseName, $data['entries'], $pForms);

@@ -5,14 +5,14 @@ namespace YesWiki\Content\TemplateData;
 use YesWiki\Content\Attribute\PreparesTemplate;
 use YesWiki\Content\Service\FormManager;
 
-/** The columns the Vue table draws, which only the form knows (was `EntryTableAction::formatArguments()`). */
+/** The columns of the table under a map, which only the form knows (was `EntryTableAction::formatArguments()`). */
 #[PreparesTemplate(['map-and-table'])]
 class PrepareDataTable extends PrepareData
 {
     public function prepare(array $arguments): array
     {
         $bareTemplate = (string)preg_replace('/\.(twig|tpl\.html)$/', '', (string)($arguments['template'] ?? ''));
-        if (empty($arguments['dynamic']) && $bareTemplate !== 'map-and-table') {
+        if ($bareTemplate !== 'map-and-table') {
             return [];
         }
 

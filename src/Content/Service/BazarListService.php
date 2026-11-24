@@ -234,7 +234,6 @@ class BazarListService
     {
         $options = array_merge([
             'groups' => [],
-            'dynamic' => true,
             'groupsexpanded' => false,
         ], $options);
 
@@ -356,22 +355,20 @@ class BazarListService
 
             $filter['collapsed'] = ($index != 0 || ($options['filterposition'] ?? '') === 'top') && !$options['groupsexpanded'];
 
-            if ($options['dynamic'] == false) {
-                $checkedValues = $this->checkedFacets();
+            $checkedValues = $this->checkedFacets();
 
-                $ancestors = self::ancestorsOf($filter['nodes']);
-                $entriesValues = array_map(
-                    fn (array $entry): array => self::withAncestors($this->entryValues($entry, $propName), $ancestors),
-                    array_values($countedEntries ?? $entries)
-                );
-                $countedValues = array_count_values(array_merge([], ...$entriesValues));
-                $adjustedNodes = [];
-                foreach ($filter['nodes'] as $rootNode) {
-                    $adjustedNodes[] = $this->recursivelyInitValuesForNonDynamic($rootNode, $propName, $countedValues, $checkedValues);
-                }
-                $filter['nodes'] = $adjustedNodes;
-                $filter['flatNodes'] = self::flattened($adjustedNodes);
+            $ancestors = self::ancestorsOf($filter['nodes']);
+            $entriesValues = array_map(
+                fn (array $entry): array => self::withAncestors($this->entryValues($entry, $propName), $ancestors),
+                array_values($countedEntries ?? $entries)
+            );
+            $countedValues = array_count_values(array_merge([], ...$entriesValues));
+            $adjustedNodes = [];
+            foreach ($filter['nodes'] as $rootNode) {
+                $adjustedNodes[] = $this->valuesWithCounts($rootNode, $propName, $countedValues, $checkedValues);
             }
+            $filter['nodes'] = $adjustedNodes;
+            $filter['flatNodes'] = self::flattened($adjustedNodes);
             if ($withIdIndexes) {
                 $filters[$filter['propName']] = $filter;
             } else {
@@ -604,7 +601,7 @@ class BazarListService
      *
      * @return array<string, mixed>
      */
-    private function recursivelyInitValuesForNonDynamic($node, $propName, $countedValues, $checkedValues)
+    private function valuesWithCounts($node, $propName, $countedValues, $checkedValues)
     {
         $result = array_merge($node, [
             'id' => $propName . $node['value'],
@@ -615,7 +612,7 @@ class BazarListService
         ]);
 
         foreach ($node['children'] as $childNode) {
-            $result['children'][] = $this->recursivelyInitValuesForNonDynamic($childNode, $propName, $countedValues, $checkedValues);
+            $result['children'][] = $this->valuesWithCounts($childNode, $propName, $countedValues, $checkedValues);
         }
         $result['descendantChecked'] = array_filter(
             $result['children'],

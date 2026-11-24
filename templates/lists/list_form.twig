@@ -1,41 +1,76 @@
-{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
-
 {{ include_javascript('javascripts/vendor/sortablejs/sortable.js') }}
-{{ include_javascript('javascripts/vendor/vuedraggable/vuedraggable.js') }}
 {{ include_javascript('javascripts/list-form.js', false, true) }}
 {{ include_css('styles/yw-entries.css') }}
 
 {{ include_javascript('javascripts/unsaved-changes.js', false, true) }}
 {{ include('@core/file-picker-panel.twig') }}
 
-<form method="post" @submit="onSubmit" class="list-form" data-list="{{ list|json_encode }}"
-      action="{{ url_with({ editlang: editLanguage }) }}" data-yw-unsaved-guard>
-	<div class="yw-form-group">
-		<label class="yw-form-label">
-			<span class="required_symbol">*&nbsp;</span>
-			{{ _t('BAZ_LIST_NAME') }}
-		</label>
-		<div class="controls">
-			<input type="text" v-model="title" name="title" 
-			       placeholder="{{ _t('BAZ_LIST_NAME') }}" class="yw-input" required/>
-		</div>
-	</div>
+{% macro node(node) %}
+  {% set extra = node|filter((value, key) => key not in ['id', 'label', 'color', 'icon', 'children', 'sourceLabel']) %}
+  {% set icon = node.icon is iterable ? node.icon : { source: 'sprite', value: node.icon|default('') } %}
+  <div class="list-node-container" data-list-node {% if extra is not empty %}data-extra="{{ extra|json_encode }}"{% endif %}>
+    <div class="list-node input-prepend input-append input-group">
+      <button type="button" class="btn btn-icon btn-primary input-group-addon btn-expand" data-list-toggle aria-expanded="false" aria-label="{{ _t('LIST_ADD_CHILD_NODE') }}">{{ icon('chevron-down') }}</button>
+      <input type="text" class="yw-input {{ node.sourceLabel|default('') ? 'yw-translate-from__input' : '' }}" data-list-label value="{{ node.label|default('') }}"
+             placeholder="{{ node.sourceLabel|default('') ?: _t('LIST_TEXT') }}" aria-label="{{ _t('LIST_TEXT') }}">
+      <div class="input-group-addon">{{ _t('LIST_KEY') }} :</div>
+      <input type="text" class="yw-input input-id {{ node.id|default('') ? '' : 'error' }}" data-list-id value="{{ node.id|default('') }}" placeholder="{{ _t('LIST_KEY') }}" aria-label="{{ _t('LIST_KEY') }}">
+      <span class="input-color-field">
+        <input type="color" class="yw-input input-color {{ node.color|default('') ? '' : 'input-color--empty' }}" data-list-color
+               value="{{ node.color|default('') ?: '#000000' }}" data-set="{{ node.color|default('') ? '1' : '0' }}" title="{{ _t('LIST_VALUE_COLOR') }}" aria-label="{{ _t('LIST_VALUE_COLOR') }}">
+        <button type="button" class="input-color-pick" data-list-color-pick hidden title="{{ _t('PICK_COLOUR_FROM_SCREEN') }}" aria-label="{{ _t('PICK_COLOUR_FROM_SCREEN') }}">{{ icon('color-picker') }}</button>
+        <button type="button" class="input-color-clear" data-list-color-clear {{ node.color|default('') ? '' : 'hidden' }} title="{{ _t('LIST_VALUE_COLOR_CLEAR') }}" aria-label="{{ _t('LIST_VALUE_COLOR_CLEAR') }}">{{ icon('x') }}</button>
+      </span>
+      <button type="button" class="yw-input input-icon yw-icon-field__button" data-list-icon data-icon="{{ icon|json_encode }}" title="{{ _t('ICON_PICKER_TITLE') }}" aria-label="{{ _t('ICON_PICKER_TITLE') }}">
+        <span class="yw-icon-field__preview">{{ nodeIcon(icon.source|default('sprite'), icon.value|default('')) }}</span>
+      </button>
+      <button type="button" class="btn btn-danger btn-icon input-group-addon" data-list-delete aria-label="{{ _t('DELETE') }}">{{ icon('trash', 'icon-trash') }}</button>
+    </div>
+    <div class="list-node-children" data-list-children hidden>
+      <div class="list-nodes" data-list-nodes>
+        {% for child in node.children|default([]) %}{{ _self.node(child) }}{% endfor %}
+      </div>
+      {{ _self.adder(_t('LIST_ADD_CHILD_NODE')) }}
+    </div>
+  </div>
+{% endmacro %}
 
-	<label class="yw-form-label">{{ _t('BAZ_VALEURS_LISTE') }}</label>
-	<div class="nodes-container">
-		<list-node :node="rootNode" :depth="0" :index="0"></list-node>
-	</div>
+{% macro adder(placeholder) %}
+  <div class="list-new-node input-group input-prepend">
+    <button type="button" class="btn btn-neutral btn-icon input-group-addon btn-add-child" data-list-add aria-label="{{ placeholder }}">{{ icon('plus') }}</button>
+    <input type="text" class="yw-input" data-list-new placeholder="{{ placeholder }}" aria-label="{{ placeholder }}">
+  </div>
+{% endmacro %}
 
-	<input type="hidden" name="nodes" :value="jsonNodes" />
+<form method="post" class="list-form" action="{{ url_with({ editlang: editLanguage|default(null) }) }}" data-yw-unsaved-guard
+      data-list-form data-missing-ids="{{ _t('LIST_ERROR_MISSING_IDS') }}" data-duplicate-ids="{{ _t('LIST_ERROR_DUPLICATES_IDS') }}">
+  <div class="yw-form-group">
+    <label class="yw-form-label" for="list-title">
+      <span class="required_symbol">*&nbsp;</span>
+      {{ _t('BAZ_LIST_NAME') }}
+    </label>
+    <div class="controls">
+      <input type="text" id="list-title" name="title" value="{{ list.title|default('') }}" placeholder="{{ list.sourceTitle|default('') ?: _t('BAZ_LIST_NAME') }}" class="yw-input" required>
+    </div>
+  </div>
 
-	<div class="form-actions yw-form-group">
-		<div class="col-sm-9 col-sm-offset-3">
-			<button class="yw-btn yw-btn--primary" type="submit" name="submit">
-				{{ _t('BAZ_SAVE') }}
-			</button>
-			<a class="yw-btn" href="{{ url({ tag: 'dashboard/lists', params: { view: 'listes' }})|raw }}">
-				{{ _t('BAZ_ANNULER') }}
-			</a>
-		</div>
-	</div>
-</div>
+  <label class="yw-form-label">{{ _t('BAZ_VALEURS_LISTE') }}</label>
+  <div class="nodes-container">
+    <div class="list-node-children root">
+      <div class="list-nodes" data-list-nodes data-list-root>
+        {% for node in list.nodes|default([]) %}{{ _self.node(node) }}{% endfor %}
+      </div>
+      {{ _self.adder(_t('LIST_ADD_NODE')) }}
+    </div>
+  </div>
+  <template data-list-node-template>{{ _self.node({ id: '', label: '', color: '', icon: { source: 'sprite', value: '' }, children: [] }) }}</template>
+
+  <input type="hidden" name="nodes" value="{{ list.nodes|default([])|json_encode }}" data-list-json>
+
+  <div class="form-actions yw-form-group">
+    <div class="col-sm-9 col-sm-offset-3">
+      <button class="yw-btn yw-btn--primary" type="submit" name="submit">{{ _t('BAZ_SAVE') }}</button>
+      <a class="yw-btn" href="{{ url({ tag: 'dashboard/lists', params: { view: 'listes' }})|raw }}">{{ _t('BAZ_ANNULER') }}</a>
+    </div>
+  </div>
+</form>
