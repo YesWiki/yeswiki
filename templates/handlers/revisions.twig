@@ -1,91 +1,97 @@
-{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
-{{ include_javascript('javascripts/handlers/revisions.js', false, true) }}
 {{ include_css('styles/yw-admin.css') }}
+{% set views = {
+  current: isTemplate ? _t('REVISIONS_CODE') : _t('REVISIONS_PREVIEW'),
+  commit_diff: _t('REVISIONS_COMMIT_DIFF'),
+  diff: _t('REVISIONS_DIFF'),
+} %}
+{% macro link(revision, view, code) %}{{ url({ handler: 'revisions', params: { revision: revision.id, show: view == 'current' ? null : view, code: code ? '1' : null } }) }}{% endmacro %}
+{% import _self as revisions %}
 
-<div class="revisions-container" 
-     data-revisions="{{ revisions|json_encode }}" 
-     data-revisions-count="{{ revisionsCount }}"
-     data-is-entry="{{ isEntry }}"
-     data-is-template="{{ isTemplate ? '1' : '' }}">
-  <template v-if="selectedRevision">
-
+<div class="revisions-container" id="revisions" hx-boost="true" hx-target="#revisions" hx-select="#revisions" hx-swap="outerHTML" hx-push-url="true">
+  {% if selected %}
     <div class="revision-page-title">
-      <a class="btn btn-sm btn-default" href="{{ isTemplate ? url({ tag: 'admin/custom-templates', params: {file: templatePath} }) : url({}) }}">
-        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg>{{  _t('GO_BACK') }}
+      <a class="btn btn-sm btn-default" hx-boost="false" href="{{ isTemplate ? url({ tag: 'admin/custom-templates', params: {file: templatePath} }) : url({}) }}">
+        {{ icon('arrow-left') }}{{ _t('GO_BACK') }}
       </a>
       <h1 class="text-center text-default">
         {{ isTemplate ? _t('TITLE_TEMPLATE_HISTORY')|replace({'{path}': templatePath}) : (isEntry ? _t('TITLE_ENTRY_HISTORY') : _t('TITLE_PAGE_HISTORY')) }}
       </h1>
     </div>
 
-    <div class="timeline-container">
-      <template v-for="revision in revisions" :key="revision.id">
-        <div class="timeline-item"
-            :style="timelineItemStyle(revision)"
-            :class="{active: selectedRevision.id === revision.id}"
-            @click="selectedRevision = revision">
-        </div>
-        <span class="timeline-item-text" :style="timelineItemStyle(revision, false)">
-          N°{{"{{revision.number }}"}} - {{"{{revision.displayTime }}"}}
-        </span>
-      </template>
+    <nav class="timeline-container" aria-label="{{ isEntry ? _t('TITLE_ENTRY_HISTORY') : _t('TITLE_PAGE_HISTORY') }}">
+      {% for revision in timeline %}
+        {% set side = revision.place < 50 ? 'left: ' ~ revision.place ~ '%' : 'right: ' ~ (100 - revision.place) ~ '%' %}
+        <a class="timeline-item {{ revision.id == selected.id ? 'active' : '' }}"
+           href="{{ revisions.link(revision, view, code and not isTemplate) }}"
+           style="{{ side }}; transform: translateX({{ revision.place < 50 ? '-' : '' }}50%) translateY(50%); z-index: {{ revision.number }}"
+           {% if revision.id == selected.id %}aria-current="true"{% endif %}
+           aria-label="N°{{ revision.number }} - {{ revision.label }}"></a>
+        <span class="timeline-item-text" style="{{ side }}; z-index: {{ revision.number }}" aria-hidden="true">N°{{ revision.number }} - {{ revision.label }}</span>
+      {% endfor %}
       <div class="timeline-bar"></div>
-    </div>
+    </nav>
 
     <div class="revision-title-container">
-      <svg class="yw-icon yw-icon--2x" aria-hidden="true" @click="moveRevision(true)" :disabled="isFirstRevision || null"><use href="src/assets/icons.svg#chevron-left"/></svg>
+      {% if older %}
+        <a href="{{ revisions.link(older, view, code and not isTemplate) }}" aria-label="N°{{ older.number }}">{{ icon('chevron-left', 'yw-icon--2x') }}</a>
+      {% else %}
+        <span class="revision-title-container__edge" aria-hidden="true">{{ icon('chevron-left', 'yw-icon--2x') }}</span>
+      {% endif %}
       <div class="text-center revision-title">
         <h3 class="text-secondary-1">
-          {{ _t('REVISION_VERSION') ~ "{{selectedRevision.number }}" }}
-          {{ _t('REVISION_ON') ~ " {{selectedRevision.displayTime }}" }}
-          {{ _t('REVISION_BY') ~ " {{ selectedRevision.user }}" }}
-        </h3>        
+          {{ _t('REVISION_VERSION') }}{{ selected.number }}
+          {{ _t('REVISION_ON') }} {{ selected.label }}
+          {{ _t('REVISION_BY') }} {{ selected.user }}
+        </h3>
 
-        <form method="post" action="{{ url({handler:'revisions'}) }}" style="display: inline">
+        <form method="post" action="{{ url({handler:'revisions'}) }}" hx-boost="false" style="display: inline">
           <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
-          <input type="hidden" name="restoreRevisionId" :value="selectedRevision.id">
-          <button type="submit" class="btn btn-success btn-restore" :disabled="isLastRevision || null">
-            <span v-if="isLastRevision">{{ _t('CURRENT_VERSION') }}</span>
-            <span v-else>{{ _t('RESTORE_REVISION') }}</span>
+          <input type="hidden" name="restoreRevisionId" value="{{ selected.id }}">
+          <button type="submit" class="btn btn-success btn-restore" {{ isLatest ? 'disabled' : '' }}>
+            {{ isLatest ? _t('CURRENT_VERSION') : _t('RESTORE_REVISION') }}
           </button>
         </form>
-        <form v-if="!isLastRevision && !isTemplate" method="post" action="{{ url({handler:'revisions'}) }}" style="display: inline">
-          <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
-          <input type="hidden" name="restoreRevisionId" :value="selectedRevision.id">
-          <input type="hidden" name="fullRevert" value="1">
-          <button type="submit" class="btn btn-link btn-restore-full" title="{{ _t('RESTORE_REVISION_FULL') }}">{{ _t('RESTORE_REVISION_FULL') }}</button>
-        </form>
+        {% if not isLatest and not isTemplate %}
+          <form method="post" action="{{ url({handler:'revisions'}) }}" hx-boost="false" style="display: inline">
+            <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+            <input type="hidden" name="restoreRevisionId" value="{{ selected.id }}">
+            <input type="hidden" name="fullRevert" value="1">
+            <button type="submit" class="btn btn-link btn-restore-full" title="{{ _t('RESTORE_REVISION_FULL') }}">{{ _t('RESTORE_REVISION_FULL') }}</button>
+          </form>
+        {% endif %}
       </div>
-      <svg class="yw-icon yw-icon--2x" aria-hidden="true" @click="moveRevision(false)" :disabled="isLastRevision || null"><use href="src/assets/icons.svg#chevron-right"/></svg>
+      {% if newer %}
+        <a href="{{ revisions.link(newer, view, code and not isTemplate) }}" aria-label="N°{{ newer.number }}">{{ icon('chevron-right', 'yw-icon--2x') }}</a>
+      {% else %}
+        <span class="revision-title-container__edge" aria-hidden="true">{{ icon('chevron-right', 'yw-icon--2x') }}</span>
+      {% endif %}
     </div>
 
     <ul class="view-types-selector yw-nav">
-      <li v-for="label, type in viewTypes" role="presentation"
-          :class="{active: selectedViewType == type}"
-          @click="selectedViewType = type"
-          v-show="type != 'diff' || !isLastRevision">
-          <a v-text="label"></a>
-      </li>
-      <label class="code-or-preview" v-if="!isTemplate">
-        <input type="checkbox" v-model="displayWikiCode" />
-        <span>{{ _t('DISPLAY_WIKI_CODE') }}</span>
-      </span>
+      {% for type, label in views %}
+        {% if type != 'diff' or not isLatest %}
+          <li role="presentation" class="{{ view == type ? 'active' : '' }}">
+            <a href="{{ revisions.link(selected, type, code and not isTemplate) }}" {% if view == type %}aria-current="page"{% endif %}>{{ label }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+      {% if not isTemplate %}
+        <li class="code-or-preview">
+          <a href="{{ revisions.link(selected, view, not code) }}" role="switch" aria-checked="{{ code ? 'true' : 'false' }}">
+            {{ icon(code ? 'square-check' : 'square') }}<span>{{ _t('DISPLAY_WIKI_CODE') }}</span>
+          </a>
+        </li>
+      {% endif %}
     </ul>
 
     <div class="preview-container">
-
-      <spinner-loader v-if="!selectedRevision.fullyRetrieved"></spinner-loader>
-
-      <template v-else>
-        <template v-if="displayWikiCode">
-          <div v-if="isEntry" class="preview-content" v-html="selectedRevision[`${selectedViewType}_code`]"></div>
-          <pre v-else class="preview-content" v-html="selectedRevision[`${selectedViewType}_code`]"></pre>
-        </template>
-        <template v-else>
-          <iframe v-if="selectedViewType == 'current' && !isEntry" :src="previewUrl" width="100%" height="800px" frameborder="0"></iframe>
-          <div v-else class="preview-content" v-html="selectedRevision[`${selectedViewType}_html`]"></div>
-        </template>   
-      </template>      
+      {% if view == 'current' and not code and not isEntry %}
+        <iframe src="{{ url({ handler: 'iframe', params: { revision: selected.id, iframelinks: 0 } }) }}" width="100%" height="800px" frameborder="0" title="{{ views.current }}"></iframe>
+      {% elseif code and not isEntry %}
+        <pre class="preview-content">{{ content|raw }}</pre>
+      {% else %}
+        <div class="preview-content">{{ content|raw }}</div>
+      {% endif %}
     </div>
-  </template>
+  {% endif %}
 </div>

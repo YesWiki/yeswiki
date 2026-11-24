@@ -652,6 +652,24 @@ ywInitEach('body', () => {
     )
   }
 
+  ywInitEach('.filters .facet-node > label > .filter-checkbox', (box) => {
+    box.addEventListener('change', () => {
+      if (!box.checked) return
+      const node = box.closest('.facet-node')
+      node
+        .querySelectorAll('.facet-node .filter-checkbox')
+        .forEach((descendant) => {
+          if (descendant !== box) descendant.checked = false
+        })
+      let parent = node.parentElement.closest('.facet-node')
+      while (parent) {
+        const own = parent.querySelector(':scope > label > .filter-checkbox')
+        if (own) own.checked = false
+        parent = parent.parentElement.closest('.facet-node')
+      }
+    })
+  })
+
   const bazarList = []
   ywInitEach('.facette-container:not(.dynamic) .filter-bazar', (filter) => {
     filter.addEventListener('keyup', () => {

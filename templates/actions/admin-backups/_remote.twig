@@ -1,0 +1,41 @@
+{# Fetching a backup from another wiki: the form, then the fetch followed every second, then how it ended. #}
+<div id="backups-remote" class="admin-backups__remote" aria-live="polite"
+     {% if running %}hx-get="{{ url({ tag: 'api/admin/backups/remote', params: { following: '1' } }) }}" hx-trigger="every 1s" hx-target="this" hx-swap="outerHTML"{% endif %}>
+  <form hx-post="{{ url({ tag: 'api/admin/backups/remote' }) }}" hx-target="#backups-remote" hx-swap="outerHTML" hx-disabled-elt="find button">
+    <fieldset {{ running ? 'disabled' : '' }}>
+      <legend>{{ _t('ADMIN_BACKUPS_REMOTE_TITLE') }}</legend>
+      <p class="help-block">{{ _t('ADMIN_BACKUPS_REMOTE_HELP') }}</p>
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="remoteBackupUrl">{{ _t('ADMIN_BACKUPS_REMOTE_URL') }}</label>
+        <input type="url" class="yw-input" id="remoteBackupUrl" name="url" value="{{ form.url|default('') }}" placeholder="https://…" required>
+      </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="remoteBackupUsername">{{ _t('ADMIN_BACKUPS_REMOTE_USERNAME') }}</label>
+        <input type="text" class="yw-input" id="remoteBackupUsername" name="username" value="{{ form.username|default('') }}" autocomplete="off" required>
+      </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="remoteBackupPassword">{{ _t('ADMIN_BACKUPS_REMOTE_PASSWORD') }}</label>
+        <input type="password" class="yw-input" id="remoteBackupPassword" name="password" autocomplete="new-password" required>
+      </div>
+      {% if not running %}
+        <div class="archive-buttons">
+          <button type="submit" class="btn btn-primary">{{ icon('download') }} {{ _t('ADMIN_BACKUPS_REMOTE_START') }}</button>
+        </div>
+      {% endif %}
+    </fieldset>
+  </form>
+  {% if running %}
+    <div class="archive-buttons">
+      <button type="button" class="btn btn-danger" hx-post="{{ url({ tag: 'api/admin/backups/remote' }) }}" hx-vals='{"op": "cancel"}' hx-target="#backups-remote" hx-swap="outerHTML" hx-disabled-elt="this">
+        {{ icon('player-stop') }} {{ _t('ADMIN_BACKUPS_REMOTE_CANCEL') }}
+      </button>
+    </div>
+    <div class="alert alert-secondary-2" role="status">
+      {{ step ? _t(step) : rawStep }} {{ progress }}
+      {% if warning %}<br>{{ warning }}{% endif %}
+      {% if output %}<pre>{{ output }}</pre>{% endif %}
+    </div>
+    {% if total > 0 %}<progress class="yw-progressbar" value="{{ bytes }}" max="{{ total }}"></progress>{% endif %}
+  {% endif %}
+  {{ include('@core/actions/admin-backups/_notice.twig', { message: notice, level: level, output: '' }) }}
+</div>

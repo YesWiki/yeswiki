@@ -8,8 +8,13 @@
 {{ include_css('styles/yw-entries.css') }}
 
 <div class="yw-items yw-items--timeline">
-  {% for item in items|sort((a, b) => (b.date ?? '') <=> (a.date ?? '')) %}
-    <article class="yw-item yw-item--timeline">
+  {% set sorted = items|sort((a, b) => (b.date ?? '') <=> (a.date ?? '')) %}
+  {% for item in sorted %}
+    {% set year = item.date ? item.date|date('Y') : '' %}
+    {% if year != '' and (loop.first or (sorted[loop.index0 - 1].date ? sorted[loop.index0 - 1].date|date('Y') : '') != year) %}
+      <h2 class="yw-items__year">{{ year }}</h2>
+    {% endif %}
+    <article class="yw-item yw-item--timeline{{ item.image ? ' has-image' : '' }}"{% if item.color %} style="--yw-item-color: {{ item.color }}"{% endif %}>
       <div class="yw-item__marker" aria-hidden="true"></div>
       <div class="yw-item__body">
         {% if item.date %}<time class="yw-item__date" datetime="{{ item.date }}">{{ item.date|moment }}</time>{% endif %}
@@ -19,6 +24,7 @@
         {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
         {{ slot.footer(item) }}
       </div>
+      {{ slot.image(item, item.title, 384) }}
     </article>
   {% else %}
     <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>

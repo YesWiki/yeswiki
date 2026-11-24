@@ -46,16 +46,17 @@
     {% endif %}
     <div class="results-container">
       {% for key, filter in filters %}
-        {% set offered = filter.nodes|filter(node => node.count > 0 or node.checked is not empty) %}
+        {% set offered = filter.nodes|filter(node => node.count > 0 or node.checked is not empty or node.descendantChecked|default(false)) %}
+        {% set flat = filter.flatNodes|default(filter.nodes)|filter(node => node.count > 0 or node.checked is not empty) %}
         {% if horizontal %}
 
           {% set pairs = [] %}
-          {% for node in offered %}
+          {% for node in flat %}
             {% set pairs = pairs|merge([
-              node.value|json_encode ~ ':' ~ (node.label|striptags|trim ~ ' (' ~ node.count ~ ')')|json_encode
+              node.value|json_encode ~ ':' ~ ((node.depth|default(0) > 0 ? range(1, node.depth)|map(i => '— ')|join : '') ~ node.label|striptags|trim ~ ' (' ~ node.count ~ ')')|json_encode
             ]) %}
           {% endfor %}
-          {% set checked = offered|filter(node => node.checked) %}
+          {% set checked = flat|filter(node => node.checked) %}
           <div class="yw-facet-select {{ key }}">
             <label class="yw-facet-select__label" for="facet-{{ listId }}-{{ filter.propName }}">{{ filter.title }}</label>
             <div class="yw-tag-input" data-yw-tag-input data-yw-tag-input-closed

@@ -1,0 +1,77 @@
+{# Making a backup: the choice and the start, then the run followed every second, then how it ended. Before an update, the update follows. #}
+{% set follow = url({ tag: 'api/admin/backups/archive/' ~ uid|default(''), params: { package: package ?: null, stopping: stopping|default(false) ? '1' : null } }) %}
+{% set swap = 'hx-target="#backups-archive" hx-swap="outerHTML" hx-disabled-elt="this"' %}
+<div id="backups-archive" class="admin-backups__archive" aria-live="polite"
+     {% if state == 'running' %}hx-get="{{ follow }}" hx-trigger="every 1s" hx-target="this" hx-swap="outerHTML"{% endif %}
+     {% if state == 'autostart' %}hx-post="{{ url({ tag: 'api/admin/backups/start' }) }}" hx-vals='{{ { type: 'full', package: package }|json_encode }}' hx-trigger="load" hx-target="this" hx-swap="outerHTML"{% endif %}>
+
+  {% if state == 'idle' and blocked|default(false) %}
+    <div class="alert alert-warning">{{ blocked|raw }}</div>
+  {% elseif state == 'idle' and package == '' %}
+    <form hx-post="{{ url({ tag: 'api/admin/backups/start' }) }}" {{ swap|raw }}>
+      <fieldset>
+        <legend>{{ _t('ADMIN_BACKUPS_CREATE') }}</legend>
+        {% for value, label in { full: 'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL', only_files: 'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES', only_db: 'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES' } %}
+          <div class="checkbox">
+            <label>
+              <input type="radio" name="type" value="{{ value }}" {{ type == value ? 'checked' : '' }}>
+              <span>{{ _t(label) }}</span>
+            </label>
+          </div>
+        {% endfor %}
+        <div class="archive-buttons">
+          <button type="submit" class="btn btn-primary" title="{{ _t('ADMIN_BACKUPS_CREATE') }}">{{ icon('player-play') }} {{ _t('ADMIN_BACKUPS_START') }}</button>
+        </div>
+      </fieldset>
+    </form>
+  {% elseif state == 'confirm' %}
+    <div class="alert alert-warning">{{ _t('ADMIN_BACKUPS_CONFIRMATION_TO_DELETE', { files: files|map(f => f|e)|join('<br>') })|replace({"\n": '<br>'})|raw }}</div>
+    <form hx-post="{{ url({ tag: 'api/admin/backups/start' }) }}" {{ swap|raw }}>
+      <input type="hidden" name="type" value="{{ type }}">
+      <label class="checkbox">
+        <input type="checkbox" name="confirmDelete" value="1" required>
+        <span>{{ _t('ADMIN_BACKUPS_CONFIRM_DELETE_FILES') }}</span>
+      </label>
+      <div class="archive-buttons">
+        <button type="submit" class="btn btn-primary">{{ icon('player-play') }} {{ _t('ADMIN_BACKUPS_START') }}</button>
+      </div>
+    </form>
+  {% elseif state == 'autostart' %}
+    <div class="alert alert-info" role="status">{{ _t('ADMIN_BACKUPS_START_BACKUP') }}</div>
+  {% endif %}
+
+  {% if state != 'confirm' and state != 'autostart' %}
+    {{ include('@core/actions/admin-backups/_notice.twig') }}
+  {% endif %}
+
+  {% if state == 'running' %}
+    <div class="archive-buttons">
+      <button type="button" class="btn btn-danger" title="{{ _t('ADMIN_BACKUPS_STOP_BACKUP') }}"
+              hx-post="{{ url({ tag: 'api/admin/backups/archive/' ~ uid ~ '/stop' }) }}" hx-vals='{{ { package: package }|json_encode }}'
+              {{ swap|raw }} {{ stopping|default(false) ? 'disabled' : '' }}>
+        {{ icon('player-stop') }} {{ _t('ADMIN_BACKUPS_STOP') }}
+      </button>
+    </div>
+  {% endif %}
+
+  {% if package != '' and state != 'updating' %}
+    <div class="archive-buttons">
+      {% if canBypass and state in ['running', 'autostart'] %}
+        <button type="button" class="btn btn-sm btn-danger" hx-post="{{ url({ tag: 'api/admin/backups/update' }) }}" hx-vals='{{ { package: package, uid: uid|default('') }|json_encode }}' {{ swap|raw }}>{{ _t('ADMIN_BACKUPS_BY_PASS') }}</button>
+      {% endif %}
+      {% if canForceUpdate|default(false) %}
+        <button type="button" class="btn btn-sm btn-danger" hx-post="{{ url({ tag: 'api/admin/backups/update' }) }}" hx-vals='{{ { package: package }|json_encode }}' {{ swap|raw }}>{{ _t('ADMIN_BACKUPS_FORCE_UPDATE') }}</button>
+      {% endif %}
+      {% if state == 'idle' %}
+        <a href="{{ url({ params: {} }) }}" class="btn btn-sm btn-info">{{ _t('GO_BACK') }}</a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if state == 'updating' %}
+    <form method="post" action="{{ updateUrl }}" data-backups-autosubmit>
+      <input type="hidden" name="csrf-token" value="{{ csrfToken({ id: 'main', refresh: false })|e('html_attr') }}">
+      <button type="submit" class="btn btn-sm btn-primary">{{ _t('ADMIN_BACKUPS_FORCE_UPDATE') }}</button>
+    </form>
+  {% endif %}
+</div>

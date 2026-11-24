@@ -115,12 +115,12 @@ class EntryListCardTest extends YesWikiTestCase
     /** @param array<string, string> $extra */
     private function render(string $displayfields, array $extra = []): string
     {
-        return (string)$this->getWiki()->services->get(Performer::class)->run('entrylist', 'action', [
+        return (string)$this->getWiki()->services->get(Performer::class)->run('entrylist', 'action', $extra + [
             'id' => self::FORM_ID,
             'template' => 'card',
             'displayfields' => $displayfields,
             'columns' => '4',
-        ] + $extra);
+        ]);
     }
 
     private function visibleText(string $html): string
@@ -160,6 +160,29 @@ class EntryListCardTest extends YesWikiTestCase
         $path = substr($original[1], strlen($base));
         $this->assertTrue($this->getWiki()->services->get(Storage::class)->exists($path), "the <img> falls back on a file that is there: $path");
         $this->assertSame('crop', $this->thumbnailRequest($html)['mode'], 'a cover card cuts its picture to the frame');
+    }
+
+    public function testTheColourFieldPutsAPelletBeforeTheTitle(): void
+    {
+        $this->serveIn('fr');
+        $palette = \YesWiki\Content\Service\EntryDisplay::categoryColorFor('form');
+
+        $html = $this->render('title=bf_titre', ['colorfield' => 'bf_type_act']);
+        $this->assertMatchesRegularExpression('#class="yw-item__title"[^>]*>\s*<span class="pellet" style="background-color: ' . preg_quote($palette, '#') . '"#', $html, 'a value with no stated colour takes its palette slot, as on the Vue card');
+
+        $html = $this->render('title=bf_titre', ['colorfield' => 'bf_type_act', 'color' => '#c0ffee=form']);
+        $this->assertStringContainsString('<span class="pellet" style="background-color: #c0ffee"', $html, 'a stated mapping wins');
+
+        $this->assertStringNotContainsString('class="pellet"', $this->render('title=bf_titre'), 'no colour field, no pellet');
+    }
+
+    public function testTheTimelineDatesItsEntriesByTheirStartAndHeadsEachYear(): void
+    {
+        $this->serveIn('fr');
+        $html = $this->render('title=bf_titre', ['template' => 'timeline']);
+
+        $this->assertStringContainsString('<h2 class="yw-items__year">2026</h2>', $html, 'with no date slot, the timeline reads the start date role');
+        $this->assertMatchesRegularExpression('#<time class="yw-item__date" datetime="2026-10-06#', $html);
     }
 
     public function testADateInAnotherSlotIsWrittenOutInTheReadersLanguage(): void

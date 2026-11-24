@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use Carbon\Carbon;
 use YesWiki\Content\Api\ImageApiController;
+use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Entity\Item;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\SuppliesItems;
@@ -19,6 +20,7 @@ use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Field\TextField;
 use YesWiki\Content\Service\BazarListService;
+use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FieldRoleResolver;
@@ -53,6 +55,7 @@ use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\CustomTemplateService;
 use YesWiki\Render\Service\PresentationCatalog;
 use YesWiki\Render\Service\PresentationRenderer;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\SearchManager;
 
 class EntryListAction extends YesWikiAction implements AliasesPerformable, RegisteredAction, ProvidesComponents, SuppliesItems
@@ -193,6 +196,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ),
             Setting::choice('entrydisplay', [
                 'direct' => _t('AB_bazarcarto_entrydisplay_option_direct'),
+                'accordion' => _t('AB_bazarliste_entrydisplay_option_accordion'),
                 'modal' => _t('AB_bazarcarto_entrydisplay_option_modal'),
                 'newtab' => _t('AB_bazarcarto_entrydisplay_option_newtab'),
             ])
@@ -360,10 +364,12 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         $slots = $this->arguments['displayfields'] ?? [];
         $slots['description'] ??= $slots['text'] ?? null;
         $imageSize = $this->imageSize();
+        $isTimeline = preg_replace('/\.(twig|tpl\.html)$/', '', (string)$this->arguments['template']) === 'timeline';
 
         $items = [];
         foreach ($entries as $entry) {
             $tag = (string)($entry['tag'] ?? '');
+            $dateSlot = $slots['date'] ?? ($isTimeline ? $this->startDateField($entry) : null);
             $badgeName = $slots['floating'] ?? null;
             $badgeDate = $this->isDateSlot($entry, $badgeName) ? self::asDate($entry[$badgeName] ?? null) : null;
             [$image, $imageResize] = $this->image($entry, $slots['visual'] ?? null, ...$imageSize);
@@ -374,17 +380,71 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 description: $this->slotHtml($entry, $slots['description'] ?? null),
                 image: $image,
                 url: $this->getService(UrlFormatter::class)->href('', $tag),
-                date: self::asDate($entry[$slots['date'] ?? ''] ?? null),
+                date: self::asDate($entry[$dateSlot ?? ''] ?? null),
                 badge: $badgeDate === null ? $this->slotText($entry, $badgeName) : null,
                 ctaUrl: $this->ctaUrl((string)($slots['cta'] ?? ''), $tag),
                 ctaLabel: self::ctaLabel((string)($slots['cta'] ?? '')),
                 footer: $this->slotText($entry, $slots['footer'] ?? null),
                 badgeDate: $badgeDate,
                 imageResize: $imageResize,
+                color: $this->itemColor($entry),
+                icon: $this->itemIcon($entry),
             );
         }
 
         return $items;
+    }
+
+    /**
+     * The entry as its colour and icon read it: when a facet on that field is checked, only the checked values count.
+     *
+     * @param array<string, mixed> $entry
+     *
+     * @return array<string, mixed>
+     */
+    private function shownValues(array $entry, string $field): array
+    {
+        $checked = $this->getService(BazarListService::class)->checkedFacets()[$field] ?? [];
+        if ($checked === [] || !isset($entry[$field])) {
+            return $entry;
+        }
+        $values = is_array($entry[$field]) ? $entry[$field] : explode(',', (string)$entry[$field]);
+        $entry[$field] = implode(',', array_values(array_intersect(array_map('strval', $values), $checked)));
+
+        return $entry;
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function startDateField(array $entry): ?string
+    {
+        $form = $this->getService(FormManager::class)->getOne((string)($entry['form_id'] ?? $entry['id_typeannonce'] ?? ''));
+
+        return $this->getService(FieldRoleResolver::class)->propertyName($form, FieldRole::START_DATE);
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function itemColor(array $entry): ?string
+    {
+        $field = (string)($this->arguments['colorfield'] ?? '');
+        $color = $this->getService(EntryDisplay::class)->markerColorFor(
+            $this->arguments['color'] ?? null,
+            $field,
+            $field === '' ? $entry : $this->shownValues($entry, $field)
+        );
+
+        return $color === '' ? null : $color;
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function itemIcon(array $entry): ?string
+    {
+        $field = (string)($this->arguments['iconfield'] ?? '');
+        if ($field === '') {
+            return null;
+        }
+        $icon = $this->getService(EntryDisplay::class)->iconForEntry($field, $this->shownValues($entry, $field), '');
+
+        return is_string($icon) && $icon !== '' ? $icon : null;
     }
 
     /** @param array<string, mixed> $entry */
@@ -591,7 +651,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
                     Setting::fieldMapping('displayfields')
-                        ->showIf('dynamic')
                         ->subSettings(
                             Setting::formField('title')
                             ->label(_t('AB_bazarliste_displayfields_title_label'))
@@ -658,8 +717,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         'popup' => _t('AB_bazarcarto_entrydisplay_option_popup'),
                     ])
                         ->label(_t('AB_bazarcarto_entrydisplay_label'))
-                        ->default('sidebar')
-                        ->showIf('dynamic'),
+                        ->default('sidebar'),
                     Setting::choice('popuptemplate', [
                         '_map_popup_html.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_html'),
                         '_map_popup_from_data.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_data'),
@@ -668,7 +726,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->label(_t('AB_bazarcarto_popuptemplate_label'))
                         ->suggests('_map_popup_html.twig')
                         ->showIf([
-                            'dynamic' => true,
                             'entrydisplay' => 'popup',
                         ]),
                     Setting::text('popupcustomtemplate')
@@ -676,7 +733,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->hint(_t('AB_bazarcarto_popupcustomtemplate_hint'))
                         ->suggests('custom_map_popup.twig')
                         ->showIf([
-                            'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => 'custom',
                         ]),
@@ -685,7 +741,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->default('')
                         ->multiple()
                         ->showIf([
-                            'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => '_map_popup_html.twig|custom',
                         ]),
@@ -694,12 +749,10 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->suggests('bf_titre,imagebf_image')
                         ->multiple()
                         ->showIf([
-                            'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => '_map_popup_from_data.twig|custom',
                         ]),
                     Setting::fieldMapping('displayfields')
-                        ->showIf('dynamic')
                         ->subSettings(
                             Setting::formField('markerhover')
                             ->label(_t('AB_bazarcarto_displayfields_markhover_label'))
@@ -1030,8 +1083,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         'popup' => _t('AB_bazarcarto_entrydisplay_option_popup'),
                     ])
                         ->label(_t('AB_bazarcarto_entrydisplay_label'))
-                        ->default('sidebar')
-                        ->showIf('dynamic'),
+                        ->default('sidebar'),
                     Setting::choice('popuptemplate', [
                         '_map_popup_html.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_html'),
                         '_map_popup_from_data.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_data'),
@@ -1040,7 +1092,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->label(_t('AB_bazarcarto_popuptemplate_label'))
                         ->suggests('_map_popup_html.twig')
                         ->showIf([
-                            'dynamic' => true,
                             'entrydisplay' => 'popup',
                         ]),
                     Setting::text('popupcustomtemplate')
@@ -1048,7 +1099,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->hint(_t('AB_bazarcarto_popupcustomtemplate_hint'))
                         ->suggests('custom_map_popup.twig')
                         ->showIf([
-                            'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => 'custom',
                         ]),
@@ -1057,7 +1107,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->default('')
                         ->multiple()
                         ->showIf([
-                            'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => '_map_popup_html.twig|custom',
                         ]),
@@ -1066,12 +1115,10 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->suggests('bf_titre,imagebf_image')
                         ->multiple()
                         ->showIf([
-                            'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => '_map_popup_from_data.twig|custom',
                         ]),
                     Setting::fieldMapping('displayfields')
-                        ->showIf('dynamic')
                         ->subSettings(
                             Setting::formField('markerhover')
                             ->label(_t('AB_bazarcarto_displayfields_markhover_label'))
@@ -1218,10 +1265,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             Setting::choice('search', [
                 'true' => _t('AB_attach_yes'),
                 'false' => _t('AB_attach_no'),
-                'dynamic' => [
-                    'label' => _t('AB_bazar_commons_search_label_dynamic'),
-                    'showif' => 'dynamic',
-                ],
+                'dynamic' => _t('AB_bazar_commons_search_label_dynamic'),
             ])
                 ->label(_t('AB_bazar_commons_search_label'))
                 ->withIcon('search'),
@@ -1239,15 +1283,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ])
                 ->exceptFor([
                     'bazarcarousel',
-                ]),
-            Setting::checkbox('dynamic')
-                ->label(_t('AB_bazar_commons_dynamic_label'))
-                ->onlyFor([
-                    'entrylist',
-                    'entrymap',
-                    'bazarmapandtable',
-                    'bazarcalendar',
-                    'bazartableau',
                 ]),
             Setting::number('pagination')
                 ->label(_t('AB_bazar_commons_pagination_label'))
@@ -1372,7 +1407,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                     'bazarcalendar',
                 ]),
             Setting::sortFields('sortfields')
-                ->showIf('dynamic')
                 ->exceptFor([
                     'entrymap',
                     'bazarannuaire',
@@ -1457,7 +1491,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         }
         $configuredTemplate = $this->params->get('default_bazar_template');
         $template = $template ?: (is_string($configuredTemplate) ? $configuredTemplate : '');
-        $dynamic = $this->formatBoolean($arg, false, 'dynamic');
 
         if (isset($arg['displayfields']) && is_array($arg['displayfields'])) {
             $displayFields = $arg['displayfields'];
@@ -1472,15 +1505,8 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         }
 
         $bareTemplate = (string)preg_replace('/\.(twig|tpl\.html)$/', '', (string)$template);
-        if ($bareTemplate === 'map-and-table') {
-            $dynamic = true;
-        }
-        if ($dynamic && $bareTemplate === 'liste_accordeon') {
-            $template = 'list';
-        }
-        if ($dynamic && $bareTemplate === 'tableau') {
-            $template = 'table';
-        }
+        $presentation = $this->getService(PresentationCatalog::class)->get($bareTemplate);
+        $dynamic = $presentation !== null && $presentation->dynamic;
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
         $searchfields = empty($searchfields) ? [PageBody::TITLE] : $searchfields;
 
@@ -1617,7 +1643,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             ? $entries
             : $bazarListService->getEntries(['keywords' => $this->arguments['fixedKeywords']] + $this->arguments, $vForms);
         $filters = $bazarListService->getFilters($this->arguments, $facetScope, $vForms, true, $entries);
-        $entries = $bazarListService->filterEntriesOnFacets($entries);
+        $entries = $bazarListService->filterEntriesOnFacets($entries, null, $filters);
 
         $listIndex = $this->getService(ListIndex::class)->next();
         $this->arguments['listindex'] = $listIndex;
@@ -1767,8 +1793,8 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             if ($templateBaseName === 'tableau') {
                 return $warning . $this->renderTableau($data);
             }
-            if ($templateBaseName === 'map') {
-                return $warning . $this->renderMap($data);
+            if (in_array($templateBaseName, PresentationCatalog::ENTRY_PRESENTATIONS, true)) {
+                return $warning . $this->renderEntryPresentation((string)$templateBaseName, $data['entries'], $pForms);
             }
 
             return $warning . $this->render("@core/{$templateName}", $data);
@@ -1996,290 +2022,245 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     }
 
     /**
-     * JS builder for the static (non-dynamic) leaflet map.
+     * The map or the calendar, drawn in the browser from what the server sends: one marker or one event per entry.
      *
-     * @param array<string,mixed> $data the uniform bazar template data (entries, params, resultsInfo, ...)
+     * @param array<array<string, mixed>> $entries
+     * @param array<mixed>                $forms
      */
-    private function renderMap(array $data): string
+    private function renderEntryPresentation(string $name, array $entries, array $forms): string
     {
-        $params = $data['params'];
-        $entries = $data['entries'];
-        $output = $data['resultsInfo'];
-        if (count($entries) === 0) {
-            return $output;
+        $view = ['params' => $this->arguments, 'listId' => $this->arguments['listindex'] ?? 0];
+        if ($name === 'calendar') {
+            return $this->render('@core/presentations/calendar.twig', $view + ['calendar' => $this->calendarSetup($entries)]);
         }
-        $js = '';
-
-        $this->getService(AssetRegistry::class)->addCssFile('styles/vendor/leaflet/leaflet.css');
-        $this->getService(AssetRegistry::class)->addCssFile('styles/yw-entries.css');
-        $this->getService(AssetRegistry::class)->addCssFile('javascripts/vendor/leaflet-draw/leaflet.draw.css');
-        $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
-        $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/leaflet/leaflet.min.js');
-        $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
-        $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/leaflet-draw/leaflet.draw.js', false, true);
-
-        $output .= '<div id="osmmap' . $params['listindex'] . '" class="no-dblclick" style="width:' . $params['width'] . '; height:' . $params['height'] . '"></div>';
-
-        if ($params['spider'] == 'true' or $params['spider'] == '1') {
-            $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/leaflet-spiderfier/oms.min.js');
-            $markersjs = 'var popups = Array();' . "\n" . 'oms = new OverlappingMarkerSpiderfier(map' . $params['listindex'] . ');' . "\n" .
-            'var popup = new L.Popup();
-        oms.addListener("click", function(marker) {
-            marker.openPopup();
-        });
-        oms.addListener(\'spiderfy\', function(markers) {
-          map' . $params['listindex'] . '.closePopup();
-        });' . "\n";
-        } elseif ($params['cluster'] == 'true' or $params['cluster'] == '1') {
-            $this->getService(AssetRegistry::class)->addCssFile('styles/vendor/leaflet-markercluster/leaflet-markercluster.css');
-            $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/leaflet-markercluster/leaflet-markercluster.min.js');
-            $markersjs = 'var markerscluster = new L.MarkerClusterGroup();' . "\n";
-        } else {
-            $markersjs = '';
+        $view['map'] = $this->mapSetup($entries, $forms);
+        if ($name === 'map-and-table') {
+            $located = array_column($view['map']['points'], 'tag');
+            $tabled = ($this->arguments['tablewith'] ?? '') === 'no-geolocation'
+                ? array_values(array_filter($entries, static fn (array $entry): bool => !in_array($entry['tag'] ?? '', $located, true)))
+                : $entries;
+            $view['table'] = $this->renderTableau([
+                'entries' => $tabled,
+                'params' => $this->arguments + self::TABLE_COLUMNS_DEFAULTS,
+                'resultsInfo' => '',
+            ]);
         }
 
-        if ($params['fullscreen'] == 'true' || $params['fullscreen'] == '1') {
-            $params['fullscreen'] = 'true';
-            $this->getService(AssetRegistry::class)->addCssFile('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css');
-            $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js');
-        } else {
-            $params['fullscreen'] = 'false';
-        }
-
-        $vAllGeometries = $geometriesWithoutMarker = [];
-        $entry = ['html_data' => ''];
-
-        $vGeolocationField = $params['geolocationfield'] ?? 'bf_geolocation';
-
-        foreach ($entries as $entry) {
-            $vGeolocation = $entry[$vGeolocationField] ?? [];
-
-            $vLatitude = $vGeolocation['latitude'] ?? '';
-            $vLongitude = $vGeolocation['longitude'] ?? '';
-            $vGeometries = $vGeolocation['geometries'] ?? '';
-            $vGeometries = str_replace(
-                '"type":"FeatureCollection"',
-                '"id":"' . $entry['tag'] . '","type":"FeatureCollection"',
-                $vGeometries
-            );
-
-            $color = $this->getService(EntryDisplay::class)->markerColorFor($params['color'], $params['colorfield'], $entry);
-
-            $icon = $params['iconprefix']
-                    . $this->getService(EntryDisplay::class)->customValueFor($params['icon'], $params['iconfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_icon']);
-
-            if (is_numeric($vLatitude) && is_numeric($vLongitude)) {
-                $markersjs .= '
-				i++;
-				var markerLocation = new L.LatLng(' . $vLatitude . ', ' . $vLongitude . ');
-				marker[i] = new L.Marker(
-						markerLocation,
-						{
-								icon: L.divIcon({
-										iconSize: ' . $params['iconSize'] . ',
-										iconAnchor: ' . $params['iconAnchor'] . ',
-										popupAnchor: ' . $params['popupAnchor'] . ',
-										className: \'bazar-marker' . $params['smallmarker'] . '\',
-										html: \'<div class="bazar-entry" '
-                                        . str_replace('\'', '', $entry['html_data']) . ($color !== '' ? ' style="color:' . htmlspecialchars($color, ENT_QUOTES) . ';"' : '') . '>'
-                                        . (!empty($icon) ? ($this->getService(\YesWiki\Render\Service\TemplateEngine::class)->legacyIconToSprite($icon) ?? '<i class="' . $icon . '"></i>') : '')
-                                        . '</div>\'
-								}),
-								title: \'' . addslashes($entry['title'] ?? $entry['bf_titre'] ?? '') . '\'
-						});
-				marker[i].bindPopup(\'' . preg_replace("(\r\n|\n|\r|)", '', addslashes($this->getService(EntryDisplay::class)->renderEntry($params['managementbar'], $entry))) . '\');
-				';
-                if ($params['spider'] == 'true' or $params['spider'] == '1') {
-                    $markersjs .= 'map' . $params['listindex'] . '.addLayer(marker[i]);' . "\n" . 'oms.addMarker(marker[i]);' . "\n";
-                } elseif ($params['cluster'] == 'true' or $params['cluster'] == '1') {
-                    $markersjs .= 'markerscluster.addLayer(marker[i]);' . "\n";
-                } else {
-                    $markersjs .= 'map' . $params['listindex'] . '.addLayer(marker[i]);' . "\n";
-                }
-            } elseif (!empty($vGeometries)) {
-                $geometriesWithoutMarker[$entry['tag']] = '<div class="bazar-entry" ' . str_replace('\'', '', $entry['html_data']) . '></div>';
-            }
-            if (!empty($vGeometries)) {
-                $vAllGeometries[$entry['tag']] = $vGeometries;
-            }
-        }
-
-        if ($params['cluster'] == 'true' or $params['cluster'] == '1') {
-            $markersjs .= 'map' . $params['listindex'] . '.addLayer(markerscluster);' . "\n";
-        }
-        $js .=
-                '// Init leaflet map
-		var map' . $params['listindex'] . ' = new L.Map(\'osmmap' . $params['listindex'] . '\', {
-				scrollWheelZoom:' . $params['zoom_molette'] . ',
-				zoomControl:' . $params['navigation'] . ',
-		fullscreenControl:' . $params['fullscreen'] . ',
-		fullscreenControlOptions: ' . json_encode(['title' => _t('BAZ_FULLSCREEN'), 'titleCancel' => _t('BAZ_BACK_TO_NORMAL_VIEW'), 'forceSeparateButton' => true], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) . ',
-				iconAnchor:   [6, 20]
-		});';
-
-        if (empty($params['providers']) && empty($params['layers'])) {
-            $js .=
-                '
-			var provider = L.tileLayer.provider("' . $params['provider'] . '"' . $params['provider_credentials'] . ');
-			';
-        } else {
-            $js .= 'var provider; var baseLayers = {};';
-            if (empty($params['providers'])) {
-                $params['providers'] = [$params['provider']];
-            }
-            foreach ($params['providers'] as $provider) {
-                $js .= 'baseLayers["' . $provider . '"] = L.tileLayer.provider("' . $provider . '");';
-                if (empty($params['provider'])) {
-                    $js .= 'if(provider==null) provider=baseLayers["' . $provider . '"];';
-                } elseif ($provider == $params['provider']) {
-                    $js .= 'provider=baseLayers["' . $provider . '"];';
-                }
-            }
-
-            $js .= 'var layers = {};';
-            if (is_array($params['layers'])) {
-                $leafletajaxIncluded = false;
-                foreach ($params['layers'] as $layer) {
-                    @list($layerLabel, $layerType, $layerOptions, $layerUrl) = explode('|', $layer);
-                    if ($layerUrl == null) {
-                        $layerUrl = $layerOptions;
-                        $layerOptions = null;
-                    }
-                    $layerType = strtolower($layerType);
-                    if (!in_array($layerType, ['tiles', 'geojson'])) {
-                        $js .= 'alert("Erreur paramètre \\"layers\\": le type \\"' . $layerType . '\\" est inconnu")';
-                    }
-                    switch ($layerType) {
-                        case 'tiles':
-                            $js .= 'layers["' . $layerLabel . '"] = L.tileLayer("' . $layerUrl . '");';
-                            break;
-                        case 'geojson':
-                            if (!$leafletajaxIncluded) {
-                                $leafletajaxIncluded = true;
-                                $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/leaflet-ajax/leaflet.ajax.min.js');
-                            }
-
-                            $styleJs = '';
-                            $isVisibleByDefault = false;
-                            if ($layerOptions != null) {
-                                if (preg_match_all('/visiblebydefault\\s*;?/i', $layerOptions, $matches)) {
-                                    $isVisibleByDefault = true;
-                                    foreach ($matches[0] as $key => $value) {
-                                        $layerOptions = str_replace($value, '', $layerOptions);
-                                    }
-                                }
-                                $layerOptions = str_replace(';', ',', $layerOptions);
-                                $styleJs .= '
-							style: function (feature, latlng) {
-								if( feature.geometry.type=="Point" )
-									return ;
-								return {' . $layerOptions . '};
-							},
-							pointToLayer: function (feature, latlng) {
-								var layerOptions = "' . $layerOptions . '".split(",");
-								var markerOptions = {} , iconClass=null, color=null ;
-								for( opt in layerOptions )
-								{
-									opt = layerOptions[opt].split(":");
-									switch(opt[0].trim()) {
-										case "opacity":
-										case "clickable":
-											markerOptions[opt[0].trim()] = opt[1].trim();
-											break;
-										case "icon":
-											iconClass = opt[1].trim().replace(/\'/g, "");
-											break;
-										case "color":
-											color = opt[1].trim();
-											break;
-									}
-								}
-
-								if( iconClass!=null || color!=null ) {
-									markerOptions["icon"] = L.divIcon({
-											iconSize: ' . $params['iconSize'] . ',
-											iconAnchor: ' . $params['iconAnchor'] . ',
-											popupAnchor: ' . $params['popupAnchor'] . ',
-											className: "bazar-marker' . $params['smallmarker'] . '",
-											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" ' . addslashes($entry['html_data']) . '>" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
-									});
-								}
-
-								return L.marker(latlng, markerOptions);
-							},
-							';
-                            }
-
-                            $js .= 'layers["' . $layerLabel . '"] = L.geoJson.ajax("' . $layerUrl . '",
-						{
-              interactive: false,
-							' . $styleJs . '
-						} );';
-                            if ($isVisibleByDefault) {
-                                $js .= 'layers["' . $layerLabel . '"].addTo(map' . $params['listindex'] . ');';
-                            }
-                            break;
-                    }
-                }
-            }
-
-            $js .= 'L.control.layers(baseLayers, layers).addTo(map' . $params['listindex'] . ');';
-        }
-        $geometriesModuleJs = '';
-        if (!empty($vAllGeometries)) {
-            $geometriesModuleJs .= '
-
-    var drawnFeatures = new L.FeatureGroup()
-    map' . $params['listindex'] . ".addLayer(drawnFeatures)\n";
-            $jsonFlags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE;
-            foreach ($vAllGeometries as $id => $g) {
-                $jsId = (string)json_encode((string)$id, $jsonFlags);
-                $geometries = json_decode((string)$g);
-                if (!is_object($geometries)) {
-                    $geometriesModuleJs .= "console.error(\"Unreadable geometry for \" + {$jsId})\n";
-                    continue;
-                }
-                $geometriesModuleJs .= "try {\n";
-                $geometriesModuleJs .= 'const geo = ' . json_encode($geometries, $jsonFlags) . "\n";
-                $geometriesModuleJs .= 'const popup = ' . json_encode($this->getService(EntryDisplay::class)->renderEntry($params['managementbar'], $id), $jsonFlags) . "\n";
-                $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo.features, popup, {$jsId})\n";
-                $geometriesModuleJs .= "} catch (e) { console.error(\"Error drawing geometry for \" + {$jsId}, e) }\n";
-            }
-            if (!empty($geometriesWithoutMarker)) {
-                $js .= 'L.Control.geometriesPanel = L.Control.extend({
-    onAdd: function(map) {
-        const div = L.DomUtil.create(\'div\', \'info-panel\');
-        div.innerHTML = \'' . implode('', $geometriesWithoutMarker) . '\';
-        div.style.background = \'transparent\';
-        div.style.padding = \'0\';
-
-        L.DomEvent.disableClickPropagation(div);
-
-        return div;
+        return $this->render("@core/presentations/{$name}.twig", $view);
     }
-});
 
-  new L.Control.geometriesPanel({ position: \'topright\' }).addTo(map' . $params['listindex'] . ');';
+    /**
+     * @param array<array<string, mixed>> $entries
+     * @param array<mixed>                $forms
+     *
+     * @return array<string, mixed> what entry-map.js needs: the background, the controls, and one point per located entry
+     */
+    private function mapSetup(array $entries, array $forms): array
+    {
+        $params = $this->arguments;
+        $field = (string)($params['geolocationfield'] ?? 'bf_geolocation');
+        $hover = $params['displayfields']['markerhover'] ?? null;
+        $points = [];
+        foreach ($entries as $entry) {
+            $place = is_array($entry[$field] ?? null) ? $entry[$field] : [];
+            $located = is_numeric($place['latitude'] ?? null) && is_numeric($place['longitude'] ?? null);
+            $geometries = self::readableGeometries($place['geometries'] ?? null);
+            if (!$located && $geometries === null) {
+                continue;
+            }
+            $tag = (string)($entry['tag'] ?? '');
+            $title = (string)($entry['title'] ?? $entry['bf_titre'] ?? $tag);
+            $points[] = array_filter([
+                'tag' => $tag,
+                'lat' => $located ? (float)$place['latitude'] : null,
+                'lng' => $located ? (float)$place['longitude'] : null,
+                'title' => $title,
+                'hover' => $this->slotText($entry, is_string($hover) ? $hover : null) ?? $title,
+                'url' => $this->getService(UrlFormatter::class)->href('', $tag),
+                'color' => $this->itemColor($entry),
+                'icon' => $this->markerIcon($entry),
+                'geometries' => $geometries,
+            ], static fn ($value) => $value !== null);
+        }
+
+        $small = $this->formatBoolean($params['smallmarker'] ?? false, false);
+        $popupFromData = ($params['popuptemplate'] ?? '') === '_map_popup_from_data.twig';
+
+        return [
+            'points' => $points,
+            'center' => [(float)($params['latitude'] ?? 0), (float)($params['longitude'] ?? 0)],
+            'zoom' => (int)($params['zoom'] ?? 5),
+            'provider' => (string)($params['provider'] ?? 'OpenStreetMap.Mapnik'),
+            'credentials' => $this->providerCredentials(),
+            'providers' => array_values(array_filter(array_map('trim', (array)($params['providers'] ?? [])))),
+            'layers' => array_values(array_filter(array_map('trim', (array)($params['layers'] ?? [])))),
+            'scrollWheelZoom' => $this->formatBoolean($params['zoom_molette'] ?? false, false),
+            'zoomControl' => $this->formatBoolean($params['navigation'] ?? true, true),
+            'fullscreen' => $this->formatBoolean($params['fullscreen'] ?? true, true),
+            'cluster' => $this->formatBoolean($params['cluster'] ?? false, false),
+            'marker' => [
+                'className' => 'bazar-marker' . ($small ? '' : ' xl'),
+                'iconSize' => $small ? [15, 20] : [35, 46],
+                'iconAnchor' => $small ? [8, 19] : [18, 45],
+                'popupAnchor' => $small ? [0, -19] : [0, -45],
+            ],
+            'display' => in_array($params['entrydisplay'] ?? '', ['popup', 'modal', 'newtab', 'direct'], true) ? $params['entrydisplay'] : 'sidebar',
+            'excludeFields' => $this->popupExcludedFields($forms, $popupFromData ? ($params['necessary_fields'] ?? []) : ($params['popupselectedfields'] ?? [])),
+            'entryButton' => $popupFromData,
+        ];
+    }
+
+    /** @return array<string, string>|null the key a paid background asks for, in the spelling its provider reads */
+    private function providerCredentials(): ?array
+    {
+        $id = (string)($this->arguments['providerid'] ?? '');
+        $pass = (string)($this->arguments['providerpass'] ?? '');
+        if ($id === '' || $pass === '') {
+            return null;
+        }
+
+        return ($this->arguments['provider'] ?? '') === 'MapBox'
+            ? ['id' => $id, 'accessToken' => $pass]
+            : ['app_id' => $id, 'app_code' => $pass];
+    }
+
+    /** The stored geometries when they are a readable FeatureCollection, or null so that one broken entry leaves the others drawn. */
+    private static function readableGeometries(mixed $stored): ?object
+    {
+        if (!is_string($stored) || trim($stored) === '') {
+            return null;
+        }
+        $geometries = json_decode($stored);
+        if (!is_object($geometries) || !is_array($geometries->features ?? null)) {
+            return null;
+        }
+        $drawable = array_values(array_filter($geometries->features, static fn ($feature) => is_object($feature) && is_object($feature->geometry ?? null)));
+        if ($drawable === []) {
+            return null;
+        }
+        $geometries->features = $drawable;
+
+        return $geometries;
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function markerIcon(array $entry): ?string
+    {
+        $fromList = $this->itemIcon($entry);
+        if ($fromList !== null) {
+            return $fromList;
+        }
+        $parameter = $this->arguments['icon'] ?? null;
+        $field = (string)($this->arguments['iconfield'] ?? '');
+        $default = (string)$this->getService(RuntimeConfig::class)['baz_marker_icon'];
+        $icon = is_array($parameter)
+            ? $this->getService(EntryDisplay::class)->customValueFor($parameter, $field, $field === '' ? $entry : $this->shownValues($entry, $field), $default)
+            : ((is_string($parameter) && trim($parameter) !== '') ? trim($parameter) : $default);
+        $icon = trim((string)($this->arguments['iconprefix'] ?? '') . (string)$icon);
+        if ($icon === '') {
+            return null;
+        }
+
+        return $this->getService(TemplateEngine::class)->legacyIconToSprite($icon)
+            ?? '<i class="' . htmlspecialchars($icon, ENT_QUOTES) . '"></i>';
+    }
+
+    /**
+     * The fields a popup leaves out when the webmaster chose the ones it shows, as the entry view reads them.
+     *
+     * @param array<mixed>        $forms
+     * @param list<string>|string $shown
+     */
+    private function popupExcludedFields(array $forms, array|string $shown): string
+    {
+        $shown = array_values(array_filter(array_map('trim', is_array($shown) ? $shown : explode(',', $shown))));
+        if ($shown === []) {
+            return '';
+        }
+        $excluded = [];
+        foreach ($forms as $form) {
+            foreach (is_array($form) ? ($form['prepared'] ?? []) : [] as $field) {
+                $name = $field instanceof BazarField ? (string)$field->getPropertyName() : '';
+                if ($name !== '' && !in_array($name, $shown, true)) {
+                    $excluded[$name] = true;
+                }
             }
         }
-        $this->getService(AssetRegistry::class)->addJs(
-            '
-import { drawGeometries } from "./javascripts/leaflet-draw.helper.js"
 
-var map' . $params['listindex'] . ';
-ywInitEach(\'#osmmap' . $params['listindex'] . '\', function() {
-		' . $js . '
-		map' . $params['listindex'] . '.addLayer(provider);
-		map' . $params['listindex'] . '.setView(new L.LatLng(' . $params['latitude'] . ', ' . $params['longitude'] . '), ' . $params['zoom'] . ');
-		var i = 0;
-		var marker = Array();
-    ' . $markersjs . '
-    ' . $geometriesModuleJs . '
-	});',
-            true
-        );
+        return implode(',', array_keys($excluded));
+    }
 
-        return $output;
+    /**
+     * @param array<array<string, mixed>> $entries
+     *
+     * @return array<string, mixed> what entry-calendar.js needs: the views, how an event opens, and the dates of each entry
+     */
+    private function calendarSetup(array $entries): array
+    {
+        $params = $this->arguments;
+        $resolver = $this->getService(FieldRoleResolver::class);
+        $formManager = $this->getService(FormManager::class);
+        $fields = [];
+        $events = [];
+        foreach ($entries as $entry) {
+            $formId = (string)($entry['form_id'] ?? $entry['id_typeannonce'] ?? '');
+            if (!isset($fields[$formId])) {
+                $form = $formManager->getOne($formId);
+                $fields[$formId] = [
+                    $resolver->propertyName($form, FieldRole::START_DATE) ?? 'bf_date_debut_evenement',
+                    $resolver->propertyName($form, FieldRole::END_DATE) ?? 'bf_date_fin_evenement',
+                ];
+            }
+            [$startField, $endField] = $fields[$formId];
+            $start = $entry[$startField] ?? null;
+            $recurrence = $entry[$endField . '_data'] ?? null;
+            if (!is_string($start) || trim($start) === '' || EntryDateService::isLegacyRecurrenceChild($recurrence)) {
+                continue;
+            }
+            $tag = (string)($entry['tag'] ?? '');
+            $events[] = array_filter([
+                'tag' => $tag,
+                'title' => (string)($entry['title'] ?? $entry['bf_titre'] ?? $tag),
+                'start' => $start,
+                'end' => is_string($entry[$endField] ?? null) && $entry[$endField] !== '' ? $entry[$endField] : null,
+                'recurrence' => is_array($recurrence) && ($recurrence['isRecurrent'] ?? null) === '1' ? $recurrence : null,
+                'url' => $this->getService(UrlFormatter::class)->href('', $tag),
+                'color' => $this->itemColor($entry),
+                'icon' => $this->itemIcon($entry),
+            ], static fn ($value) => $value !== null);
+        }
+
+        $views = ['week' => 'listWeek', 'month' => 'listMonth', 'year' => 'listYear'];
+        $listView = $views[$params['showlist'] ?? 'year'] ?? 'listYear';
+        $initial = (string)($params['initialview'] ?? 'dayGridMonth');
+
+        return [
+            'events' => $events,
+            'listView' => $listView,
+            'initialView' => $initial === 'list' ? $listView : (in_array($initial, ['timeGridWeek', 'timeGridDay'], true) ? $initial : 'dayGridMonth'),
+            'display' => in_array($params['entrydisplay'] ?? '', ['newtab', 'direct', 'sidebar'], true) ? $params['entrydisplay'] : 'modal',
+            'icalUrl' => $this->formatBoolean($params, false, 'showicalbutton') ? $this->icalUrl($entries) : null,
+        ];
+    }
+
+    /**
+     * The feed of what the calendar shows: the whole form, or the listed entries once a search, a facet or several forms narrow it.
+     *
+     * @param array<array<string, mixed>> $entries
+     */
+    private function icalUrl(array $entries): string
+    {
+        $ids = (string)(is_array($this->arguments['id'] ?? null) ? implode(',', $this->arguments['id']) : ($this->arguments['id'] ?? ''));
+        $narrowed = str_contains($ids, ',')
+            || $this->arguments['keywords'] !== $this->arguments['fixedKeywords']
+            || $this->getService(BazarListService::class)->checkedFacets() !== [];
+        $query = array_filter([
+            'id' => str_contains($ids, ',') ? null : $ids,
+            'datefilter' => $this->arguments['datefilter'] ?? null,
+            'query' => $narrowed ? 'tag=' . implode(',', array_map(static fn (array $entry): string => (string)($entry['tag'] ?? ''), $entries)) : null,
+        ], static fn ($value) => $value !== null && $value !== '');
+
+        return $this->getService(UrlFormatter::class)->href('', 'api/entries/ical', $query, false);
     }
 
     /**

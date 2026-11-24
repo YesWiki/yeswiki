@@ -2,9 +2,7 @@
 
 namespace YesWiki\Content\TemplateData;
 
-use YesWiki\Render\Service\TemplateEngine;
-
-/** The calendar's own classes, and its fall back to the Vue view (was `CalendarAction::formatArguments()`). */
+/** The calendar's own classes: `minicalendar` and the `minical` class are one setting. */
 class PrepareDataCalendar extends PrepareData
 {
     public function prepare(array $arguments): array
@@ -15,28 +13,14 @@ class PrepareDataCalendar extends PrepareData
             $classes = array_combine($names, $names);
         }
 
-        $miniCalendar = (isset($arguments['minicalendar']) && $arguments['minicalendar'] == 'true')
-            || isset($classes['minical']);
+        $miniCalendar = $this->formatBoolean($arguments, false, 'minicalendar') || isset($classes['minical']);
         if ($miniCalendar) {
             $classes['minical'] = 'minical';
-        }
-
-        $template = !empty($arguments['template']) ? basename((string)$arguments['template']) : 'calendar';
-        $dynamic = $this->formatBoolean($arguments, false, 'dynamic');
-
-        if (
-            in_array($template, ['calendar', 'calendar.tpl.html', 'calendar.twig'], true)
-            && !$this->getService(TemplateEngine::class)->hasTemplate('@core/calendar.twig')
-        ) {
-            $template = 'calendar';
-            $dynamic = true;
         }
 
         return [
             'minicalendar' => $miniCalendar,
             'class' => $classes === [] ? null : implode(' ', $classes),
-            'template' => $template,
-            'dynamic' => $dynamic,
             'pagination' => -1,
         ];
     }

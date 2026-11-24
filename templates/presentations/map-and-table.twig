@@ -1,0 +1,8 @@
+{# presentation
+   label: PRESENTATION_MAP_AND_TABLE
+   category: map
+   icon: pin
+   requires: geolocation
+#}
+{{ include('@core/presentations/map.twig') }}
+<div class="yw-entry-map__table">{{ table|raw }}</div>

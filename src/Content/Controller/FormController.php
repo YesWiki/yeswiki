@@ -217,7 +217,6 @@ class FormController extends YesWikiController
         $arguments = [
             'id' => (string)$form['id'],
             'template' => self::RENDER_AS[$presentation->name] ?? $presentation->name,
-            'dynamic' => $presentation->shared ? 'false' : 'true',
             'search' => 'false',
             'shownumentries' => 'false',
             'pagination' => self::ROWS_PER_PAGE,

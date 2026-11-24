@@ -1,406 +1,210 @@
-const rootsElementsRaw = document.getElementsByClassName(
-  'selector_is_recurrent',
-)
-const rootsElements = []
-for (let index = 0; index < rootsElementsRaw.length; index++) {
-  rootsElements.push(rootsElementsRaw.item(index).parentNode)
+/* The recurrence of an event: the server draws every control, this shows the ones the chosen repetition needs and keeps the derived values in step. */
+
+const NB_MAX = 600
+const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+
+const isoDay = (date) =>
+  new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+    .toISOString()
+    .slice(0, 10)
+
+const dateIn = (input) => {
+  const date = input?.value ? new Date(input.value) : null
+  return date && !Number.isNaN(date.getTime()) ? date : null
 }
-const isVueJS3 = typeof Vue.createApp == 'function'
 
-const defaultNbMax = 600
+ywInitEach('[data-recurrence]', (root) => {
+  const field = root.dataset.field
+  const $ = (selector) => root.querySelector(selector)
+  const repetition = $('[data-recurrence-repetition]')
+  const rule = $('[data-recurrence-rule]')
+  const limit = $('[data-recurrence-limit]')
+  const limitHint = $('[data-recurrence-limit-hint]')
+  const inMonth = $('[data-recurrence-in-month]')
+  const weekday = $('[data-recurrence-weekday]')
+  const exceptChoice = $('[data-recurrence-except-choice]')
+  const exceptList = $('[data-recurrence-except]')
+  const start = () => document.getElementById('bf_date_debut_evenement')
+  let chosen = repetition.value
 
-const appParams = {
-  components: {},
-  data() {
-    return {
-      availableExcept: [],
-      canCustomizeRepetition: false,
-      datePickerForLimitInternal: null,
-      days: ['mon'],
-      endDateLimitTime: -1,
-      except: [],
-      month: '',
-      newExcept: '',
-      nbmax: defaultNbMax,
-      nth: '',
-      recurrenceBaseId: '',
-      repetitionInternal: '',
-      showEndDateMessage: false,
-      showRange: false,
-      startDateInputInternal: null,
-      stepInternal: 2,
-      whenInMonth: '',
+  const kind = () => (/^x?[dwmy]$/.test(chosen) ? chosen.slice(-1) : '')
+  const step = () => {
+    if (!chosen.startsWith('x')) return 1
+    const input = root.querySelector(
+      `[data-recurrence-when="${chosen}"]:not([disabled]) .recurrence__step`,
+    )
+    return Math.max(2, Number(input?.value) || 2)
+  }
+  const startDay = () => {
+    const date = dateIn(start())
+    return date ? WEEKDAYS[date.getDay()] : ''
+  }
+  const days = () => {
+    if (kind() === 'w') {
+      return [...root.querySelectorAll('[data-recurrence-day]:checked')].map(
+        (box) => box.value,
+      )
     }
-  },
-  computed: {
-    availableExceptFiltered() {
-      return this.availableExcept.filter((elem) => !this.except.includes(elem))
-    },
-    baseElement() {
-      return this.element?.getElementsByClassName('selector_is_recurrent')?.[0]
-    },
-    dataset() {
-      return this.baseElement?.dataset?.data
-    },
-    datePickerForLimit() {
-      let datePicker = this.datePickerForLimitInternal
-      if (datePicker === null) {
-        datePicker =
-          this.baseElement?.parentNode?.querySelector(
-            '.event-container-for-datepicker input[name="bf_date_fin_evenement_data[limitdate]"]',
-          ) ?? null
-        this.datePickerForLimitInternal = datePicker
-      }
-      return datePicker
-    },
-    element() {
-      return isVueJS3 ? this.$el.parentNode : this.$el
-    },
-    isRecurrent() {
-      return this.repetition !== ''
-    },
-    mainParentElement() {
-      return this.baseElement?.parentNode?.parentNode
-    },
-    repetition() {
-      switch (this.repetitionInternal) {
-        case 'd':
-        case 'xd':
-          return 'd'
-        case 'w':
-        case 'xw':
-          return 'w'
-        case 'm':
-        case 'xm':
-          return 'm'
-        case 'y':
-        case 'xy':
-          return 'y'
-        default:
-          return ''
-      }
-    },
-    startDateInput() {
-      if (this.startDateInputInternal === null) {
-        this.startDateInputInternal = document.getElementById(
-          'bf_date_debut_evenement',
-        )
-      }
-      return this.startDateInputInternal
-    },
-    step() {
-      switch (this.repetitionInternal) {
-        case 'd':
-        case 'w':
-        case 'm':
-        case 'y':
-          return 1
-        case 'xd':
-        case 'xw':
-        case 'xm':
-        case 'xy':
-        default:
-          return this.stepInternal
-      }
-    },
-  },
-  methods: {
-    /** The occurrence dates that can be excluded, up to nbStep of them. */
-    calculateAvailableExcept(nbStep = defaultNbMax) {
-      const date = this.getCurrentInputDate('startDateInput')
-      if (date === null) {
-        return []
-      }
-      const anchor = this.convertDateToString(date)
-      const occurrences = window._bazarRecurrenceCalculator.generateOccurrences(
-        {
-          startDate: anchor,
-          endDate: anchor,
-          repetition: this.repetition,
-          step: this.step,
-          days: this.days,
-          month: this.month,
-          whenInMonth: this.whenInMonth,
-          nth: this.nth,
-          nbmax: nbStep,
-          limitdate:
-            this.endDateLimitTime >= 0
-              ? this.convertDateToString(new Date(this.endDateLimitTime))
-              : null,
-          except: [],
-        },
-      )
-      return occurrences.slice(1).map((occurrence) => occurrence.start)
-    },
-    /** A Date as a YYYY-MM-DD string. */
-    convertDateToString(date) {
-      return new Date(
-        Date.UTC(
-          date.getFullYear(),
-          date.getMonth(),
-          date.getDate(),
-          date.getHours(),
-          date.getMinutes(),
-          date.getSeconds(),
-        ),
-      )
-        .toISOString()
-        .slice(0, 10)
-    },
-    /** The number of occurrences the limit date allows, or defaultNbMax without one. */
-    estimateNBMaxFromLimitDate() {
-      if (this.endDateLimitTime <= 0) {
-        return defaultNbMax
-      }
-      const startDate = this.getCurrentInputDate('startDateInput')
-      if (startDate === null) {
-        return defaultNbMax
-      }
-      const duration = this.endDateLimitTime - startDate.getTime()
-      if (duration < 0) {
-        return 0
-      }
-      let step
-      switch (this.repetition) {
-        case 'y':
-          step = 365
-          break
-        case 'w':
-          step = Math.floor(7 / this.step)
-          break
-        case 'm':
-          step = 28
-          break
-        case 'd':
-        default:
-          step = 1
-          break
-      }
-      return Math.ceil(duration / 1000 / 3600 / 24 / step) + 20
-    },
-    /** The date the input named keyname holds, or null when it is empty, missing or invalid. */
-    getCurrentInputDate(keyname) {
-      const dateStr = this?.[keyname]?.value ?? ''
-      if (dateStr === '') {
-        return null
-      }
-      const date = new Date(dateStr)
-      if (date.toString() === 'Invalid Date') {
-        return null
-      }
-      return date
-    },
-    getCurrentStartDay() {
-      const date = this.getCurrentInputDate('startDateInput')
-      if (date === null) {
-        return ''
-      }
-      const day = date.getDay()
-      switch (day) {
-        case 0:
-          return 'sun'
-        case 1:
-          return 'mon'
-        case 2:
-          return 'tue'
-        case 3:
-          return 'wed'
-        case 4:
-          return 'thu'
-        case 5:
-          return 'fri'
-        case 6:
-          return 'sat'
-        default:
-          return ''
-      }
-    },
-    registerChangeOnStartDateInput() {
-      this.startDateInput?.addEventListener('blur', () => {
-        setTimeout(() => {
-          this.setCurrentDayIfWeek()
-        }, 200)
-        this.updateAvailableExceptUpdatingNbMax()
-      })
-    },
-    setCurrentDayIfWeek() {
-      if (this.repetitionInternal?.match(/w$/)) {
-        const day = this.getCurrentStartDay()
-        if (day !== '' && !this.days.includes(day)) {
-          if (
-            day !== 'mon' &&
-            this.days.length === 1 &&
-            this.days.includes('mon')
-          ) {
-            this.days = [day]
-          } else {
-            this.days.push(day)
-          }
-        }
-      }
-    },
-    toggleDay(key) {
-      if (this.repetition === 'w') {
-        if (this.days.includes(key) && key !== this.getCurrentStartDay()) {
-          this.days = this.days.filter((elem) => elem !== key)
-        } else {
-          this.days.push(key)
-        }
-      } else {
-        this.days = [key]
-      }
-    },
-    updateAvailableExceptUpdatingNbMax() {
-      const nbmax = this.estimateNBMaxFromLimitDate()
-      const availableExcept = this.calculateAvailableExcept(
-        Math.min(nbmax, defaultNbMax),
-      )
-      this.availableExcept = availableExcept
-      this.nbmax = Math.max(2, availableExcept.length)
-      if (nbmax > defaultNbMax) {
-        this.updateEndDateLimitInputIfNotEmpty(availableExcept)
-      }
-    },
-    /** Brings the limit date back to the last occurrence when the maximum number is reached. */
-    updateEndDateLimitInputIfNotEmpty(availableExcept) {
-      const endDateLimit = this.getCurrentInputDate('datePickerForLimit')
-      if (endDateLimit !== null && availableExcept.length > 0) {
-        const endDateLimitStr = this.convertDateToString(endDateLimit)
-        const lastAvailableExcept = availableExcept[availableExcept.length - 1]
-        if (lastAvailableExcept < endDateLimitStr) {
-          this.datePickerForLimit.value = lastAvailableExcept
-          this.updateEndDateLimitTime(lastAvailableExcept)
-          this.showEndDateMessage = true
-        }
-      }
-    },
-    updateEndDateLimitTime(newVal = null) {
-      const endDateLimit =
-        newVal === null
-          ? this.getCurrentInputDate('datePickerForLimit')
-          : new Date(newVal)
-      this.endDateLimitTime =
-        endDateLimit === null || endDateLimit.toString() === 'Invalid Date'
-          ? -1
-          : endDateLimit.getTime()
-      this.updateAvailableExceptUpdatingNbMax()
-    },
-  },
-  mounted() {
-    const data = JSON.parse(this.dataset)
-    const limitdate = data?.limitdate ?? ''
-    this.datePickerForLimit?.addEventListener('change', () => {
-      this.updateEndDateLimitTime(this.datePickerForLimit.value || '')
-    })
-    this.datePickerForLimit?.addEventListener('input', () => {
-      if (!this.datePickerForLimit.value) {
-        this.updateEndDateLimitTime('')
-      }
-    })
     if (
-      limitdate &&
-      this.datePickerForLimit &&
-      'value' in this.datePickerForLimit
+      ['m', 'y'].includes(kind()) &&
+      inMonth.value &&
+      inMonth.value !== 'nthOfMonth'
     ) {
-      this.datePickerForLimit.value = limitdate
-      this.updateEndDateLimitTime()
-    } else {
-      this.updateAvailableExceptUpdatingNbMax()
+      return [weekday.value]
     }
-    if (data?.isRecurrent !== '1') {
-      this.recurrenceBaseId =
-        window._bazarRecurrenceCalculator.isLegacyRecurrenceChild(data)
-          ? data.replace(/^\{"recurrentParentId":"([^"]+)"}$/, '$1')
-          : ''
+    return []
+  }
+  const excepted = () =>
+    [...exceptList.querySelectorAll('[data-recurrence-except-date]')].map(
+      (item) => item.dataset.recurrenceExceptDate,
+    )
+
+  const show = () => {
+    const current = kind()
+    const when = inMonth.value
+    const visible = {
+      [`x${current}`]: chosen.startsWith('x'),
+      y: current === 'y',
+      'm y': ['m', 'y'].includes(current),
+      w: current === 'w',
+      weekday:
+        ['m', 'y'].includes(current) && when !== '' && when !== 'nthOfMonth',
+      nth: ['m', 'y'].includes(current) && when === 'nthOfMonth',
     }
-    const step = data?.step ?? 2
-    this.stepInternal = step
-    const repetition = data?.repetition ?? ''
-    this.repetitionInternal =
-      data?.isRecurrent === '1' && ['d', 'y', 'w', 'm'].includes(repetition)
-        ? Number(step) === 1
-          ? repetition
-          : `x${repetition}`
-        : ''
-    if (repetition.length > 0 && Number(step) > 1) {
-      this.canCustomizeRepetition = true
-    }
-    this.whenInMonth = data?.whenInMonth ?? ''
-    this.month = data?.month ?? ''
-    this.nth = data?.nth ?? ''
-    const nbmax = Number(data?.nbmax ?? defaultNbMax)
-    this.nbmax = nbmax && nbmax > 0 ? nbmax : defaultNbMax
-    this.days = Array.isArray(data?.days) ? data.days : ['mon']
-    this.month = data?.month ?? ''
-    this.except = Array.isArray(data?.except) ? data?.except : []
-    this.mainParentElement?.classList?.add('ready')
-  },
-  watch: {
-    days() {
-      this.updateAvailableExceptUpdatingNbMax()
-    },
-    month() {
-      this.updateAvailableExceptUpdatingNbMax()
-    },
-    newExcept(newValue) {
-      if (newValue.length > 0) {
-        if (
-          !this.except.includes(newValue) &&
-          this.availableExceptFiltered.includes(newValue)
-        ) {
-          this.except.push(newValue)
-        }
-        this.newExcept = ''
-      }
-    },
-    nth() {
-      this.updateAvailableExceptUpdatingNbMax()
-    },
-    repetition(repetition) {
-      if (repetition !== 'w' && this.days?.length > 1) {
-        this.days = [this.days[0]]
-      }
-      this.updateAvailableExceptUpdatingNbMax()
-    },
-    repetitionInternal(repetition, previousValue) {
-      if (repetition === 'activateCustom') {
-        this.canCustomizeRepetition = true
-        this.repetitionInternal = previousValue
-      } else if (repetition === 'removeCustom') {
-        this.canCustomizeRepetition = false
-        this.repetitionInternal = previousValue.replace('x', '')
-      }
-      this.setCurrentDayIfWeek()
-    },
-    showEndDateMessage(newValue) {
-      if (newValue) {
-        setTimeout(() => {
-          this.showEndDateMessage = false
-        }, 3000)
-      }
-    },
-    step() {
-      this.updateAvailableExceptUpdatingNbMax()
-    },
-    whenInMonth() {
-      this.updateAvailableExceptUpdatingNbMax()
-    },
-  },
-}
-if (isVueJS3) {
-  const app = Vue.createApp(appParams)
-  app.config.globalProperties.wiki = wiki
-  app.config.globalProperties._t = _t
-  rootsElements.forEach((elem) => {
-    app.mount(elem)
-  })
-} else {
-  Vue.prototype.wiki = wiki
-  Vue.prototype._t = _t
-  rootsElements.forEach((elem) => {
-    new Vue({
-      ...{ el: elem },
-      ...appParams,
+    rule.disabled = current === ''
+    rule.hidden = current === ''
+    root.querySelectorAll('[data-recurrence-when]').forEach((set) => {
+      const on = Boolean(visible[set.dataset.recurrenceWhen])
+      set.disabled = !on
+      set.hidden = !on
     })
+  }
+
+  const allowedOccurrences = () => {
+    const from = dateIn(start())
+    const until = dateIn(limit)
+    if (!from || !until) return NB_MAX
+    const span = until.getTime() - from.getTime()
+    if (span < 0) return 0
+    const daysPerStep =
+      { y: 365, w: Math.floor(7 / step()) || 1, m: 28 }[kind()] ?? 1
+    return Math.ceil(span / 86400000 / daysPerStep) + 20
+  }
+
+  const occurrences = (count) => {
+    const from = dateIn(start())
+    if (!from || kind() === '') return []
+    const anchor = isoDay(from)
+    const until = dateIn(limit)
+    return window._bazarRecurrenceCalculator
+      .generateOccurrences({
+        startDate: anchor,
+        endDate: anchor,
+        repetition: kind(),
+        step: step(),
+        days: days(),
+        month: $('[data-recurrence-month]').value,
+        whenInMonth: inMonth.value,
+        nth: $('[data-recurrence-nth]').value,
+        nbmax: count,
+        limitdate: until ? isoDay(until) : null,
+        except: [],
+      })
+      .slice(1)
+      .map((occurrence) => occurrence.start)
+  }
+
+  const update = () => {
+    show()
+    $('[data-recurrence-kind]').value = kind()
+    $('[data-recurrence-step]').value = step()
+    const holder = $('[data-recurrence-days]')
+    holder.replaceChildren(
+      ...days().map((day, index) => {
+        const input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = `${field}_data[days][${index}]`
+        input.value = day
+        return input
+      }),
+    )
+
+    const wanted = allowedOccurrences()
+    const available = occurrences(Math.min(wanted, NB_MAX))
+    $('[data-recurrence-nbmax]').value = Math.max(2, available.length)
+    if (
+      wanted > NB_MAX &&
+      available.length > 0 &&
+      limit.value > available.at(-1)
+    ) {
+      limit.value = available.at(-1)
+      limitHint.hidden = false
+      window.setTimeout(() => {
+        limitHint.hidden = true
+      }, 3000)
+    }
+
+    const taken = excepted()
+    exceptChoice.replaceChildren(
+      exceptChoice.options[0],
+      ...available
+        .filter((date) => !taken.includes(date))
+        .map((date) => new Option(date, date)),
+    )
+  }
+
+  const addExcept = (date) => {
+    const item = $(
+      'template[data-recurrence-except-template]',
+    ).content.firstElementChild.cloneNode(true)
+    item.dataset.recurrenceExceptDate = date
+    item.querySelector('[data-recurrence-except-label]').textContent = date
+    item.querySelector('input').value = date
+    exceptList.append(item)
+  }
+
+  repetition.addEventListener('change', () => {
+    if (['activateCustom', 'removeCustom'].includes(repetition.value)) {
+      const custom = repetition.value === 'activateCustom'
+      root.querySelectorAll('[data-recurrence-custom]').forEach((option) => {
+        option.hidden = !custom
+        option.disabled = !custom
+      })
+      root.querySelectorAll('[data-recurrence-plain]').forEach((option) => {
+        option.hidden = custom
+        option.disabled = custom
+      })
+      if (!custom) chosen = chosen.replace('x', '')
+      repetition.value = chosen
+    } else {
+      chosen = repetition.value
+    }
+    if (kind() === 'w' && days().length === 0 && startDay()) {
+      root.querySelector(
+        `[data-recurrence-day][value="${startDay()}"]`,
+      ).checked = true
+    }
+    update()
   })
-}
+
+  root.addEventListener('change', (event) => {
+    const day = event.target.closest('[data-recurrence-day]')
+    if (day && !day.checked && day.value === startDay()) day.checked = true
+    if (event.target === exceptChoice) {
+      if (exceptChoice.value) addExcept(exceptChoice.value)
+    }
+    if (event.target !== repetition) update()
+  })
+  root.addEventListener('input', (event) => {
+    if (event.target.matches('.recurrence__step')) update()
+  })
+  root.addEventListener('click', (event) => {
+    const remove = event.target.closest('[data-recurrence-except-remove]')
+    if (!remove) return
+    remove.closest('[data-recurrence-except-date]').remove()
+    update()
+  })
+  start()?.addEventListener('change', update)
+
+  update()
+})

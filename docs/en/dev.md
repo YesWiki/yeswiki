@@ -48,16 +48,14 @@ Some variables like `entry` and `fiche` are the same. We have rename old variabl
 
 ### Custom template to render bazar entries (Bazarliste)
 
-You can either create an "old school template" or a more recent dynamic template (VueJs).
-
-Old school templates might be easier to write, but dynamic templates will provide better performance and use latest features form yeswiki
+A list is rendered on the server. Search, sort, facets and pages swap the results in place over htmx, and the URL keeps the state. The map and the calendar are rendered on the server too: the page carries their points or events as JSON, and Leaflet or FullCalendar draws them.
 
 #### List templates
 
 A list template is a Twig file in one of two folders, and the wiki reads what it is from the file itself:
 
-- `templates/presentations/` holds the shared shapes drawn over Items (`card`, `list`, `table`, `timeline`). They work for every Source, a form or a feed alike.
-- `templates/entries/index-dynamic-templates/` holds the Vue templates (`calendar`, `map`, `map-and-table`, and the Vue variants of the shared shapes).
+- `templates/presentations/` holds the server templates. The shared shapes `card`, `list`, `table` and `timeline` are drawn over Items and work for every Source, a form or a feed alike. `map`, `map-and-table` and `calendar` are drawn over entries, so the global search does not offer them.
+- `templates/entries/index-dynamic-templates/` holds the Vue templates. Core ships none any more, only the partials `_card.twig` and `_table.twig` that a Vue template can extend.
 
 A wiki adds its own or overrides a shipped one under `custom/templates/core/` at the same path: `custom/templates/core/entries/index-dynamic-templates/my-template.twig`. Files whose name starts with `_` are partials and are never listed.
 
@@ -82,7 +80,7 @@ Every template opens with a header comment that names it and says what it needs:
 
 `PresentationCatalog` reads these headers. A form's own screen (`/?MyForm`) offers every template whose `requires` the form's fields satisfy, grouped by category, and a list rendered over a form that lacks a required role shows a warning naming it instead of coming out empty. A file with no header is still listed, under its file name, in the `list` category.
 
-Use a template with `{{entrylist id="1" template="my-template" dynamic="true"}}` for a Vue one, or `template="card"` for a shared shape.
+Use a template with `{{entrylist id="1" template="my-template"}}`. The folder it lives in decides how it renders: a shared shape on the server, a Vue template in the browser. A template name means one file only, so a Vue template cannot be called `card`, `list`, `table` or `timeline`.
 
 ##### VueJs Template
 
@@ -156,7 +154,7 @@ Existing yeswiki templates contains block declaration so you can easily override
 
 ```twig
 {# custom/templates/core/entries/index-dynamic-templates/my-template.twig #}
-{% extends "@bazar/entries/index-dynamic-templates/card.twig" %}
+{% extends "@core/entries/index-dynamic-templates/_card.twig" %}
 
 {% block area_footer %}
   My custom card footer
@@ -452,12 +450,12 @@ it carries `#[Exclude]`: every class of `services/` is otherwise autowired.
 
 Core then gives the type:
 
--   a place on the administration screen, with an edit form generated from `connectionSettings()`,
-    and a button to try the provider out;
--   a place on the sign-in page, and the sign-in itself;
--   the account rules: creating the account, linking it, matching by email, group mapping,
-    attributes mapped by name. An extension cannot change these rules;
--   the Journal entries for failed sign-ins and the health checks on the configuration.
+- a place on the administration screen, with an edit form generated from `connectionSettings()`,
+  and a button to try the provider out;
+- a place on the sign-in page, and the sign-in itself;
+- the account rules: creating the account, linking it, matching by email, group mapping,
+  attributes mapped by name. An extension cannot change these rules;
+- the Journal entries for failed sign-ins and the health checks on the configuration.
 
 When the extension is switched off, the configuration of its providers is kept, but they are not
 offered on the sign-in page and the administration screen reports the unavailable type. The sample

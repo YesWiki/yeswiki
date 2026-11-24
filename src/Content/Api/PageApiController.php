@@ -7,14 +7,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
-use YesWiki\Content\Service\DiffService;
 use YesWiki\Content\Service\DuplicationManager;
-use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\PageOperationsService;
+use YesWiki\Content\Service\RevisionView;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
@@ -64,37 +62,15 @@ class PageApiController extends YesWikiController
     {
         $this->denyAccessUnlessGranted('read', $tag);
 
-        $pageManager = $this->getService(PageManager::class);
-        $diffService = $this->getService(DiffService::class);
-        $entryManager = $this->getService(EntryManager::class);
-        $entryController = $this->getService(EntryController::class);
-        $page = $pageManager->getOne($tag, PageManager::revisionAsked(CurrentRequest::input($request, 'revision'), CurrentRequest::input($request, 'time')));
+        $page = $this->getService(PageManager::class)->getOne($tag, PageManager::revisionAsked(CurrentRequest::input($request, 'revision'), CurrentRequest::input($request, 'time')));
         if (!$page) {
             return new ApiResponse(null, Response::HTTP_NOT_FOUND);
         }
 
-        if (($page['type'] ?? null) === PageType::TEMPLATE) {
-            $page['code'] = DiffService::templateCode($page);
-            $page['html'] = '<pre>' . $page['code'] . '</pre>';
-        } elseif ($entryManager->isEntry($page['tag'])) {
-            $page['html'] = $entryController->view($page['tag'], ($page['latest'] ?? 'Y') === 'Y' ? '' : (int)$page['id'], false);
-            $page['code'] = $diffService->formatJsonCodeIntoHtmlTable($page);
-        } else {
-            $page['code'] = PageBody::content($page['body']);
-            $page['html'] = $this->getService(MarkdownFormatterService::class)->format($page['code']);
-        }
-
+        $revisionView = $this->getService(RevisionView::class);
+        $page = $revisionView->rendering($page) + $page;
         if (CurrentRequest::input($request, 'includeDiff')) {
-            $prevVersion = $pageManager->getPreviousRevision($page);
-            if (!$prevVersion) {
-                $prevVersion = ['tag' => $tag, 'body' => [], 'time' => null];
-            }
-            $page['commit_diff_html'] = $diffService->getPageDiff($prevVersion, $page, true);
-            $page['commit_diff_code'] = $diffService->getPageDiff($prevVersion, $page, false);
-
-            $lastVersion = $pageManager->getOne($page['tag']) ?? ['tag' => $tag, 'body' => [], 'time' => null];
-            $page['diff_html'] = $diffService->getPageDiff($lastVersion, $page, true);
-            $page['diff_code'] = $diffService->getPageDiff($lastVersion, $page, false);
+            $page = $revisionView->differences($page) + $page;
         }
 
         return new ApiResponse($page);

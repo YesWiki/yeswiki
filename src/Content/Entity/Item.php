@@ -24,6 +24,8 @@ final class Item
         public readonly ?string $footer = null,
         public readonly ?string $badgeDate = null,
         public readonly ?array $imageResize = null,
+        public readonly ?string $color = null,
+        public readonly ?string $icon = null,
     ) {
     }
 
@@ -45,6 +47,8 @@ final class Item
             'footer' => $this->footer,
             'badgeDate' => $this->badgeDate,
             'imageResize' => $this->imageResize,
+            'color' => $this->color,
+            'icon' => $this->icon,
         ];
     }
 }

@@ -222,10 +222,10 @@ class BazarListService
     }
 
     /**
-     * @param array<string, mixed>                   $options
-     * @param array<array-key, array<string, mixed>> $entries
-     * @param array<int|string, mixed>               $forms
-     * @param bool                                   $withIdIndexes key the filters by property name rather than by position
+     * @param array<string, mixed>                        $options
+     * @param array<array-key, array<string, mixed>>      $entries
+     * @param array<int|string, mixed>                    $forms
+     * @param bool                                        $withIdIndexes  key the filters by property name rather than by position
      * @param array<array-key, array<string, mixed>>|null $countedEntries the entries the counts are over, when the facets come from a wider set
      *
      * @return array<array-key, array<string, mixed>>
@@ -286,7 +286,7 @@ class BazarListService
             if (!empty($field) && $field instanceof EnumField) {
                 $filter['title'] = $field->getLabel();
 
-                if (!empty($field->getOptionsTree()) && $options['dynamic'] == true) {
+                if (!empty($field->getOptionsTree())) {
                     foreach ($field->getOptionsTree() as $node) {
                         $filter['nodes'][] = $this->recursivelyCreateNode($node);
                     }
@@ -314,7 +314,7 @@ class BazarListService
                         if (!empty($finalField)) {
                             $filter['title'] = $finalField->getLabel();
                             if ($finalField instanceof EnumField) {
-                                if (!empty($finalField->getOptionsTree()) && $options['dynamic'] == true) {
+                                if (!empty($finalField->getOptionsTree())) {
                                     foreach ($finalField->getOptionsTree() as $node) {
                                         $filter['nodes'][$node['value']] = $this->recursivelyCreateNode($node);
                                     }
@@ -359,19 +359,18 @@ class BazarListService
             if ($options['dynamic'] == false) {
                 $checkedValues = $this->checkedFacets();
 
-                $entriesValues = array_column($countedEntries ?? $entries, $propName);
-
-                $entriesValues = array_map(function ($val) {
-                    return is_array($val) ? array_map('strval', $val) : explode(',', (string)($val ?? ''));
-                }, $entriesValues);
-
-                $entriesValues = array_merge(...$entriesValues);
-                $countedValues = array_count_values($entriesValues);
+                $ancestors = self::ancestorsOf($filter['nodes']);
+                $entriesValues = array_map(
+                    fn (array $entry): array => self::withAncestors($this->entryValues($entry, $propName), $ancestors),
+                    array_values($countedEntries ?? $entries)
+                );
+                $countedValues = array_count_values(array_merge([], ...$entriesValues));
                 $adjustedNodes = [];
                 foreach ($filter['nodes'] as $rootNode) {
                     $adjustedNodes[] = $this->recursivelyInitValuesForNonDynamic($rootNode, $propName, $countedValues, $checkedValues);
                 }
                 $filter['nodes'] = $adjustedNodes;
+                $filter['flatNodes'] = self::flattened($adjustedNodes);
             }
             if ($withIdIndexes) {
                 $filters[$filter['propName']] = $filter;
@@ -443,23 +442,29 @@ class BazarListService
     /**
      * The entries the checked facets leave -- OR inside a box, AND between boxes.
      *
-     * @param array<array-key, array<string, mixed>> $entries
-     * @param array<string, list<string>>|null       $checked defaults to what the URL says
+     * @param array<array-key, array<string, mixed>>      $entries
+     * @param array<string, list<string>>|null            $checked defaults to what the URL says
+     * @param array<array-key, array<string, mixed>>|null $filters the facets as getFilters() built them: a checked value then also keeps the entries holding one of its descendants
      *
      * @return list<array<string, mixed>>
      */
-    public function filterEntriesOnFacets(array $entries, ?array $checked = null): array
+    public function filterEntriesOnFacets(array $entries, ?array $checked = null, ?array $filters = null): array
     {
         $checked ??= $this->checkedFacets();
         if ($checked === []) {
             return array_values($entries);
         }
+        $ancestors = [];
+        foreach ($filters ?? [] as $filter) {
+            $ancestors[(string)($filter['propName'] ?? '')] = self::ancestorsOf($filter['nodes'] ?? []);
+        }
 
         return array_values(array_filter(
             $entries,
-            function (array $entry) use ($checked): bool {
+            function (array $entry) use ($checked, $ancestors): bool {
                 foreach ($checked as $propName => $values) {
-                    if (array_intersect($values, $this->entryValues($entry, $propName)) === []) {
+                    $held = self::withAncestors($this->entryValues($entry, $propName), $ancestors[$propName] ?? []);
+                    if (array_intersect($values, $held) === []) {
                         return false;
                     }
                 }
@@ -467,6 +472,58 @@ class BazarListService
                 return true;
             }
         ));
+    }
+
+    /**
+     * @param array<array-key, array<string, mixed>> $nodes
+     * @param list<string>                           $chain
+     *
+     * @return array<string, list<string>> each value of a facet tree => the values above it
+     */
+    private static function ancestorsOf(array $nodes, array $chain = []): array
+    {
+        $ancestors = [];
+        foreach ($nodes as $node) {
+            $value = (string)($node['value'] ?? '');
+            if ($chain !== []) {
+                $ancestors[$value] = $chain;
+            }
+            $ancestors += self::ancestorsOf($node['children'] ?? [], [$value, ...$chain]);
+        }
+
+        return $ancestors;
+    }
+
+    /**
+     * @param array<array-key, array<string, mixed>> $nodes
+     *
+     * @return list<array<string, mixed>> every node of the tree in reading order, each with its `depth`
+     */
+    private static function flattened(array $nodes, int $depth = 0): array
+    {
+        $flat = [];
+        foreach ($nodes as $node) {
+            $flat[] = ['depth' => $depth] + $node;
+            array_push($flat, ...self::flattened($node['children'] ?? [], $depth + 1));
+        }
+
+        return $flat;
+    }
+
+    /**
+     * @param list<string>                $values
+     * @param array<string, list<string>> $ancestors
+     *
+     * @return list<string>
+     */
+    private static function withAncestors(array $values, array $ancestors): array
+    {
+        $all = $values;
+        foreach ($values as $value) {
+            array_push($all, ...($ancestors[$value] ?? []));
+        }
+
+        return array_values(array_unique($all));
     }
 
     /**
@@ -554,11 +611,16 @@ class BazarListService
             'name' => $propName,
             'count' => $countedValues[$node['value']] ?? 0,
             'checked' => isset($checkedValues[$propName]) && in_array($node['value'], $checkedValues[$propName]) ? ' checked' : '',
+            'children' => [],
         ]);
 
-        foreach ($node['children'] as &$childNode) {
+        foreach ($node['children'] as $childNode) {
             $result['children'][] = $this->recursivelyInitValuesForNonDynamic($childNode, $propName, $countedValues, $checkedValues);
         }
+        $result['descendantChecked'] = array_filter(
+            $result['children'],
+            static fn (array $child): bool => $child['checked'] !== '' || $child['descendantChecked']
+        ) !== [];
 
         return $result;
     }

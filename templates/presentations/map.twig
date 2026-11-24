@@ -1,0 +1,40 @@
+{# presentation
+   label: PRESENTATION_MAP
+   category: map
+   requires: geolocation
+#}
+{% set jsonFlags = constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES') %}
+{{ include_css('styles/vendor/leaflet/leaflet.css') }}
+{{ include_css('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css') }}
+{{ include_css('javascripts/vendor/leaflet-draw/leaflet.draw.css') }}
+{{ include_css('styles/yw-entries.css') }}
+{{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
+{{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
+{{ include_javascript('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js') }}
+{% if map.cluster %}
+  {{ include_css('styles/vendor/leaflet-markercluster/leaflet-markercluster.css') }}
+  {{ include_javascript('javascripts/vendor/leaflet-markercluster/leaflet-markercluster.min.js') }}
+{% endif %}
+{% if map.layers is not empty %}
+  {{ include_javascript('javascripts/vendor/leaflet-ajax/leaflet.ajax.min.js') }}
+{% endif %}
+{{ include_javascript('javascripts/vendor/leaflet-draw/leaflet.draw.js') }}
+{{ include_javascript('javascripts/entry-map.js', false, true) }}
+
+<div class="bazar-map-container yw-entry-map no-dblclick" id="entry-map-{{ listId }}" data-list="{{ listId }}"
+     data-fragment-url="{{ url({ tag: 'api/entries/html/__TAG__/fragment' }) }}"
+     style="height: {{ params.height|default('500px') }}">
+  <div class="yw-entry-map__canvas"></div>
+  <aside class="entry-container yw-entry-map__side" hidden>
+    <button type="button" class="btn-close yw-entry-map__close" aria-label="{{ _t('BAZ_CLOSE_ENTRY') }}">{{ icon('x') }}</button>
+    <div class="yw-entry-map__entry"></div>
+  </aside>
+  <script type="application/json" class="yw-entry-map__data">{{ map|merge({
+    labels: {
+      fullscreen: _t('BAZ_FULLSCREEN'),
+      normalView: _t('BAZ_BACK_TO_NORMAL_VIEW'),
+      seeEntry: _t('BAZ_SEE_ENTRY'),
+    },
+    inIframe: params.isInIframe is not empty,
+  })|json_encode(jsonFlags)|raw }}</script>
+</div>

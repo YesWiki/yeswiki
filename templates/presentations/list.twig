@@ -5,18 +5,38 @@
 {% import "@core/presentations/_item-fields.twig" as slot %}
 {{ include_css('styles/yw-entries.css') }}
 
-<div class="yw-items yw-items--list">
+{% set accordion = params.entrydisplay|default('') == 'accordion' %}
+<div class="yw-items yw-items--list{{ accordion ? ' yw-items--accordion' : '' }}">
   {% for item in items %}
-    <article class="yw-item yw-item--list{{ item.image ? ' has-image' : '' }}">
-      {{ slot.image(item, item.title, 192) }}
-      <div class="yw-item__body">
-        {{ slot.badge(item) }}
-        {{ slot.title(item, params) }}
-        {{ slot.meta(item) }}
-        {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
-        {{ slot.footer(item) }}
-      </div>
-    </article>
+    {% if accordion %}
+      <details class="yw-item yw-item--list yw-accordion__item{{ item.image ? ' has-image' : '' }}">
+        <summary class="yw-accordion__summary yw-item__summary">
+          {{ slot.image(item, item.title, 192) }}
+          <div class="yw-item__body">
+            {{ slot.badge(item) }}
+            {{ slot.title(item|merge({ url: null }), params) }}
+            {{ slot.meta(item) }}
+          </div>
+        </summary>
+        <div class="yw-accordion__body yw-item__entry"
+             hx-get="{{ url({ tag: 'api/entries/html/' ~ item.id ~ '/fragment' }) }}"
+             hx-trigger="toggle from:closest details once"
+             hx-swap="innerHTML">
+          <p class="yw-item__loading">{{ _t('BAZ_LOADING') }}…</p>
+        </div>
+      </details>
+    {% else %}
+      <article class="yw-item yw-item--list{{ item.image ? ' has-image' : '' }}">
+        {{ slot.image(item, item.title, 192) }}
+        <div class="yw-item__body">
+          {{ slot.badge(item) }}
+          {{ slot.title(item, params) }}
+          {{ slot.meta(item) }}
+          {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
+          {{ slot.footer(item) }}
+        </div>
+      </article>
+    {% endif %}
   {% else %}
     <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
   {% endfor %}

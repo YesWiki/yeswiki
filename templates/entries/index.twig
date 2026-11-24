@@ -31,10 +31,9 @@
       formAttrs: swapResults|merge({
         'hx-get': facetForm.action,
         'hx-trigger': "input changed delay:350ms from:find input[name='keywords'], search from:find input[name='keywords'], change from:find select, submit",
-        'hx-include': '#' ~ facetsFormId ~ ' [name^=facet]',
         'hx-sync': 'this:replace',
         'hx-indicator': '#' ~ toolbarId ~ '-spinner',
-      }),
+      })|merge(params.groups is not empty ? { 'hx-include': '#' ~ facetsFormId ~ ' [name^=facet]' } : {}),
       showSearch: params.search is not empty,
       searchName: 'keywords',
       keywords: searchedKeywords,

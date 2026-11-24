@@ -52,7 +52,10 @@ test('typing narrows the list without leaving the page or the search box', async
 test('choosing a sort reorders the list and lands in the URL', async ({
   page,
 }) => {
-  expect(await titles(page)).toEqual(['Framasoft', 'Yeswiki : le site officiel'])
+  expect(await titles(page)).toEqual([
+    'Framasoft',
+    'Yeswiki : le site officiel',
+  ])
 
   await page.getByLabel('Trier').selectOption({ label: 'Titre ↓' })
 

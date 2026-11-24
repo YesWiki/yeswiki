@@ -1,5 +1,14 @@
 {% extends "@core/layouts/field.twig" %}
 {% block value %}
-    <opening-hours class="opening-hours-display" data-openingHours="{{ opening_hours }}">
-    </opening-hours>
+  <details class="opening-hours-display" data-opening-hours="{{ opening_hours }}" data-closed-label="{{ _t('BAZ_OPENING_HOURS_CLOSED') }}">
+    <summary class="opening-hours-display__today">
+      <span class="opening-hours-display__day"></span>
+      <ul class="opening-hours-display__hours"></ul>
+      {{ icon('chevron-down') }}
+    </summary>
+    <div class="opening-hours-display__week">
+      <table><tbody></tbody></table>
+    </div>
+    <noscript>{{ opening_hours }}</noscript>
+  </details>
 {% endblock %}

@@ -1,5 +1,5 @@
-
-<div class="checkbox">
+{% set children = filterNode.children|default([])|filter(node => node.count > 0 or node.checked is not empty or node.descendantChecked|default(false)) %}
+<div class="checkbox facet-node{{ children is not empty ? ' has-children' : '' }}">
   <label>
     <input class="filter-checkbox" type="checkbox" id="{{ listId }}_{{ filterNode.id }}"
            name="facet[{{ filterNode.name }}][]"
@@ -8,4 +8,12 @@
       {{ filterNode.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterNode.count }}</span>)</span>
     </span>
   </label>
+  {% if children is not empty %}
+    <details class="facet-node__children"{{ filterNode.descendantChecked|default(false) ? ' open' : '' }}>
+      <summary class="facet-node__toggle"><span class="sr-only">{{ _t('BAZ_FILTER_SHOW_CHILDREN', { label: filterNode.label|striptags|trim }) }}</span></summary>
+      {% for filterNode in children %}
+        {{ include('@core/entries/index/_filter-checkbox.twig') }}
+      {% endfor %}
+    </details>
+  {% endif %}
 </div>

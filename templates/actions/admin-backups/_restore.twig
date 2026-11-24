@@ -1,0 +1,6 @@
+{# Restoring a backup: followed every second, then the page reloads on the restored wiki. #}
+<div id="backups-restore" aria-live="polite"
+     {% if uid %}hx-get="{{ url({ tag: 'api/admin/backups/restore/' ~ uid, params: { file: file } }) }}" hx-trigger="every 1s" hx-target="this" hx-swap="outerHTML"{% endif %}
+     {% if reload %}data-backups-reload="2000"{% endif %}>
+  {{ include('@core/actions/admin-backups/_notice.twig') }}
+</div>

@@ -5,6 +5,7 @@ namespace YesWiki\Content\Handler;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\RevisionView;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
@@ -58,22 +59,37 @@ class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
 
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
         }
-        $revisionsCount = $pageManager->countRevisions($this->getService(PageContext::class)->getTag());
-
-        $revisionsLimit = $this->params->get('revisionscount');
-        $revisions = $pageManager->getRevisions(
-            $this->getService(PageContext::class)->getTag(),
-            is_numeric($revisionsLimit) ? (int)$revisionsLimit : 30
-        );
-        $entryManager = $this->getService(EntryManager::class);
-
         $tag = $this->getService(PageContext::class)->getTag();
+        $revisionsLimit = $this->params->get('revisionscount');
+        $revisions = $pageManager->getRevisions($tag, is_numeric($revisionsLimit) ? (int)$revisionsLimit : 30);
+        $revisionView = $this->getService(RevisionView::class);
+        $timeline = $revisionView->timeline(array_values($revisions), $pageManager->countRevisions($tag));
         $isTemplate = $pageManager->typeOf($tag) === PageType::TEMPLATE;
+        $isEntry = $this->getService(EntryManager::class)->isEntry($tag);
+
+        $query = $this->getRequest()->query;
+        $ids = array_column($timeline, 'id');
+        $selectedId = in_array($query->getInt('revision'), $ids, true) ? $query->getInt('revision') : ($ids[0] ?? null);
+        $position = $selectedId === null ? null : array_search($selectedId, $ids, true);
+        $isLatest = $position === 0;
+        $view = in_array($query->get('show'), RevisionView::VIEWS, true) ? (string)$query->get('show') : 'current';
+        if ($view === 'diff' && $isLatest) {
+            $view = 'current';
+        }
+        $code = $isTemplate || $query->getBoolean('code');
+
+        $page = $selectedId === null ? null : $pageManager->getOne($tag, PageManager::revisionAsked((string)$selectedId, null));
 
         return $this->renderFullPage('@core/handlers/revisions.twig', [
-            'revisions' => $revisions,
-            'revisionsCount' => $revisionsCount,
-            'isEntry' => $entryManager->isEntry($tag),
+            'timeline' => $timeline,
+            'selected' => $position === null || $position === false ? null : $timeline[$position],
+            'newer' => is_int($position) && $position > 0 ? $timeline[$position - 1] : null,
+            'older' => is_int($position) ? ($timeline[$position + 1] ?? null) : null,
+            'isLatest' => $isLatest,
+            'view' => $view,
+            'code' => $code,
+            'content' => $page === null || ($view === 'current' && !$code && !$isEntry) ? '' : $revisionView->show($page, $view, $code),
+            'isEntry' => $isEntry,
             'isTemplate' => $isTemplate,
             'templatePath' => $isTemplate ? (string)($pageManager->getOne($tag, null, false, true)['body']['path'] ?? '') : '',
         ]);

@@ -2137,14 +2137,18 @@ body:has(#yw-fb-rail:not([hidden])) .yw-fb__rail-open {
   font-size: 1.3rem;
 }
 
-.revision-title-container i[disabled] {
+.revision-title-container__edge {
   color: var(--yw-text-muted);
-  cursor: not-allowed;
+  opacity: 0.4;
 }
 
-.revision-title-container i:not([disabled]):hover {
-  cursor: pointer;
+.revision-title-container a:hover {
   color: var(--yw-secondary);
+}
+
+.view-types-selector .code-or-preview a {
+  display: inline-flex;
+  align-items: center;
 }
 
 .spinner-loader {

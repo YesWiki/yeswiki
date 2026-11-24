@@ -5,17 +5,6 @@ return [
     'ADMIN_BACKUPS_RESTORE_CONFIRM' => 'Restore the backup {filename}?
 
 Warning: this overwrites the current database and files. It cannot be undone.',
-    'ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING' => 'The backup cannot start: one seems to be running already.
-Follow <a href="{helpBaseUrl}#/docs/en/admin?id=fixing-backup-problems" title="Help on restarting a backup" target="blank">this help page</a> to put it right.',
-    'ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE' => 'The backup cannot start: the site is hibernating.
-Follow <a href="{helpBaseUrl}#/docs/en/admin?id=fixing-backup-problems" title="Help on waking the site up" target="blank">this help page</a> to wake it up.',
-    'ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE' => 'The backup cannot start: the backup folder is not writable.
-Follow <a href="{helpBaseUrl}#/docs/en/admin?id=fixing-backup-problems" title="Help on setting the backup folder up" target="blank">this help page</a> to set the folder up.',
-    'ADMIN_BACKUPS_CANNOT_ARCHIVE' => 'The backup cannot start: this server cannot archive.',
-    'ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE' => 'The backup cannot start: the backup folder can be reached from the internet.
-Follow <a href="{helpBaseUrl}?#/docs/en/admin?id=fixing-backup-problems" title="Help on restricting access to the backup folder" target="blank">this help page</a> to restrict access to it.',
-    'ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE' => 'The backup cannot start: there is not enough disk space left for a new one.',
-    'ERROR_CONTACT_ADMIN' => 'Something went wrong. Please contact the site administrator and pass on this message:',
     'CHOOSE_AN_IMAGE' => 'Choose an image',
     'REMOVE_IMAGE' => 'Remove the image',
     'CANCEL' => 'Cancel',
@@ -34,57 +23,7 @@ Follow <a href="{helpBaseUrl}?#/docs/en/admin?id=fixing-backup-problems" title="
     'PRINT' => 'Print',
     'RIGHT' => 'Right',
     'YES' => 'Yes',
-    'ADMIN_BACKUPS_LOADING_LIST' => 'Loading list of backups',
-    'ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' => 'Not possible to update list of backups',
-    'ADMIN_BACKUPS_DELETE_ARCHIVE' => 'Delete {filename}',
-    'ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR' => 'An error could occur when deleting {filename}',
-    'ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS' => '{filename} successfully deleted',
-    'ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR' => 'Not possible to delete {filename}',
-    'ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE' => 'No backup to delete',
-    'ADMIN_BACKUPS_DELETE_SELECTED_ARCHIVES' => 'Deleting selected backups',
-    'ADMIN_BACKUPS_RESTORE_ARCHIVE' => 'Restore {filename}',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_POSSIBLE_ERROR' => 'An error could occur when restoring {filename}',
-    'ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS' => '{filename} successfully restored',
-    'ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR' => 'Not possible to restore {filename}',
-    'ADMIN_BACKUPS_START_BACKUP' => 'Start a backup',
-    'ADMIN_BACKUPS_STARTED' => 'Backup started',
-    'ADMIN_BACKUPS_START_BACKUP_ERROR' => 'Not possible to start backup',
-    'ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR' => 'Not possible to update backup status',
-    'ADMIN_BACKUPS_UID_STATUS_NOT_FOUND' => 'Data about backup was not found',
-    'ADMIN_BACKUPS_UID_STATUS_RUNNING' => 'Running backup',
-    'ADMIN_BACKUPS_UID_STATUS_PENDING' => 'Backup waiting for the background queue to take it',
-    'ADMIN_BACKUPS_UID_STATUS_FAILED' => 'The backup failed',
-    'ADMIN_BACKUPS_UID_STATUS_KILLED' => 'The server stopped it before the end. The Background jobs page (?admin/jobs) says what to do.',
-    'ADMIN_BACKUPS_UID_STATUS_FINISHED' => 'Finished backup',
-    'ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED' => 'Problem : backup is not running but not finished !',
-    'ADMIN_BACKUPS_UID_STATUS_STOP' => 'Backup aborted',
-    'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => 'Error : not possible to stop backup',
-    'ADMIN_BACKUPS_STOPPING_ARCHIVE' => 'Backup stopping',
-    'ADMIN_BACKUPS_EMPTY_ANSWER' => 'the server answered nothing at all',
-    'ADMIN_BACKUPS_REMOTE_CONNECTING' => 'Signing in to the remote wiki',
-    'ADMIN_BACKUPS_REMOTE_STEP_CHECKING' => 'Asking the remote wiki whether it can make a backup',
-    'ADMIN_BACKUPS_REMOTE_STEP_STARTING' => 'Asking the remote wiki for a backup',
-    'ADMIN_BACKUPS_REMOTE_STEP_ARCHIVING' => 'The remote wiki is making its backup',
-    'ADMIN_BACKUPS_REMOTE_STEP_IDENTIFYING' => 'Waiting for the backup it made to be complete',
-    'ADMIN_BACKUPS_REMOTE_STEP_DOWNLOADING' => 'Downloading',
-    'ADMIN_BACKUPS_REMOTE_STEP_CLEANING' => 'Deleting the backup on the remote wiki',
-    'ADMIN_BACKUPS_REMOTE_FINISHED' => 'Remote backup fetched: {filename}',
-    'ADMIN_BACKUPS_REMOTE_CANCELLED' => 'Fetch given up',
-    'ADMIN_BACKUPS_RESTORE_CONFIRM_FULL' => "Restore the full backup {filename}?\n\n" .
-        "The database and the files are replaced by those of the backup, and files added since are deleted.\n" .
-        "Settings come back from the backup, except the database connection, the address of the site, the mail server and the backup settings.\n\n" .
-        'This cannot be undone.',
-    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_DB' => "Restore the database of {filename}?\n\n" .
-        "The current database is replaced by the one in the backup. Files are left alone.\n\n" .
-        'This cannot be undone.',
-    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_FILES' => "Restore the files of {filename}?\n\n" .
-        "Files in the backup overwrite those of the same name; the others are left alone. Settings come back from the backup, as for a full one. The database is left alone.\n\n" .
-        'This cannot be undone.',
-    'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => 'Update started (please wait)',
-    'REVISIONS_COMMIT_DIFF' => 'Changes done by this revision',
-    'REVISIONS_DIFF' => 'Comparison to the current revision',
-    'REVISIONS_PREVIEW' => 'Preview of this revision',
-    'REVISIONS_CODE' => 'Code of this revision',
     'FAVORITES_ADD' => 'Add to favorites',
     'FAVORITES_ALL_DELETED' => 'Favorites deleted',
     'FAVORITES_ERROR' => 'An error occurred : {error}',
@@ -107,7 +46,6 @@ Follow <a href="{helpBaseUrl}?#/docs/en/admin?id=fixing-backup-problems" title="
     'EDIT_OUPS_MSG' => 'INdeed, I would not double-click...',
     'COMMENT_NOT_DELETED' => 'Comment {comment} was not deleted.',
     'COMMENT_DELETED' => 'Comment deleted.',
-    'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' => 'Forced update not possible',
     'DELETE_COMMENT_AND_ANSWERS' => 'Delete this comment and associated answers ?',
     'REACTION_CONFIRM_DELETE_ALL' => 'Are you sure you want to delete all the reactions from this vote ?',
     'REACTION_NOT_POSSIBLE_TO_ADD_REACTION' => 'Impossible to add the reaction because of following error : {error}!',
@@ -118,9 +56,6 @@ Follow <a href="{helpBaseUrl}?#/docs/en/admin?id=fixing-backup-problems" title="
     'NOT_VALID_URL' => 'Invalid url: {url}',
     'PAGE_NOT_AVAILABLE' => 'Page {tag} is not available on the destination YesWiki',
     'CONNECTED_AS_ADMIN' => 'The user {user} is successfully logged in to the destination YesWiki, with administration rights.',
-    'ADMIN_BACKUPS_CONFIRMATION_TO_DELETE' => 'The following files will be deleted by the backup.
-Please confirm their deletion by checking the box below.
-<pre>{files}</pre>',
     'CONNECTED_BUT_NOT_ADMIN' => 'The user {user} is successfully logged in to the destination YesWiki, but does not have administrative rights. Please log in with an admin account.',
     'PAGE_AVAILABLE' => 'The {tag} page is available on the destination YesWiki',
     'NOT_CONNECTED' => 'You must log in to the destination YesWiki with an account that has administrative rights.',

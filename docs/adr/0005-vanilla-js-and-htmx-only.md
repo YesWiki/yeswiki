@@ -32,7 +32,10 @@ Core ships zero jQuery, with no exceptions.
 
 The pre-existing Vue-based "dynamic entries index" subsystem (BazarTable/
 DynTable/BazarMap/BazarCalendar and the actions-builder app) was grandfathered
-as-is in ticket 24 (user-confirmed boundary) and stays: this ADR governs new
-core JS, which remains vanilla + htmx; the Vue island neither grew nor was it
-ported to something heavier — its jQuery/DataTables usage was removed like
-everywhere else.
+as-is in ticket 24 (user-confirmed boundary): this ADR governs new core JS,
+which remains vanilla + htmx; the Vue island neither grew nor was it ported to
+something heavier — its jQuery/DataTables usage was removed like everywhere
+else. Since then the lists, the map and the calendar moved to server templates
+with vanilla JS (`entry-map.js`, `entry-calendar.js`); Vue still draws the
+custom templates a wiki keeps in `index-dynamic-templates/` and the other
+screens it was already used on.

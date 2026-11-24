@@ -1,0 +1,41 @@
+{# The backups kept on this wiki: download, restore, delete one or several. Reloads whenever a backup ends. #}
+<div id="backups-list" class="admin-backups__list" hx-get="{{ url({ tag: 'api/admin/backups/list' }) }}" hx-trigger="ywBackupsChanged from:body" hx-target="this" hx-swap="outerHTML">
+  {{ include('@core/actions/admin-backups/_notice.twig', { message: notice, level: level, output: '' }) }}
+  {% if archives is empty %}
+    <div class="alert alert-info">{{ _t('ADMIN_NO_BACKUP_FOUND') }}.</div>
+  {% else %}
+    <hr>
+    <h2>{{ _t('ADMIN_BACKUPS_ARCHIVES_LIST') }}</h2>
+    <form hx-post="{{ url({ tag: 'api/admin/backups/delete' }) }}" hx-target="#backups-list" hx-swap="outerHTML" hx-confirm="{{ _t('DELETE_ALL_SELECTED_ITEMS') }}" data-yw-confirm-destructive>
+      <div class="backups-container">
+        <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_FILENAME') }}</div>
+        <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_SIZE') }}</div>
+        <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE') }}</div>
+        <div class="archive-item archive-item-title"></div>
+        <div class="archive-item archive-item-title">
+          <button type="submit" class="btn btn-danger btn-wrap" title="{{ _t('DELETE_ALL_SELECTED_ITEMS') }}">{{ _t('DELETE_SELECTION') }}</button>
+        </div>
+        {% for archive in archives %}
+          <div class="archive-item archive-filename">{{ archive.filename }} {% if archive.scheduled %}<span class="admin-backups__scheduled">{{ _t('ADMIN_BACKUPS_SCHEDULED_BADGE') }}</span>{% endif %}</div>
+          <div class="archive-item">{{ archive.readableSize }}</div>
+          <div class="archive-item">
+            {% if archive.type in ['only_files', 'full'] %}<span title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}">{{ icon('copy') }}</span>{% endif %}
+            {% if archive.type == 'full' %}<strong>+</strong>{% endif %}
+            {% if archive.type in ['only_db', 'full'] %}<span title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}">{{ icon('database') }}</span>{% endif %}
+          </div>
+          <div class="archive-item">
+            <a href="{{ archive.link }}" class="btn btn-xs btn-primary" title="{{ _t('DOWNLOAD') }}" aria-label="{{ _t('DOWNLOAD') }} {{ archive.filename }}" hx-boost="false">{{ icon('download') }}</a>
+            <button type="button" class="btn btn-xs btn-danger" title="{{ _t('DELETE') }}" aria-label="{{ _t('DELETE') }} {{ archive.filename }}"
+                    hx-post="{{ url({ tag: 'api/admin/backups/delete' }) }}" hx-vals='{{ { 'filenames[]': archive.filename }|json_encode }}' hx-confirm="{{ _t('DELETE') }} {{ archive.filename }} ?" data-yw-confirm-destructive>{{ icon('trash') }}</button>
+            <button type="button" class="btn btn-xs btn-warning" title="{{ _t('ADMIN_BACKUPS_RESTORE') }}" aria-label="{{ _t('ADMIN_BACKUPS_RESTORE') }} {{ archive.filename }}"
+                    hx-post="{{ url({ tag: 'api/admin/backups/restore' }) }}" hx-vals='{{ { file: archive.filename }|json_encode }}' hx-target="#backups-restore" hx-swap="outerHTML"
+                    hx-confirm="{{ archive.confirm }}" data-yw-confirm-destructive>{{ icon('arrow-back-up') }}</button>
+          </div>
+          <div class="archive-item">
+            <input type="checkbox" name="filenames[]" value="{{ archive.filename }}" aria-label="{{ archive.filename }}">
+          </div>
+        {% endfor %}
+      </div>
+    </form>
+  {% endif %}
+</div>

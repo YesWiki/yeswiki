@@ -687,7 +687,7 @@ Affiche toutes les favoris de l'utilisateur
 #### 9.2.4 Afficher mes fiches bazar
 
 L'action
-`{{entrylist template="liste_accordeon" dynamic="true" filteruserasowner="true"}}`
+`{{entrylist template="list" entrydisplay="accordion" filteruserasowner="true"}}`
 
 Affiche toutes les fiches bazar dont l'utilisateur est propriétaire
 

@@ -3,6 +3,7 @@
 namespace YesWiki\Admin\Action;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Admin\Api\BackupsScreenController;
 use YesWiki\Admin\Entity\PackageTool;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\AutoUpdateService;
@@ -164,7 +165,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
 
                             if (!$vArchiveService->hasValidatedBackup($vForcedUpdateToken)) {
                                 return $this->render('@core/preupdate-backup.twig', [
-                                    'packageName' => $vPackageName,
+                                    'archive' => $this->getService(BackupsScreenController::class)->archiveHtml(['state' => 'autostart', 'package' => (string)$vPackageName]),
                                 ]);
                             }
 
@@ -244,7 +245,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
     /**
      * For each installed extension, the `ACTIVE_EXTENSIONS` line that switches it the other way, for an operator to set on every replica.
      *
-     * @param list<mixed> $tools
+     * @param list<mixed>  $tools
      * @param list<string> $active
      *
      * @return array<string, string>

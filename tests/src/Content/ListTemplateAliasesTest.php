@@ -57,13 +57,13 @@ class ListTemplateAliasesTest extends YesWikiTestCase
         }
     }
 
-    /** The map's leaflet vocabulary, which `renderMap()` reads and nothing else produced. */
+    /** The map's settings, which the map presentation reads and nothing else produces. */
     public function testTheMapTemplateIsPreparedWhoeverAsksForIt(): void
     {
         $prepared = self::getWiki()->services->get(TemplateDataFactory::class)->prepare('map', ['template' => 'map']);
 
-        foreach (['iconSize', 'iconAnchor', 'popupAnchor', 'smallmarker', 'provider', 'geolocationfield'] as $key) {
-            $this->assertArrayHasKey($key, $prepared, "renderMap() reads {$key} and would emit broken JS without it");
+        foreach (['smallmarker', 'provider', 'latitude', 'zoom', 'cluster', 'geolocationfield'] as $key) {
+            $this->assertArrayHasKey($key, $prepared, "the map reads {$key}");
         }
         $this->assertSame('bf_geolocation', $prepared['geolocationfield']);
     }
@@ -90,7 +90,7 @@ class ListTemplateAliasesTest extends YesWikiTestCase
             ['template' => 'map-and-table', 'dynamic' => true, 'id' => '1']
         );
 
-        $this->assertArrayHasKey('iconSize', $prepared, 'the map preparer did not run');
+        $this->assertArrayHasKey('geolocationfield', $prepared, 'the map preparer did not run');
         $this->assertArrayHasKey('columnfieldsids', $prepared, 'the table preparer did not run');
     }
 

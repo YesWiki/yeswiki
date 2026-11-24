@@ -16,6 +16,9 @@ class PresentationCatalog
     public const DYNAMIC_DIR = 'templates/entries/index-dynamic-templates';
     public const CUSTOM_PREFIX = 'custom/templates/core/';
 
+    /** The server templates that draw entries rather than Items, so the global search cannot offer them. */
+    public const ENTRY_PRESENTATIONS = ['map', 'map-and-table', 'calendar'];
+
     /** Templates outside the two folders that still cannot do without a role (ticket 11). */
     private const LEGACY_REQUIREMENTS = [
         'agenda' => [FieldRole::START_DATE],
@@ -133,18 +136,18 @@ class PresentationCatalog
 
         $found = [];
         foreach ($this->files(self::SHARED_DIR) as $name => [$contents, $custom]) {
-            if (PresentationRenderer::knows($name)) {
-                $found[$name] = $this->describe($name, $contents, true, $custom);
+            if (PresentationRenderer::knows($name) || in_array($name, self::ENTRY_PRESENTATIONS, true)) {
+                $found[$name] = $this->describe($name, $contents, PresentationRenderer::knows($name), $custom, false);
             }
         }
         foreach ($this->files(self::DYNAMIC_DIR) as $name => [$contents, $custom]) {
             if (!isset($found[$name])) {
-                $found[$name] = $this->describe($name, $contents, false, $custom);
+                $found[$name] = $this->describe($name, $contents, false, $custom, true);
             }
         }
         foreach ($this->extensionFiles() as $name => $contents) {
             if (!isset($found[$name])) {
-                $found[$name] = $this->describe($name, $contents, false, false);
+                $found[$name] = $this->describe($name, $contents, false, false, true);
             }
         }
 
@@ -218,7 +221,7 @@ class PresentationCatalog
         return $matches[1];
     }
 
-    private function describe(string $name, string $contents, bool $shared, bool $custom): Presentation
+    private function describe(string $name, string $contents, bool $shared, bool $custom, bool $dynamic): Presentation
     {
         $header = self::header($contents);
         $category = strtolower($header['category'] ?? '');
@@ -235,6 +238,7 @@ class PresentationCatalog
             $requires,
             $shared,
             $custom,
+            $dynamic,
         );
     }
 

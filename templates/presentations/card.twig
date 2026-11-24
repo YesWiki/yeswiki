@@ -5,11 +5,14 @@
 {% import "@core/presentations/_item-fields.twig" as slot %}
 {{ include_css('styles/yw-entries.css') }}
 
+{% set style = params.style|default('') %}
 {% set columns = params.columns|default(3) %}
+{% set columns = style == 'horizontal' ? min(columns, 2) : columns %}
 {% set imagefit = params.imagefit|default(params.imgstyle|default('cover')) %}
-{% set square = params.style|default('') == 'square' %}
+{% set lines = params.lines|default('')|number_format %}
 {% set cardWidth = (1170 / columns)|round(0, 'ceil') * 2 %}
-<div class="yw-items yw-items--card{{ square ? ' yw-items--square' : '' }}" style="--yw-item-columns: {{ columns }}; --yw-item-image-fit: {{ imagefit == 'contain' ? 'contain' : 'cover' }}">
+<div class="yw-items yw-items--card{{ style in ['square', 'horizontal'] ? ' yw-items--' ~ style : '' }}{{ lines > 0 ? ' yw-items--clamped' : '' }}"
+     style="--yw-item-columns: {{ columns }}; --yw-item-image-fit: {{ imagefit == 'contain' ? 'contain' : 'cover' }}{{ lines > 0 ? '; --yw-item-lines: ' ~ lines : '' }}">
   {% for item in items %}
     <article class="yw-item yw-item--card{{ item.image ? ' has-image' : '' }}{{ item.footer ? ' has-footer' : '' }}">
       {% if item.image %}

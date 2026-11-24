@@ -176,6 +176,21 @@ class EntryApiController extends YesWikiController
         return $this->getAllFormEntries([], $output, $selectedEntries);
     }
 
+    /** One entry rendered as an HTML fragment, for a list that opens its entries in place. */
+    #[Route('/api/entries/html/{entryId}/fragment', methods: ['GET'], options: ['acl' => ['public']], priority: 3)]
+    public function entryFragment(string $entryId): Response
+    {
+        $entryManager = $this->getService(EntryManager::class);
+        if (!$entryManager->isEntry($entryId)) {
+            throw new NotFoundHttpException();
+        }
+        $html = $this->getService(AclService::class)->hasAccess('read', $entryId)
+            ? $this->renderWithItsStyles(fn () => $this->getService(EntryController::class)->view($entryId, '', true))
+            : $this->render('@core/alert-message.twig', ['type' => 'info', 'message' => _t('ERROR_NO_ACCESS')]);
+
+        return new Response($html, Response::HTTP_OK, ['Content-Type' => 'text/html; charset=utf-8']);
+    }
+
     /** Renders an entry with its template's stylesheets. */
     private function renderWithItsStyles(callable $render): string
     {

@@ -84,6 +84,7 @@ class PresentationCatalogTest extends YesWikiTestCase
             $this->assertSame($requires, $byName[$name]->requires, "{$name} requires the wrong roles");
             $this->assertSame($shared, $byName[$name]->shared, "{$name} is (not) a shared shape");
             $this->assertFalse($byName[$name]->custom);
+            $this->assertFalse($byName[$name]->dynamic, "{$name} is drawn by Vue");
         }
         $this->assertSame(_t('PRESENTATION_MAP_AND_TABLE'), $byName['map-and-table']->label, 'the label is not translated');
         $this->assertSame('pin', $byName['map-and-table']->icon, 'an explicit icon is not kept');
@@ -94,7 +95,7 @@ class PresentationCatalogTest extends YesWikiTestCase
     {
         $names = array_map(static fn (Presentation $p) => $p->name, $this->catalog()->all());
 
-        $this->assertNotContains('_map_popup_html', $names);
+        $this->assertNotContains('_card', $names);
         $this->assertNotContains('_item-fields', $names);
     }
 
@@ -114,6 +115,7 @@ class PresentationCatalogTest extends YesWikiTestCase
         $this->assertSame([FieldRole::IMAGE, FieldRole::DESCRIPTION], $gallery->requires);
         $this->assertTrue($gallery->custom);
         $this->assertFalse($gallery->shared);
+        $this->assertTrue($gallery->dynamic, 'a template in the Vue folder is not drawn by Vue');
 
         $bare = $catalog->get('zz-probe-bare.twig');
         $this->assertNotNull($bare, 'a template with no header is not listed');

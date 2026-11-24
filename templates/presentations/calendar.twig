@@ -1,0 +1,29 @@
+{# presentation
+   label: PRESENTATION_CALENDAR
+   category: calendar
+   requires: start_date
+#}
+{% set jsonFlags = constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES') %}
+{{ include_css('styles/vendor/fullcalendar/fullcalendar.min.css') }}
+{{ include_css('styles/yw-entries.css') }}
+{{ include_javascript('javascripts/vendor/fullcalendar/temporal-polyfill.min.js') }}
+{{ include_javascript('javascripts/vendor/fullcalendar/fullcalendar.min.js') }}
+{{ include_javascript('javascripts/vendor/fullcalendar/theme-classic.min.js') }}
+{{ include_javascript('javascripts/vendor/fullcalendar/locales-all.min.js') }}
+{{ include_javascript('javascripts/services/recurrence-calculator.js') }}
+{{ include_javascript('javascripts/entry-calendar.js', false, true) }}
+
+<div class="entry-list-dynamic-template-container yw-entry-calendar no-dblclick" id="entry-calendar-{{ listId }}"
+     data-fragment-url="{{ url({ tag: 'api/entries/html/__TAG__/fragment' }) }}">
+  <div class="yw-calendar"></div>
+  <aside class="entry-container yw-entry-calendar__side" hidden>
+    <button type="button" class="btn-close yw-entry-calendar__close" aria-label="{{ _t('BAZ_CLOSE_ENTRY') }}">{{ icon('x') }}</button>
+    <div class="yw-entry-calendar__entry"></div>
+  </aside>
+  {% if calendar.icalUrl %}
+    <a class="btn btn-primary btn-xs ical-export-button" target="_blank" href="{{ calendar.icalUrl }}" title="{{ _t('BAZ_CALENDAR_EXPORT_BUTTON_TITLE') }}">
+      {{ icon('plus') }}&nbsp;{{ icon('calendar') }}
+    </a>
+  {% endif %}
+  <script type="application/json" class="yw-entry-calendar__data">{{ calendar|merge({ inIframe: params.isInIframe is not empty })|json_encode(jsonFlags)|raw }}</script>
+</div>

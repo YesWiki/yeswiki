@@ -7,8 +7,6 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Kernel\Asset\AssetEntry;
-use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Render\Service\Performer;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -117,34 +115,36 @@ class MarkerColourTest extends YesWikiTestCase
         $this->assertSame(['eau' => '#1e6fd9'], $json['optionColors']);
     }
 
-    /** @param array<string, string> $arguments */
-    private function staticMapScript(array $arguments = []): string
+    /**
+     * @param array<string, string> $arguments
+     *
+     * @return array<string, string> tag => the colour its marker is drawn in
+     */
+    private function markerColours(array $arguments = []): array
     {
-        $services = $this->getWiki()->services;
-        $assets = $services->get(AssetRegistry::class)->capture(
-            fn () => $services->get(Performer::class)->run('entrylist', 'action', ['id' => self::FORM_ID, 'template' => 'map'] + $arguments)
-        );
-        foreach ($assets->entries() as $asset) {
-            if ($asset->kind === AssetEntry::JS_INLINE && str_contains($asset->payload, 'bazar-marker')) {
-                return $asset->payload;
-            }
+        $html = (string)$this->getWiki()->services->get(Performer::class)
+            ->run('entrylist', 'action', ['id' => self::FORM_ID, 'template' => 'map'] + $arguments);
+        if (preg_match('#class="yw-entry-map__data">(.*?)</script>#s', $html, $match) !== 1) {
+            $this->fail('the map sent no points');
         }
-        $this->fail('the map declared no marker');
+        $colours = [];
+        foreach (json_decode($match[1], true)['points'] as $point) {
+            $colours[$point['tag']] = $point['color'] ?? '';
+        }
+
+        return $colours;
     }
 
-    public function testTheStaticMapColoursEachValue(): void
+    public function testTheMapColoursEachValue(): void
     {
-        $script = $this->staticMapScript(['colorfield' => 'bf_theme']);
+        $colours = $this->markerColours(['colorfield' => 'bf_theme']);
 
-        $this->assertStringContainsString('style="color:#1e6fd9;"', $script);
-        $this->assertStringContainsString('style="color:' . EntryDisplay::categoryColorFor('sol') . ';"', $script);
+        $this->assertSame('#1e6fd9', $colours['MarkerColourTestEau']);
+        $this->assertSame(EntryDisplay::categoryColorFor('sol'), $colours['MarkerColourTestSol']);
     }
 
-    public function testTheStaticMapWithoutAFieldLeavesTheColourToTheStylesheet(): void
+    public function testTheMapWithoutAFieldLeavesTheColourToTheStylesheet(): void
     {
-        $script = $this->staticMapScript();
-
-        $this->assertStringNotContainsString('style="color:', $script);
-        $this->assertStringNotContainsString('darkred', $script);
+        $this->assertSame(['', ''], array_values($this->markerColours()));
     }
 }

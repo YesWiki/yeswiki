@@ -2,9 +2,11 @@
 
 namespace YesWiki\Admin\Action;
 
+use YesWiki\Admin\Api\BackupsScreenController;
 use YesWiki\Admin\Service\ArchiveSchedule;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\JobsOverview;
+use YesWiki\Admin\Service\RemoteBackupService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
@@ -66,10 +68,14 @@ class AdminBackupsAction extends YesWikiAction implements RegisteredAction, Prov
             ]);
         }
 
+        $screen = $this->getService(BackupsScreenController::class);
+        $remoteStatus = $this->getService(RemoteBackupService::class)->status();
+
         return $this->render('@core/actions/admin-backups.twig', [
-            'canArchive' => $status['canArchive'],
-            'cannotArchiveMessage' => $message,
             'schedule' => $this->schedule(),
+            'archive' => $screen->archiveHtml($status['canArchive'] ? [] : ['blocked' => $message]),
+            'remote' => (string)$screen->remoteHtml(($remoteStatus['running'] ?? false) ? $remoteStatus : ['running' => false], false)->getContent(),
+            'list' => $screen->listHtml(),
         ]);
     }
 

@@ -636,25 +636,26 @@ class EntryController extends YesWikiController
             return null;
         }
 
-        if (is_array($semanticData['@context'])) {
+        if (is_array($semanticData['@context'] ?? null)) {
             foreach ($semanticData['@context'] as $context) {
                 if (is_string($context)) {
                     break;
                 }
             }
         } else {
-            $context = $semanticData['@context'];
+            $context = $semanticData['@context'] ?? null;
         }
 
         if (isset($context) && $dir_name = $this->config['baz_semantic_types_mapping'][$context]) {
-            if (is_array($semanticData['@type'])) {
-                foreach ($semanticData['@type'] as $type) {
+            $types = $semanticData['@type'] ?? $semanticData['type'] ?? null;
+            if (is_array($types)) {
+                foreach ($types as $type) {
                     if (is_string($type)) {
                         break;
                     }
                 }
             } else {
-                $type = $semanticData['@type'];
+                $type = $types;
             }
 
             if (isset($type)) {
@@ -724,7 +725,7 @@ class EntryController extends YesWikiController
 
         if (!empty($form['sem_type']) && !empty($form['sem_template'])) {
             $html['tag'] = $entry['tag'];
-            $html['semantic'] = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $html);
+            $html['semantic'] = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
         }
 
         $values = [];

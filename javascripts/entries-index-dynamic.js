@@ -1,10 +1,8 @@
 import Panel from './shared-components/Panel.js'
 import EntryField from './components/EntryField.js'
-import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import FilterNode from './components/FilterNode.js'
-import BazarMap from './components/BazarMap.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
 import { recursivelyCalculateRelations, deepGet } from './utils.js'
 import { updateHash, parseSearchParams, serializeSearchParams } from './url.js'
@@ -29,9 +27,7 @@ const load = (domElement) => {
       ModalEntry,
       SpinnerLoader,
       EntryField,
-      PopupEntryField,
       FilterNode,
-      BazarMap,
     },
     data() {
       return {
