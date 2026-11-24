@@ -12,13 +12,16 @@ use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 #[Field(['checkboxfiche'])]
-class CheckboxEntryField extends CheckboxField
+class CheckboxEntryField extends CheckboxField implements KeepsAMembersGroup
 {
     use ShowsEntriesThroughAList;
+    use KeepsAGroupOfItsEntries;
 
     protected const FIELD_ENTRIES_TEMPLATE = 20;
     protected const FIELD_ENTRIES_PARAMS = 21;
     protected const FIELD_ENTRY_DISPLAY = 22;
+    protected const FIELD_MEMBERS_GROUP = 23;
+    protected const FIELD_MEMBERS_GROUP_OWNER = 24;
 
     private const DESCRIPTION_FIELD_NAME = 'bf_description';
     private const THUMBNAIL_SIZE = 64;
@@ -43,6 +46,7 @@ class CheckboxEntryField extends CheckboxField
 
         $this->options = null;
         $this->readEntriesDisplay($values);
+        $this->readMembersGroup($values);
     }
 
     protected function renderStatic($entry)

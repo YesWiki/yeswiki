@@ -219,6 +219,16 @@ export const entriesDisplayConf = {
     placeholder: 'Ex : displayfields="visual=imagebf_image" nb="5"',
     description: _t('BAZ_FORM_EDIT_ENTRIES_PARAMS_HINT'),
   },
+  members_group: {
+    label: _t('BAZ_FORM_EDIT_MEMBERS_GROUP_LABEL'),
+    value: '',
+    placeholder: _t('BAZ_FORM_EDIT_MEMBERS_GROUP_PLACEHOLDER'),
+    description: _t('BAZ_FORM_EDIT_MEMBERS_GROUP_HINT'),
+  },
+  members_group_owner: {
+    label: _t('BAZ_FORM_EDIT_MEMBERS_GROUP_OWNER_LABEL'),
+    options: { '': _t('NO'), 1: _t('YES') },
+  },
 }
 
 export const entriesDisplayAttributes = Object.keys(entriesDisplayConf)
@@ -232,8 +242,11 @@ export function entriesDisplayEditorSetup(api) {
       api[fromForm ? 'show' : 'hide'](name),
     )
     if (fromForm && !withTemplate) api.hide('entries_params')
+    if (fromForm && String(api.getValue('members_group') ?? '').trim() === '')
+      api.hide('members_group_owner')
   }
   api.onChange('subtype2', applyVisibility)
   api.onChange('entries_template', applyVisibility)
+  api.onChange('members_group', applyVisibility)
   applyVisibility()
 }

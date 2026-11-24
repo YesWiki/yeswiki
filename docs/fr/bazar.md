@@ -460,6 +460,28 @@ Les choix possibles seront présentés sous forme d'un groupe de boutons radio :
 cela se présente comme les cases à cocher mais l'utilisateurice ne pourra
 choisir qu'une option parmi la liste.
 
+#### 1.2.11.4. Un groupe des personnes choisies
+
+Quand les choix viennent d'un formulaire Bazar, la liste déroulante, les cases à
+cocher et les boutons radio peuvent tenir à jour un groupe par fiche. Dans les
+paramètres avancés du champ :
+
+- **Groupe des personnes choisies** : un préfixe en lettres et chiffres, par
+  exemple `Equipe`. La fiche `MonEquipe` tient alors le groupe `EquipeMonEquipe`.
+- **Mettre l'auteur de la fiche dans le groupe tant que personne n'est choisi** :
+  sinon, le groupe n'est créé qu'une fois quelqu'un choisi.
+
+Le groupe contient le compte de chaque fiche choisie : celui qu'elle a créé
+(champ « Créer un utilisateur lorsque la fiche est validée »), ou à défaut le
+compte qui porte le nom de la fiche. Il est recalculé à chaque enregistrement de
+la fiche, et supprimé avec elle. Un groupe qui existait déjà avant la fiche
+n'est jamais modifié.
+
+Exemple : un formulaire « Personnes » crée un compte pour chaque personne, et un
+formulaire « Équipes » a des cases à cocher sur les personnes, avec le préfixe
+`Equipe`. Chaque équipe a son groupe, qu'on peut utiliser dans les droits
+d'accès, par exemple `@EquipeMonEquipe`.
+
 ### 1.2.12. Géolocalisation de l'adresse
 
 ![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc.png)

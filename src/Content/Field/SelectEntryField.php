@@ -7,9 +7,10 @@ use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Controller\EntryController;
 
 #[Field(['listefiche'])]
-class SelectEntryField extends EnumField
+class SelectEntryField extends EnumField implements KeepsAMembersGroup
 {
     use ShowsEntriesThroughAList;
+    use KeepsAGroupOfItsEntries;
 
     /** @var mixed the form definition's rendering choice for this list */
     protected $displayMethod;
@@ -18,6 +19,8 @@ class SelectEntryField extends EnumField
     protected const FIELD_ENTRIES_TEMPLATE = 20;
     protected const FIELD_ENTRIES_PARAMS = 21;
     protected const FIELD_ENTRY_DISPLAY = 22;
+    protected const FIELD_MEMBERS_GROUP = 23;
+    protected const FIELD_MEMBERS_GROUP_OWNER = 24;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -25,6 +28,7 @@ class SelectEntryField extends EnumField
 
         $this->displayMethod = $values[self::FIELD_DISPLAY_METHOD];
         $this->readEntriesDisplay($values);
+        $this->readMembersGroup($values);
 
         $this->options = null;
     }

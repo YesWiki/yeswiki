@@ -6,13 +6,16 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attribute\Field;
 
 #[Field(['radiofiche'])]
-class RadioEntryField extends RadioField
+class RadioEntryField extends RadioField implements KeepsAMembersGroup
 {
     use ShowsEntriesThroughAList;
+    use KeepsAGroupOfItsEntries;
 
     protected const FIELD_ENTRIES_TEMPLATE = 20;
     protected const FIELD_ENTRIES_PARAMS = 21;
     protected const FIELD_ENTRY_DISPLAY = 22;
+    protected const FIELD_MEMBERS_GROUP = 23;
+    protected const FIELD_MEMBERS_GROUP_OWNER = 24;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -20,6 +23,7 @@ class RadioEntryField extends RadioField
 
         $this->options = null;
         $this->readEntriesDisplay($values);
+        $this->readMembersGroup($values);
     }
 
     protected function renderStatic($entry)
