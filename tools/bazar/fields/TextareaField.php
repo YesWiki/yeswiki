@@ -34,10 +34,8 @@ class TextareaField extends BazarField
         $this->syntax = $values[self::FIELD_SYNTAX] ?? self::SYNTAX_WIKI;
 
         $this->placeholder = $values[self::FIELD_PLACEHOLDER];
-        // For this field, max chars are defined in the 6th column, instead of the already-used 4th
         $this->maxChars = $values[self::FIELD_MAX_CHARS];
 
-        // Retro-compatibility
         if ($this->syntax === 'wiki') {
             $this->syntax = self::SYNTAX_WIKI;
         }
@@ -47,7 +45,6 @@ class TextareaField extends BazarField
     {
         $output = '';
         $wiki = $this->getWiki();
-        // If HTML syntax, load editor's JS and CSS
         if ($this->syntax === self::SYNTAX_HTML) {
             $wiki->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
             $wiki->AddCSSFile('tools/bazar/libs/vendor/summernote/summernote.css');
@@ -64,26 +61,21 @@ class TextareaField extends BazarField
             $script = '$(document).ready(function() {
               $(".summernote").summernote({
                 ' . $langOptions . '
-                height: ' . $this->numRows * 30 . ',    // set editor height
-                minHeight: 100, // set minimum height of editor
-                maxHeight: 350,                // set maximum height of editor
-                focus: false,                   // set focus to editable area after initializing summernote
+                height: ' . $this->numRows * 30 . ',
+                minHeight: 100,
+                maxHeight: 350,
+                focus: false,
                 inheritPlaceholder: true,
                 toolbar: [
-                    //[groupname, [button list]]
-                    //[\'style\', [\'style\', \'well\']],
                     [\'style\', [\'style\']],
                     [\'textstyle\', [\'bold\', \'italic\', \'underline\', \'strikethrough\', \'clear\']],
                     [\'color\', [\'color\']],
                     [\'para\', [\'ul\', \'ol\', \'paragraph\']],
-                    [\'insert\', [\'hr\', \'link\', \'table\']], // \'picture\', \'video\' removed because of the storage in the field
+                    [\'insert\', [\'hr\', \'link\', \'table\']],
                     [\'misc\', [\'codeview\']]
                 ],
                 isNotSplitEdgePoint : true,
                 styleTags: [\'h3\', \'h4\', \'h5\', \'h6\', \'p\', \'blockquote\', \'pre\'],
-                oninit: function() {
-                  //$(\'button[data-original-title=Style]\').prepend("Style").find("i").remove();
-                },
                 callbacks: {
                     onPaste: function (e) {
                         var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData(\'Text\');
@@ -136,7 +128,6 @@ class TextareaField extends BazarField
 
         switch ($this->syntax) {
             case self::SYNTAX_WIKI:
-                // Do the page change in any case (useful for attach or grid)
                 $oldPage = $GLOBALS['wiki']->GetPageTag();
                 $oldPageArray = $GLOBALS['wiki']->page;
                 $GLOBALS['wiki']->tag = $entry['id_fiche'];
@@ -144,10 +135,6 @@ class TextareaField extends BazarField
                 $GLOBALS['wiki']->page['body'] = $value;
 
                 $value = $GLOBALS['wiki']->Format($value);
-                // if the textarea have some actions which return "", they are replaced by '' otherwise it crashed
-                // because they're by wakka as a beginning of HTML code
-                // the user still insert HTML code in the textarea with "" because the "" block is interpretated before
-                // the replacement
                 $value = str_replace('""', '\'\'', $value);
 
                 $GLOBALS['wiki']->tag = $oldPage;
@@ -159,8 +146,6 @@ class TextareaField extends BazarField
                 break;
 
             case self::SYNTAX_HTML:
-                // if the user type "", it's replaced by '' otherwise it crashes the output because it's interpretated
-                // by wakka as a beginning of HTML code
                 $value = str_replace('""', '\'\'', $value);
                 break;
         }
@@ -169,8 +154,6 @@ class TextareaField extends BazarField
             'value' => $value,
         ]);
     }
-
-    // GETTERS. Needed to use them in the Twig syntax
 
     public function getNumRows()
     {
@@ -266,7 +249,6 @@ class TextareaField extends BazarField
                 $attach = new \Attach($wiki);
                 $attach->file = $fileName;
 
-                // fake page
                 $wiki->tag = $entry['id_fiche'];
                 $wiki->page = [
                     'tag' => $entry['id_fiche'],
@@ -278,7 +260,6 @@ class TextareaField extends BazarField
                 $newFilePath = $attach->GetFullFilename(true);
 
                 if (!empty($newFilePath)) {
-                    // save file
                     file_put_contents($newFilePath, $imageContent);
 
                     $newText = $matches[1][$index];
@@ -310,30 +291,24 @@ class TextareaField extends BazarField
         return $entryCreationTime;
     }
 
-    /**
-     * sanitize file name.
-     *
-     * @return string $outputString
-     */
+    /** The file name with punctuation turned into dashes and accents removed. */
     private function sanitizeFileName(string $inputString): string
     {
         return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
     }
 
-    /**
-     * sanitize html to prevent xss.
-     */
-    private function sanitizeHTMLInWikiCode(string $value)
+    /** Purifies every stretch between "" delimiters that could hold a tag, leaving tag-free wiki text as written. */
+    private function sanitizeHTMLInWikiCode(string $value): string
     {
-        $preformattedDirtyHTML = str_replace(['@@', '""'], ['\\@\\@\\', '@@'], $value);
-        $preformattedCleanHTML = $this->getService(HtmlPurifierService::class)->cleanHTML($preformattedDirtyHTML);
-
-        return str_replace(['""', '@@', '\\@\\@\\'], ['\'\'', '""', '@@'], $preformattedCleanHTML);
+        return implode('""', array_map(
+            fn (string $segment) => preg_match('/<[a-zA-Z\/!?]/', $segment)
+                ? str_replace('""', "''", $this->sanitizeHTML($segment))
+                : $segment,
+            explode('""', $value)
+        ));
     }
 
-    /**
-     * sanitize html to prevent xss.
-     */
+    /** The HTML cleaned of anything that could run script. */
     private function sanitizeHTML(string $value)
     {
         return $this->getService(HtmlPurifierService::class)->cleanHTML($value);

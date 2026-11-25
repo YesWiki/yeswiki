@@ -12,9 +12,8 @@ class BazarAction extends YesWikiAction
     public const VARIABLE_VOIR = 'vue';
     public const VARIABLE_ACTION = 'action';
 
-    // Premier niveau d'action : pour toutes les fiches
-    public const VOIR_DEFAUT = 'formulaire'; // Recherche
-    public const VOIR_CONSULTER = 'consulter'; // Recherche
+    public const VOIR_DEFAUT = 'formulaire';
+    public const VOIR_CONSULTER = 'consulter';
     public const VOIR_SAISIR = 'saisir';
     public const VOIR_FORMULAIRE = 'formulaire';
     public const VOIR_LISTES = 'listes';
@@ -22,7 +21,6 @@ class BazarAction extends YesWikiAction
     public const VOIR_EXPORTER = 'exporter';
     public const VOIR_ABONNEMENTS = 'abonnements';
 
-    // Entries
     public const MOTEUR_RECHERCHE = 'recherche';
     public const ACTION_ENTRY_VIEW = 'voir_fiche';
     public const CONSULTER_PAGINATION = 50;
@@ -30,7 +28,6 @@ class BazarAction extends YesWikiAction
     public const ACTION_ENTRY_EDIT = 'modif_fiche';
     public const ACTION_ENTRY_DELETE = 'supprimer';
 
-    // Forms
     public const ACTION_FORM_CREATE = 'new';
     public const ACTION_FORM_EDIT = 'modif';
     public const ACTION_FORM_DELETE = 'delete';
@@ -41,32 +38,29 @@ class BazarAction extends YesWikiAction
     public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche';
     public const ACTION_FORM_TRANSLATE = 'translate';
 
-    // Lists
     public const ACTION_LIST_CREATE = 'saisir_liste';
     public const ACTION_LIST_TRANSLATE = 'traduire_liste';
     public const ACTION_LIST_EDIT = 'modif_liste';
     public const ACTION_LIST_DELETE = 'supprimer_liste';
 
-    // Abonnements
     public const ACTION_ABONNEMENT_LIST = 'list';
     public const ACTION_ABONNEMENT_ADD = 'add';
     public const ACTION_ABONNEMENT_REMOVE = 'remove';
     public const ACTION_ABONNEMENT_SYNC = 'sync';
     public const ACTION_ABONNEMENT_ACCEPT = 'accept';
 
-    public const ACTION_PUBLIER = 'publier'; // Valider la fiche
-    public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
+    public const ACTION_PUBLIER = 'publier';
+    public const ACTION_PAS_PUBLIER = 'pas_publier';
 
     public function formatArguments($arg)
     {
-        $redirecturl = $this->sanitizedGet('redirecturl', function () use ($arg) {
+        $redirecturl = str_replace('&amp;', '&', (string)$this->sanitizedGet('redirecturl', function () use ($arg) {
             return $arg['redirecturl'] ?? '';
-        });
+        }));
 
-        // YesWiki pages links, like "HomePage" or "HomePage/xml"
         if (!empty($redirecturl)) {
             $wikiLink = $this->wiki->extractLinkParts((substr($redirecturl, 0, 1) == '?') ? substr($redirecturl, 1) : $redirecturl);
-            if ($wikiLink) {// General URL
+            if ($wikiLink) {
                 $tag = $wikiLink['tag'];
                 $method = $wikiLink['method'];
                 $params = $wikiLink['params'] ?? [];
@@ -98,24 +92,15 @@ class BazarAction extends YesWikiAction
             self::VARIABLE_VOIR => $this->sanitizedGet(self::VARIABLE_VOIR, function () use ($arg) {
                 return $arg[self::VARIABLE_VOIR] ?? self::VOIR_DEFAUT;
             }),
-            // afficher le menu de vues bazar ?
             'voirmenu' => $this->sanitizedGet('voirmenu', function () use ($arg) {
                 return $arg['voirmenu'] ?? $this->params->get('baz_menu');
             }),
-            // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $vIDs,
-            // Permet de rediriger vers une url après saisie de fiche
             'redirecturl' => $redirecturl,
         ];
     }
 
-    /**
-     * check if get is scalar then return it or result of callback.
-     *
-     * @param function $callback
-     *
-     * @return scalar
-     */
+    /** The query value for $key when it is scalar, otherwise what $callback returns. */
     protected function sanitizedGet(string $key, $callback)
     {
         $val = $this->getRequest()->query->get($key);
