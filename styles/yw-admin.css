@@ -2002,6 +2002,18 @@ body:has(#yw-fb-rail:not([hidden])) .yw-fb__rail-open {
   font-size: 0.85rem;
 }
 
+.yw-fb__card-code-label {
+  color: var(--yw-text);
+  font-size: 0.8rem;
+}
+
+.yw-fb__card-code {
+  margin: 0 0 var(--yw-space-sm-y);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.85rem;
+}
+
 .yw-fb__canvas .yw-fb__palette-item {
   flex-direction: row;
   justify-content: center;

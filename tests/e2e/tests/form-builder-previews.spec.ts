@@ -154,6 +154,40 @@ test('a field with nothing to show says so instead of spinning', async ({
   expect(watcher.errors()).toEqual([])
 })
 
+test('a custom HTML field shows its code instead of running it', async ({
+  page,
+}, testInfo) => {
+  const watcher = watchConsole(page)
+  await openDesigner(page)
+
+  await addField(page, 'labelhtml')
+  await page
+    .locator('[data-fb-attribute="form_text"] textarea')
+    .fill('<div class="yw-probe-html">salut</div>')
+  await addField(page, 'text')
+  await previewsSettled(page)
+
+  const code = page.locator('.yw-fb__canvas pre.yw-fb__card-code')
+  await expect(code).toHaveText('<div class="yw-probe-html">salut</div>')
+  await expect(page.locator('.yw-fb__canvas .yw-probe-html')).toHaveCount(0)
+
+  await attachConsole(watcher, testInfo)
+  expect(watcher.errors()).toEqual([])
+})
+
+test('the end of a conditions block shows its closing tag', async ({
+  page,
+}) => {
+  await openDesigner(page)
+
+  await addField(page, 'conditionschecking')
+  await previewsSettled(page)
+
+  await expect(
+    cards(page).last().locator('pre.yw-fb__card-code'),
+  ).toContainText('</div>')
+})
+
 /** A required field's preview is not a field of the form being designed, so it cannot hold up saving it. */
 test('a form with required checkbox, radio and map fields saves', async ({
   page,

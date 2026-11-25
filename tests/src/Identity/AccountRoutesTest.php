@@ -103,6 +103,7 @@ class AccountRoutesTest extends YesWikiTestCase
             $body = (string)$account->account()->getContent();
             $this->assertStringNotContainsString('login-form', $body, 'a signed-in visitor gets their account');
             $this->assertStringContainsString('usersettings_action" value="update"', $body);
+            $this->assertMatchesRegularExpression('~class="yw-account-face">(?:(?!</div>\s*<div).)*yw-account-face__logout~s', $body, 'the logout button sits beside the avatar, at the top');
 
             $this->assertStringContainsString('?user/pages', $body, 'the rail links the account screens');
             $this->assertStringNotContainsString('?dashboard/', $body, 'the account rail is not the dashboard');

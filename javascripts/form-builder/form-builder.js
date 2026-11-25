@@ -600,7 +600,31 @@ function hasVisiblePreview(holder) {
   )
 }
 
+const drawnOnServer = (field) => field.type !== 'labelhtml'
+
+/** A custom HTML field's code as typed, since its raw markup can unbalance the canvas. */
+function codePreview(field) {
+  const texts = [
+    ['form_text', 'BAZ_FORM_EDIT_EDIT_CONTENT_LABEL'],
+    ['view_text', 'BAZ_FORM_EDIT_VIEW_CONTENT_LABEL'],
+  ].filter(([key]) => (field.data[key] || '').trim() !== '')
+  if (texts.length === 0) {
+    return `<em class="yw-fb__card-nopreview">${esc(_t('FORM_BUILDER_NO_PREVIEW'))}</em>`
+  }
+  return texts
+    .map(
+      ([key, label]) =>
+        `<div class="yw-fb__card-code-label">${esc(_t(label))}</div><pre class="yw-fb__card-code">${esc(field.data[key])}</pre>`,
+    )
+    .join('')
+}
+
 function paintPreview(holder, field) {
+  if (!drawnOnServer(field)) {
+    holder.innerHTML = codePreview(field)
+    holder.classList.remove('yw-fb__card-preview--pending')
+    return
+  }
   holder.innerHTML = previewHtml[field.id] ?? ''
   neutralizePreview(holder, field.id)
   if (!hasVisiblePreview(holder)) {
@@ -629,9 +653,11 @@ function schedulePreviews(ids = null) {
 }
 
 async function runPreviews() {
-  const targets = previewPendingAll
-    ? fields.slice()
-    : fields.filter((field) => previewPendingIds.has(field.id))
+  const targets = (
+    previewPendingAll
+      ? fields.slice()
+      : fields.filter((field) => previewPendingIds.has(field.id))
+  ).filter(drawnOnServer)
   previewPendingAll = false
   previewPendingIds = new Set()
   if (targets.length === 0) return
@@ -711,7 +737,9 @@ function renderCanvas() {
   })
   forgetStalePreviews()
   const missing = fields
-    .filter((field) => previewHtml[field.id] === undefined)
+    .filter(
+      (field) => drawnOnServer(field) && previewHtml[field.id] === undefined,
+    )
     .map((field) => field.id)
   if (missing.length > 0) schedulePreviews(missing)
 }
@@ -794,7 +822,7 @@ function refreshCard(field) {
 
 /** Paint a card's cached preview, once the card is in the document. */
 function paintCached(field) {
-  if (previewHtml[field.id] === undefined) return
+  if (drawnOnServer(field) && previewHtml[field.id] === undefined) return
   const holder = previewHolder(field)
   if (holder) paintPreview(holder, field)
 }

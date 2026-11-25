@@ -1156,6 +1156,10 @@ input[type='url'] {
   font-size: 1.1em;
 }
 
+.yw-account-face__logout {
+  margin-left: auto;
+}
+
 .clear,
 .hr_clear {
   clear: both;
