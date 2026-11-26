@@ -1,0 +1,16 @@
+{# One slotted wall of a tower or a triangle: a landscape A4 sheet, the entry between the slots and its title on the wings. #}
+{% import "@core/presentations/_print.twig" as print %}
+<div class="yw-print__sheet yw-wall">
+  <svg class="yw-print__net" viewBox="0 0 297 210" aria-hidden="true">
+    <path class="yw-print__cut" d="{{ outline }}" />
+  </svg>
+  <span class="yw-print__label">{{ label }}</span>
+  {% if item %}
+    {% for x in [10, 237.6] %}
+      <div class="yw-print__panel yw-wall__wing"{{ print.place(x, 10, 49.4, 190, 297, 210, item) }}><span>{{ item.title|shorten(params.maxtitle|default(limits.title)) }}</span></div>
+    {% endfor %}
+    <article class="yw-print__panel yw-wall__face"{{ print.place(60.6, 10, 175.8, 190, 297, 210, item) }}>
+      {{ print.block(item, params, limits) }}
+    </article>
+  {% endif %}
+</div>

@@ -148,10 +148,10 @@ class PresentationCatalogTest extends YesWikiTestCase
             array_filter($presentations, static fn (Presentation $p) => !$p->custom)
         ));
         $plain = $shipped($catalog->fitting($this->plainForm()));
-        $this->assertSame(['card', 'list', 'table'], $plain, 'a form with only a text field is offered a date or a map display');
+        $this->assertSame(['card', 'list', 'print-affiche', 'print-badges', 'print-cartels', 'print-cartes', 'print-chevalet', 'print-croix', 'print-cube', 'print-pied', 'print-totem', 'print-tour', 'print-triangle', 'print-zine', 'table'], $plain, 'a form with only a text field is offered a date or a map display');
 
         $rich = $shipped($catalog->fitting($this->richForm()));
-        foreach (['card', 'list', 'table', 'timeline', 'calendar', 'map', 'map-and-table'] as $name) {
+        foreach (['card', 'list', 'table', 'timeline', 'print-frise', 'calendar', 'map', 'map-and-table'] as $name) {
             $this->assertContains($name, $rich, "{$name} is not offered to a form with a date and a location");
         }
     }
@@ -166,7 +166,7 @@ class PresentationCatalogTest extends YesWikiTestCase
         $rich = $catalog->switcherFor($this->richForm());
         $this->assertSame(['card', 'list', 'table', 'map', 'calendar'], array_column($rich, 'name'));
         $byCategory = array_column($rich, 'presentations', 'name');
-        $this->assertSame(['list', 'timeline'], array_column($byCategory['list'], 'name'));
+        $this->assertSame(['list', 'print-frise', 'timeline'], array_column($byCategory['list'], 'name'));
         $this->assertSame(['map', 'map-and-table'], array_column($byCategory['map'], 'name'));
         $this->assertSame(_t('PRESENTATION_MAP'), $rich[3]['label']);
         $this->assertSame('map-2', $rich[3]['icon']);

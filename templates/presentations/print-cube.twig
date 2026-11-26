@@ -1,0 +1,37 @@
+{# presentation
+   label: PRESENTATION_PRINT_CUBE
+   category: card
+   icon: cube
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set faces = [
+  {name: 'front', x: 73, y: 89},
+  {name: 'right', x: 137, y: 89},
+  {name: 'back', x: 73, y: 217},
+  {name: 'left', x: 9, y: 89},
+  {name: 'top', x: 73, y: 25},
+  {name: 'bottom', x: 73, y: 153},
+] %}
+{% set limits = {title: 35, subtitle: 30} %}
+<div class="yw-print yw-print--cube">
+  {{ print.start(_t('PRESENTATION_PRINT_CUBE_HINT'), limits, params) }}
+  {% for chunk in items|batch(6, false, false) %}
+    <div class="yw-print__sheet yw-cube">
+      <svg class="yw-print__net" viewBox="0 0 210 297" aria-hidden="true">
+        <path class="yw-cube__tabs" d="M73 25 L81 16 L129 16 L137 25 L137 89 L145 80 L193 80 L201 89 L201 153 L193 162 L145 162 L137 153 L137 217 L146 225 L146 273 L137 281 L73 281 L64 273 L64 225 L73 217 L73 153 L65 162 L17 162 L9 153 L9 89 L17 80 L65 80 L73 89 Z" />
+        <path class="yw-cube__faces" d="M73 25 L137 25 L137 89 L201 89 L201 153 L137 153 L137 281 L73 281 L73 153 L9 153 L9 89 L73 89 Z" />
+        <path class="yw-print__fold" d="M73 25 L137 25 M9 89 L201 89 M9 153 L201 153 M73 217 L137 217 M73 89 L73 153 M137 89 L137 153 M73 217 L73 281 M137 217 L137 281" />
+      </svg>
+      {% for face in faces %}
+        {% set item = chunk[loop.index0] %}
+        <section class="yw-cube__face yw-cube__face--{{ face.name }}" style="left: {{ face.x / 210 * 100 }}%; top: {{ face.y / 297 * 100 }}%"{% if item %}{{ print.accent(item) }}{% endif %}>
+          {% if item %}
+            {{ print.block(item, params, limits, {qr: false, text: false, fields: false, note: false, tag: 'h3'}) }}
+          {% endif %}
+        </section>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

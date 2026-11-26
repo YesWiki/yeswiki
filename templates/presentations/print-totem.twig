@@ -1,0 +1,41 @@
+{# presentation
+   label: PRESENTATION_PRINT_TOTEM
+   category: card
+   icon: bookmark
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set limits = {
+  ellipse: {title: 35, subtitle: 40, text: {none: 700, landscape: 700, square: 700, portrait: 700}},
+  triangle: {title: 30, subtitle: 30, text: {none: 780, landscape: 780, square: 780, portrait: 780}},
+} %}
+{% set shape = params.forme|default('ellipse') == 'triangle' ? 'triangle' : 'ellipse' %}
+{% set limits = limits[shape] %}
+{% set faces = shape == 'triangle' ? ['visual', 'text', 'qr'] : ['visual', 'text'] %}
+{% set faceWidth = 273 / faces|length %}
+<div class="yw-print yw-print--landscape yw-print--totem yw-print--totem-{{ shape }}">
+  {{ print.start(_t(shape == 'triangle' ? 'PRESENTATION_PRINT_TOTEM_TRIANGLE_HINT' : 'PRESENTATION_PRINT_TOTEM_ELLIPSE_HINT'), limits, params) }}
+  {% for item in items %}
+    <div class="yw-print__sheet yw-totem">
+      <svg class="yw-print__net" viewBox="0 0 297 210" aria-hidden="true">
+        <path class="yw-print__cut" d="M6 8 H279 L291 16 V194 L279 202 H6 Z" />
+        <path class="yw-print__fold" d="{% for i in 1..faces|length %}M{{ 6 + faceWidth * i }} 8 V202 {% endfor %}" />
+      </svg>
+      <span class="yw-print__panel yw-totem__flap"{{ print.place(279, 16, 12, 178, 297, 210, null) }}><span>{{ _t('PRESENTATION_PRINT_GLUE') }}</span></span>
+      {% for kind in faces %}
+        <section class="yw-print__panel yw-totem__face yw-totem__face--{{ kind }}"{{ print.place(6 + faceWidth * loop.index0, 8, faceWidth, 194, 297, 210, item) }}>
+          {% if kind == 'visual' %}
+            {{ print.block(item, params, limits, {qr: false, text: false, fields: false}) }}
+          {% elseif kind == 'text' %}
+            {{ print.block(item, params, limits, {image: false, meta: false, note: false, qr: shape == 'ellipse', tag: 'h3'}) }}
+          {% else %}
+            <h3 class="yw-print__title">{{ item.title|shorten(params.maxtitle|default(limits.title)) }}</h3>
+            {{ print.qr(item, params) }}
+            {% if item.footer %}<span class="yw-print__footnote">{{ item.footer }}</span>{% endif %}
+          {% endif %}
+        </section>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

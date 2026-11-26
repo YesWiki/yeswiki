@@ -872,6 +872,56 @@ constructeur graphique permet de lister les options possibles.
   et se filtre par facette comme les autres listes.
 - **Afficher les contours de département** (à completer)
 
+#### 3.1.3. Supports à imprimer
+
+Treize templates mettent les fiches en page sur des feuilles A4, pour une
+exposition, un événement ou un atelier. Les champs se choisissent avec
+`displayfields`, comme pour les blocs, et `printfields` ajoute d'autres champs,
+séparés par des virgules, affichés comme sur la fiche. `qrcode="0"` retire le QR
+code qui mène à chaque fiche.
+
+| Template         | Support                                                                       | Paramètres propres                             |
+| ---------------- | ----------------------------------------------------------------------------- | ---------------------------------------------- |
+| `print-cartels`  | Cartels à découper                                                            | `size` : `a5` (2), `a6` (4) ou `a7` (8)        |
+| `print-chevalet` | Chevalet de table, une fiche par feuille pliée en tente                       |                                                |
+| `print-zine`     | Livret de 8 pages sur une feuille, six fiches                                 | `cover` : titre de couverture                  |
+| `print-badges`   | Dix badges de 90 × 55 mm par feuille                                          |                                                |
+| `print-cartes`   | Neuf cartes de 63 × 88 mm, recto-verso                                        | `verso="0"` : recto seul                       |
+| `print-affiche`  | Une affiche par fiche, en mosaïque de feuilles                                | `tiles` : `2x2` (A2), `3x3`, `1x3`…            |
+| `print-frise`    | Frise chronologique en bandes à coller bout à bout                            | `persheet` : de 2 à 6 fiches par bande         |
+| `print-cube`     | Patron de cube, six fiches par cube                                           |                                                |
+| `print-croix`    | Présentoir en croix à encoches, quatre fiches                                 |                                                |
+| `print-pied`     | Cartel de 95 × 190 mm sur pied à encoche                                      |                                                |
+| `print-tour`     | Tour de quatre panneaux à encoches, emboîtés en dièse                         |                                                |
+| `print-triangle` | Présentoir de trois panneaux à encoches, en triangle                          |                                                |
+| `print-totem`    | Totem de comptoir dans une feuille A4 : deux faces bombées ou trois en prisme | `forme` : `ellipse` (par défaut) ou `triangle` |
+
+```
+{{entrylist id="2" template="print-cartes" displayfields="title=bf_titre,visual=imagebf_image,text=bf_description" printfields="bf_lieu"}}
+```
+
+La mise en page suit la forme de l'image. Une image en paysage passe au-dessus du
+texte, sur toute la largeur. Une image carrée ou en portrait se place à gauche,
+sous le titre, et le texte coule à côté. Le QR code se cale en bas à droite et le
+texte l'entoure aussi. Les supports à imprimer reçoivent l'image entière, sans le
+recadrage des cartes.
+
+Chaque support a des limites en nombre de caractères pour le titre, le sous-titre
+et le texte, mesurées pour que tout tienne. La limite du texte dépend de la forme
+de l'image. Les consignes au-dessus des feuilles les affichent. Au-delà, le texte
+est coupé au dernier mot entier, suivi de « … ». `maxtitle`, `maxsubtitle` et
+`maxtext` changent ces limites, par exemple `maxtext="200"` pour des notices plus
+courtes. Les limites supposent les champs de `printfields` des exemples : avec
+plus de champs, réduisez `maxtext`.
+
+La frise a besoin d'un champ date de début, comme le calendrier. Chaque page
+affiche ses consignes de découpe et de pliage au-dessus des feuilles. Le bouton
+**Imprimer** ouvre l'impression du navigateur : seules les feuilles sortent, sans
+le menu ni l'en-tête du wiki. Réglez l'échelle à 100 % et les marges à zéro.
+Sans pagination, toutes les fiches sont imprimées. Les cartes s'impriment en
+recto-verso. Prenez un papier de 160 à 250 g pour les cartes et les badges, et
+de 200 g ou plus pour les cubes, les chevalets et les formats à encoches.
+
 ### 3.2. Paramètres des visualisations
 
 #### 3.2.1. Afficher des filtres (facettes)

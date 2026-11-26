@@ -1,0 +1,30 @@
+{# presentation
+   label: PRESENTATION_PRINT_FRISE
+   category: list
+   icon: history
+   requires: start_date
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set limits = {title: 45, subtitle: 40, text: {none: 850, landscape: 440, square: 440, portrait: 440}} %}
+{% set perSheet = params.persheet|default('4') in ['2', '3', '4', '5', '6'] ? params.persheet|default('4') + 0 : 4 %}
+<div class="yw-print yw-print--landscape yw-print--frise">
+  {{ print.start(_t('PRESENTATION_PRINT_FRISE_HINT'), limits, params) }}
+  {% for sheet in items|sort((a, b) => (a.date ?? '') <=> (b.date ?? ''))|batch(perSheet) %}
+    <div class="yw-print__sheet yw-frise">
+      <div class="yw-frise__glue"><span>{{ _t('PRESENTATION_PRINT_GLUE') }}</span></div>
+      <div class="yw-frise__track" style="--yw-frise-columns: {{ perSheet }}">
+        {% for item in sheet %}
+          <article class="yw-frise__event yw-frise__event--{{ loop.index is odd ? 'up' : 'down' }}"{{ print.accent(item) }}>
+            <div class="yw-frise__card">
+              {{ print.block(item, params, limits, {qr: false, fields: false, note: false, date: true, tag: 'h3'}) }}
+            </div>
+            <span class="yw-frise__dot"></span>
+          </article>
+        {% endfor %}
+      </div>
+      <span class="yw-frise__trim"></span>
+    </div>
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

@@ -1,0 +1,21 @@
+{# presentation
+   label: PRESENTATION_PRINT_TRIANGLE
+   category: card
+   icon: box
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set limits = {title: 60, subtitle: 60, text: {none: 1210, landscape: 300, square: 830, portrait: 810}} %}
+<div class="yw-print yw-print--landscape yw-print--triangle">
+  {{ print.start(_t('PRESENTATION_PRINT_TRIANGLE_HINT'), limits, params) }}
+  {% for chunk in items|batch(3, false, false) %}
+    {% for item in chunk %}
+      {% include "@core/presentations/_print-wall.twig" with {
+        item: item,
+        outline: 'M10 10 H236.4 V105 H237.6 V10 H287 V200 H60.6 V105 H59.4 V200 H10 Z',
+        label: _t('PRESENTATION_PRINT_PANEL') ~ ' ' ~ loop.index ~ ' / 3 · ' ~ _t('PRESENTATION_PRINT_SLOTS_MIXED'),
+      } %}
+    {% endfor %}
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

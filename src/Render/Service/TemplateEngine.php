@@ -249,6 +249,20 @@ class TemplateEngine
                 $height > 0 ? $height : null
             );
         });
+        $this->addTwigHelper('image_shape', function ($url): string {
+            static $shapes = [];
+            $url = (string)$url;
+            if (isset($shapes[$url])) {
+                return $shapes[$url];
+            }
+            $base = $this->urlFormatter->getBaseUrl() . '/';
+            $path = str_starts_with($url, $base) ? substr($url, strlen($base)) : (preg_match('#^(https?:)?//#i', $url) === 1 ? '' : $url);
+            $path = (string)strtok($path, '?');
+            $size = $path !== '' && $this->storage->exists($path) ? $this->storage->imageSize($path) : false;
+            $ratio = is_array($size) && $size[1] > 0 ? $size[0] / $size[1] : 1.5;
+
+            return $shapes[$url] = $ratio >= 1.15 ? 'landscape' : ($ratio <= 0.87 ? 'portrait' : 'square');
+        });
         $this->addTwigHelper('urlImage', function ($options) {
             if (!isset($options['fileName'])) {
                 throw new \Exception('`urlImage` should be called with `fileName` key in params!');
@@ -568,6 +582,21 @@ class TemplateEngine
             $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
             return trim((string)preg_replace("~[ \t]*\n\s*\n+~", "\n", $text));
+        }));
+
+        $this->twig->addFilter(new \Twig\TwigFilter('shorten', function ($text, mixed $limit): string {
+            $text = trim((string)$text);
+            $limit = (int)$limit;
+            if ($limit < 1 || mb_strlen($text) <= $limit) {
+                return $text;
+            }
+            $cut = mb_substr($text, 0, $limit - 1);
+            $space = mb_strrpos($cut, ' ');
+            if ($space !== false && $space > $limit * 0.6) {
+                $cut = mb_substr($cut, 0, $space);
+            }
+
+            return rtrim($cut, " \t\n,;:.-–—") . '…';
         }));
 
         $this->twig->addFilter(new \Twig\TwigFilter('number', fn ($value, mixed $decimals = null): string => is_scalar($value) ? $this->container->get(NumberDisplay::class)->format((string)$value, NumberDisplay::decimalsFrom($decimals)) : ''));

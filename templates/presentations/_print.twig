@@ -1,0 +1,77 @@
+{# Shared pieces of the printable presentations: the print button with the character limits, and an entry's block laid out around its picture. #}
+{% macro start(hint, limits, params) %}
+  {{ include_css('styles/yw-print.css') }}
+  {{ include_javascript('javascripts/yw-print.js', false, true) }}
+  <div class="yw-print__hint">
+    <div>
+      <p>{{ hint }}</p>
+      {% if limits|default(null) %}
+        {%- set text = limits.text|default(null) -%}
+        {%- if text and params.maxtext|default(false) -%}
+          {%- set text = {none: params.maxtext, landscape: params.maxtext, square: params.maxtext, portrait: params.maxtext} -%}
+        {%- endif -%}
+        {%- set parts = [] -%}
+        {%- if text -%}
+          {%- if text.none == text.landscape and text.none == text.portrait and text.none == text.square -%}
+            {%- set parts = [text.none] -%}
+          {%- else -%}
+            {%- for shape in ['landscape', 'square', 'portrait', 'none'] -%}
+              {%- set parts = parts|merge([text[shape] ~ ' ' ~ _t('PRESENTATION_PRINT_SHAPE_' ~ shape|upper)]) -%}
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endif -%}
+        <p class="yw-print__limits">{{ _t(parts ? 'PRESENTATION_PRINT_LIMITS' : 'PRESENTATION_PRINT_LIMITS_NO_TEXT', {title: params.maxtitle|default(limits.title), subtitle: params.maxsubtitle|default(limits.subtitle), text: parts|join(', ')}) }}</p>
+      {% endif %}
+    </div>
+    <button type="button" class="yw-btn yw-btn--primary" data-yw-print>{{ _t('PRESENTATION_PRINT_BUTTON') }}</button>
+  </div>
+{% endmacro %}
+
+{% macro block(item, params, limits, options) %}
+  {%- set options = {qr: true, image: true, meta: true, text: true, fields: true, note: true, date: false, hero: false, tag: 'h2'}|merge(options|default({})) -%}
+  {%- set shape = options.image and item.image ? image_shape(item.image) : 'none' -%}
+  {%- set textLimit = params.maxtext|default(limits.text[shape]|default(0)) -%}
+  {%- set titleLimit = params.maxtitle|default(limits.title|default(0)) -%}
+  {%- set subtitleLimit = params.maxsubtitle|default(limits.subtitle|default(0)) -%}
+  {%- set pictureFirst = options.hero or shape == 'landscape' -%}
+  <div class="yw-print__layout is-{{ shape }}{{ options.hero and shape != 'none' ? ' is-hero' : '' }}">
+    {%- set picture -%}
+      {% if shape != 'none' %}<img class="yw-print__image" src="{{ image_at(item.image, 1600, 0) }}" alt="" />{% endif %}
+      {% if options.qr and params.qrcode|default('1') != '0' and item.url %}<img class="yw-print__qr" src="{{ qrCode(item.url, 'print') }}" alt="{{ item.url }}" />{% endif %}
+    {%- endset -%}
+    <div class="yw-print__body">
+      {% if pictureFirst %}{{ picture }}{% endif %}
+      {% if options.date and item.date %}<p class="yw-print__date"><time datetime="{{ item.date }}">{{ item.date|moment('LL') }}</time></p>{% endif %}
+      <{{ options.tag }} class="yw-print__title">{% if item.icon %}{{ item.icon|raw }} {% endif %}{{ item.title|shorten(titleLimit) }}</{{ options.tag }}>
+      {% if options.meta and (item.subtitle or (item.date and not options.date)) %}
+        <p class="yw-print__meta">
+          {% if item.subtitle %}<span>{{ item.subtitle|shorten(subtitleLimit) }}</span>{% endif %}
+          {% if item.date and not options.date %}<time datetime="{{ item.date }}">{{ item.date|moment('LL') }}</time>{% endif %}
+        </p>
+      {% endif %}
+      {% if not pictureFirst %}{{ picture }}{% endif %}
+      {% if options.text and item.description %}
+        {%- set plain = item.description|html_to_text -%}
+        <div class="yw-print__text">{% if textLimit > 0 and plain|length > textLimit %}<p>{{ plain|shorten(textLimit) }}</p>{% else %}{{ item.description|raw }}{% endif %}</div>
+      {% endif %}
+      {% if options.fields %}
+        {% for field in params.printfields|default('')|split(',')|map(f => f|trim)|filter(f => f is not empty) %}
+          <div class="yw-print__field">{{ entryField(item.entry, field) }}</div>
+        {% endfor %}
+      {% endif %}
+    </div>
+    {% if options.note and item.footer %}<span class="yw-print__footnote">{{ item.footer }}</span>{% endif %}
+  </div>
+{% endmacro %}
+
+{% macro accent(item) %}{% if item.color %} style="--yw-print-accent: {{ item.color }}"{% endif %}{% endmacro %}
+
+{% macro qr(item, params) %}
+  {% if params.qrcode|default('1') != '0' and item.url %}<img class="yw-print__qr" src="{{ qrCode(item.url, 'print') }}" alt="{{ item.url }}" />{% endif %}
+{% endmacro %}
+
+{% macro image(item, width) %}
+  {% if item.image %}<img class="yw-print__image" src="{{ image_at(item.image, width, 0) }}" alt="" />{% endif %}
+{% endmacro %}
+
+{% macro place(x, y, w, h, sheetWidth, sheetHeight, item) %} style="left: {{ x / sheetWidth * 100 }}%; top: {{ y / sheetHeight * 100 }}%; width: {{ w / sheetWidth * 100 }}%; height: {{ h / sheetHeight * 100 }}%{% if item and item.color %}; --yw-print-accent: {{ item.color }}{% endif %}"{% endmacro %}

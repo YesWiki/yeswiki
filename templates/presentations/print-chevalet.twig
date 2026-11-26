@@ -1,0 +1,28 @@
+{# presentation
+   label: PRESENTATION_PRINT_CHEVALET
+   category: card
+   icon: tent
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set limits = {title: 35, subtitle: 25, text: {none: 390, landscape: 390, square: 390, portrait: 390}} %}
+<div class="yw-print yw-print--chevalet">
+  {{ print.start(_t('PRESENTATION_PRINT_CHEVALET_HINT'), limits, params) }}
+  {% for item in items %}
+    {% set shape = item.image ? image_shape(item.image) : 'none' %}
+    <div class="yw-print__sheet yw-chevalet"{{ print.accent(item) }}>
+      <section class="yw-chevalet__face yw-chevalet__face--back">
+        {{ print.block(item, params, limits, {image: false}) }}
+      </section>
+      <section class="yw-chevalet__face yw-chevalet__face--front is-{{ shape }}">
+        {{ print.image(item, 1600) }}
+        <div class="yw-chevalet__text">
+          <h2 class="yw-print__title">{{ item.title|shorten(params.maxtitle|default(limits.title)) }}</h2>
+          {% if item.subtitle %}<p class="yw-print__meta"><span>{{ item.subtitle|shorten(params.maxsubtitle|default(limits.subtitle)) }}</span></p>{% endif %}
+          {% if item.footer %}<span class="yw-print__footnote">{{ item.footer }}</span>{% endif %}
+        </div>
+      </section>
+    </div>
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

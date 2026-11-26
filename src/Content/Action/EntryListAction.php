@@ -364,12 +364,12 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         $slots = $this->arguments['displayfields'] ?? [];
         $slots['description'] ??= $slots['text'] ?? null;
         $imageSize = $this->imageSize();
-        $isTimeline = preg_replace('/\.(twig|tpl\.html)$/', '', (string)$this->arguments['template']) === 'timeline';
+        $datedByStart = in_array(FieldRole::START_DATE, $this->getService(PresentationCatalog::class)->requiredRoles((string)$this->arguments['template']), true);
 
         $items = [];
         foreach ($entries as $entry) {
             $tag = (string)($entry['tag'] ?? '');
-            $dateSlot = $slots['date'] ?? ($isTimeline ? $this->startDateField($entry) : null);
+            $dateSlot = $slots['date'] ?? ($datedByStart ? $this->startDateField($entry) : null);
             $badgeName = $slots['floating'] ?? null;
             $badgeDate = $this->isDateSlot($entry, $badgeName) ? self::asDate($entry[$badgeName] ?? null) : null;
             [$image, $imageResize] = $this->image($entry, $slots['visual'] ?? null, ...$imageSize);
@@ -534,6 +534,9 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     /** @return array{int, int, string} the width, height and mode a card's picture is cut to */
     private function imageSize(): array
     {
+        if (str_starts_with((string)($this->arguments['template'] ?? ''), 'print-')) {
+            return [1600, 1600, 'fit'];
+        }
         $columns = max(1, (int)($this->arguments['columns'] ?? 0) ?: 3);
         $width = (int)ceil(1170 / $columns) * 2;
         $style = (string)($this->arguments['style'] ?? '');

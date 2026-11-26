@@ -185,6 +185,124 @@ class EntryListCardTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression('#<time class="yw-item__date" datetime="2026-10-06#', $html);
     }
 
+    public function testThePrintableCartelsFillAnA4SheetWithAQrCodeToEachEntry(): void
+    {
+        $this->serveIn('fr');
+        $html = $this->render('title=bf_titre,text=bf_description', ['template' => 'print-cartels', 'size' => 'a7', 'printfields' => 'bf_type_act']);
+
+        $this->assertStringContainsString('class="yw-print yw-print--cartels yw-print--a7"', $html);
+        $this->assertSame(1, substr_count($html, 'class="yw-print__sheet"'), 'one entry fits on one sheet');
+        $this->assertStringContainsString('Robustesse : du concept à l&#039;opérationnel', $html);
+        $this->assertStringContainsString('Deux jours pour essayer', $this->visibleText($html));
+        $this->assertStringContainsString('Formation', $this->visibleText($html), 'a printed field reads as the entry shows it');
+
+        if (preg_match('#class="yw-print__qr" src="([^"]+)"#', $html, $qr) !== 1) {
+            $this->fail("no QR code in:\n" . $html);
+        }
+        $this->writtenFiles[] = $qr[1];
+        $this->assertTrue($this->getWiki()->services->get(Storage::class)->exists($qr[1]), "the QR code is written where the page reads it: {$qr[1]}");
+
+        $without = $this->render('title=bf_titre', ['template' => 'print-cartels', 'qrcode' => '0', 'size' => 'nonsense']);
+        $this->assertStringNotContainsString('yw-print__qr', $without);
+        $this->assertStringContainsString('class="yw-print yw-print--cartels yw-print--a6"', $without, 'an unknown size falls back on A6');
+    }
+
+    public function testEveryPrintablePresentationDrawsTheEntryOnAnA4Sheet(): void
+    {
+        $this->serveIn('fr');
+        foreach (['print-chevalet', 'print-zine', 'print-badges', 'print-cartes', 'print-affiche', 'print-frise', 'print-cube', 'print-croix', 'print-pied', 'print-tour', 'print-triangle', 'print-totem'] as $template) {
+            $html = $this->render('title=bf_titre,text=bf_description', ['template' => $template, 'qrcode' => '0']);
+            $this->assertStringContainsString('class="yw-print__sheet', $html, "{$template} draws no sheet");
+            $this->assertStringContainsString('>Robustesse', $html, "{$template} leaves the entry out");
+            $this->assertStringContainsString('data-yw-print', $html, "{$template} has no print button");
+        }
+    }
+
+    public function testThePlayingCardsPutEachBackBehindItsFront(): void
+    {
+        $this->serveIn('fr');
+        $html = $this->render('title=bf_titre,text=bf_description', ['template' => 'print-cartes', 'qrcode' => '0']);
+
+        $this->assertSame(2, substr_count($html, 'class="yw-print__sheet'), 'a front sheet and its back');
+        $back = substr($html, (int)strpos($html, 'yw-cards--verso'));
+        $this->assertSame(9, substr_count($back, 'class="yw-card '), 'the back sheet keeps all nine places');
+        $this->assertLessThan(strpos($back, 'yw-card--back'), strpos($back, 'yw-card--empty'), 'flipped on the long edge, the first card\'s back is the third in its row');
+        $this->assertStringNotContainsString('yw-cards--verso', $this->render('title=bf_titre', ['template' => 'print-cartes', 'verso' => '0']));
+    }
+
+    public function testTheCrossStandSplitsEachEntryAcrossBothPieces(): void
+    {
+        $this->serveIn('fr');
+        $html = $this->render('title=bf_titre,text=bf_description', ['template' => 'print-croix', 'qrcode' => '0']);
+
+        $this->assertSame(2, substr_count($html, 'class="yw-print__sheet'), 'one sheet per piece');
+        $this->assertSame(2, substr_count($html, 'Robustesse : du concept'), 'with no picture, the picture panel shows the title beside the text panel');
+        $this->assertSame(4, substr_count($html, 'yw-print__panel--flipped'), 'the top half of each piece folds behind it');
+    }
+
+    public function testSlottedStandsAlwaysPrintEveryPanelTheyNeedToStand(): void
+    {
+        $this->serveIn('fr');
+        $tower = $this->render('title=bf_titre', ['template' => 'print-tour', 'qrcode' => '0']);
+        $this->assertSame(4, substr_count($tower, 'class="yw-print__sheet'), 'one entry still makes a tower of four walls');
+        $this->assertSame(2, substr_count($tower, 'V105 H60.6 V10'), 'walls 1 and 3 are slotted from the top');
+
+        $triangle = $this->render('title=bf_titre', ['template' => 'print-triangle', 'qrcode' => '0']);
+        $this->assertSame(3, substr_count($triangle, 'class="yw-print__sheet'));
+    }
+
+    public function testTheCounterTotemFoldsIntoTwoOrThreeFaces(): void
+    {
+        $this->serveIn('fr');
+        $ellipse = $this->render('title=bf_titre', ['template' => 'print-totem', 'qrcode' => '0']);
+        $this->assertSame(2, substr_count($ellipse, 'class="yw-print__panel yw-totem__face '), 'the elliptical totem bows two faces');
+
+        $triangle = $this->render('title=bf_titre', ['template' => 'print-totem', 'forme' => 'triangle', 'qrcode' => '0']);
+        $this->assertSame(3, substr_count($triangle, 'class="yw-print__panel yw-totem__face '), 'the triangular one folds in three');
+    }
+
+    public function testPrintableTemplatesCutTextAtTheirLimitAndFollowThePicturesShape(): void
+    {
+        $this->serveIn('fr');
+        $html = $this->render('title=bf_titre,visual=imagebf_image,text=bf_description', ['template' => 'print-cartels', 'maxtext' => '20', 'qrcode' => '0']);
+
+        $this->assertStringContainsString('<p>Deux jours pour…</p>', $html, 'past its limit, the text stops at the last whole word');
+        $this->assertStringContainsString('yw-print__layout is-landscape', $html, 'a 900 × 600 picture is laid out as a landscape one');
+        $this->assertStringContainsString('texte 20', html_entity_decode($html), 'the instructions show the limit the page uses');
+        $this->assertMatchesRegularExpression('#<img class="yw-print__image" src="[^"]*imagebf_image_affiche\.png"#', $html, 'the print gets the whole picture, not a card\'s crop');
+    }
+
+    public function testAPosterOpensOnItsPictureWhateverItsShape(): void
+    {
+        $this->serveIn('fr');
+        $html = $this->render('title=bf_titre,visual=imagebf_image', ['template' => 'print-affiche', 'tiles' => '1x3', 'qrcode' => '0']);
+
+        $this->assertSame(3, substr_count($html, 'class="yw-print__layout is-landscape is-hero"'), 'each of the three sheets carries the whole poster, picture first');
+        $this->assertStringContainsString('yw-poster--tower', $html, 'a 1 × 3 banner is laid out as a tower');
+        $this->assertLessThan(strpos($html, 'class="yw-print__title"'), strpos($html, 'class="yw-print__image"'));
+    }
+
+    public function testTheZineLaysItsEightPagesOutForFolding(): void
+    {
+        $this->serveIn('fr');
+        $html = $this->render('title=bf_titre', ['template' => 'print-zine', 'cover' => 'Mon livret', 'qrcode' => '0']);
+
+        $this->assertStringContainsString('Mon livret', $html);
+        $this->assertSame(8, substr_count($html, 'class="yw-zine__page'));
+        $this->assertSame(4, substr_count($html, 'yw-zine__page--flipped'), 'the top row prints upside down');
+        preg_match_all('#yw-zine__folio">(\d)<#', $html, $folios);
+        $this->assertSame(['5', '4', '3', '2', '6', '7'], $folios[1], 'pages run 5 4 3 2 on top, 6 7 then the covers below');
+    }
+
+    public function testThePrintableTimelineDatesItsEntriesByTheirStart(): void
+    {
+        $this->serveIn('fr');
+        $html = $this->render('title=bf_titre', ['template' => 'print-frise']);
+
+        $this->assertMatchesRegularExpression('#<time datetime="2026-10-06#', $html, 'with no date slot, the timeline reads the start date role');
+        $this->assertStringContainsString('6 octobre 2026', $this->visibleText($html));
+    }
+
     public function testADateInAnotherSlotIsWrittenOutInTheReadersLanguage(): void
     {
         $this->serveIn('en');

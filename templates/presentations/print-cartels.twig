@@ -1,0 +1,27 @@
+{# presentation
+   label: PRESENTATION_PRINT_CARTELS
+   category: card
+   icon: printer
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set size = params.size|default('a6') in ['a5', 'a6', 'a7'] ? params.size|default('a6') : 'a6' %}
+{% set perSheet = {a5: 2, a6: 4, a7: 8}[size] %}
+{% set limits = {
+  a5: {title: 30, subtitle: 30, text: {none: 570, landscape: 290, square: 300, portrait: 340}},
+  a6: {title: 45, subtitle: 45, text: {none: 850, landscape: 250, square: 580, portrait: 580}},
+  a7: {title: 50, subtitle: 55, text: {none: 380, landscape: 380, square: 380, portrait: 380}},
+}[size] %}
+<div class="yw-print yw-print--cartels yw-print--{{ size }}">
+  {{ print.start(_t('PRESENTATION_PRINT_CARTELS_HINT'), limits, params) }}
+  {% for sheet in items|batch(perSheet) %}
+    <div class="yw-print__sheet">
+      {% for item in sheet %}
+        <article class="yw-cartel"{{ print.accent(item) }}>
+          {{ print.block(item, params, limits, {image: size != 'a7'}) }}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

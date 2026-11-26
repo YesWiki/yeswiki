@@ -1,0 +1,30 @@
+{# presentation
+   label: PRESENTATION_PRINT_PIED
+   category: card
+   icon: tag
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set limits = {title: 45, subtitle: 45, text: {none: 1200, landscape: 550, square: 910, portrait: 910}} %}
+<div class="yw-print yw-print--pied">
+  {{ print.start(_t('PRESENTATION_PRINT_PIED_HINT'), limits, params) }}
+  {% for sheet in items|batch(2) %}
+    <div class="yw-print__sheet yw-pied">
+      <svg class="yw-print__net" viewBox="0 0 210 297" aria-hidden="true">
+        {% for item in sheet %}
+          {% set x = loop.index0 == 0 ? 7.5 : 107.5 %}
+          <path class="yw-print__cut" d="M{{ x }} 8 H{{ x + 95 }} V198 H{{ x + 48.1 }} V178 H{{ x + 46.9 }} V198 H{{ x }} Z" />
+          <path class="yw-print__cut" d="M{{ x + 2.5 }} 215 H{{ x + 46.9 }} V235 H{{ x + 48.1 }} V215 H{{ x + 92.5 }} V255 H{{ x + 2.5 }} Z" />
+        {% endfor %}
+      </svg>
+      {% for item in sheet %}
+        {% set x = loop.index0 == 0 ? 7.5 : 107.5 %}
+        <article class="yw-print__panel yw-pied__card"{{ print.place(x, 8, 95, 168, 210, 297, item) }}>
+          {{ print.block(item, params, limits) }}
+        </article>
+        <span class="yw-pied__foot-label"{{ print.place(x + 2.5, 237, 90, 18, 210, 297, item) }}>{{ item.title|shorten(params.maxtitle|default(limits.title)) }}</span>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

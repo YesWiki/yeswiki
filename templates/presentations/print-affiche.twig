@@ -1,0 +1,36 @@
+{# presentation
+   label: PRESENTATION_PRINT_POSTER
+   category: card
+   icon: photo
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set tiles = params.tiles|default('2x2')|split('x') %}
+{% set cols = tiles[0]|default('') matches '/^[1-4]$/' ? tiles[0] + 0 : 2 %}
+{% set rows = tiles[1]|default('') matches '/^[1-4]$/' ? tiles[1] + 0 : 2 %}
+{% set ratio = rows / cols %}
+{% set proportion = ratio < 1 ? 'wide' : (ratio == 1 ? 'even' : (ratio < 2.5 ? 'tall' : 'tower')) %}
+{% set limits = {
+  wide: {title: 25, subtitle: 25, text: {none: 970, landscape: 270, square: 270, portrait: 270}},
+  even: {title: 35, subtitle: 40, text: {none: 1200, landscape: 180, square: 180, portrait: 180}},
+  tall: {title: 35, subtitle: 40, text: {none: 2370, landscape: 530, square: 530, portrait: 530}},
+  tower: {title: 25, subtitle: 25, text: {none: 2280, landscape: 630, square: 630, portrait: 630}},
+}[proportion] %}
+<div class="yw-print yw-print--affiche">
+  {{ print.start(_t('PRESENTATION_PRINT_POSTER_HINT'), limits, params) }}
+  {% for item in items %}
+    {% for row in 0..(rows - 1) %}
+      {% for col in 0..(cols - 1) %}
+        <div class="yw-print__sheet yw-tile">
+          <div class="yw-tile__window">
+            <div class="yw-poster yw-poster--{{ proportion }}" style="width: {{ cols * 100 }}%; height: {{ rows * 100 }}%; left: {{ col * -100 }}%; top: {{ row * -100 }}%;{% if item.color %} --yw-print-accent: {{ item.color }};{% endif %}">
+              {{ print.block(item, params, limits, {hero: true}) }}
+            </div>
+          </div>
+          <span class="yw-tile__label">{{ item.title|shorten(40) }} · {{ 'ABCD'|slice(col, 1) }}{{ row + 1 }}</span>
+        </div>
+      {% endfor %}
+    {% endfor %}
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

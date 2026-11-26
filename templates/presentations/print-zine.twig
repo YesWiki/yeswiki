@@ -1,0 +1,41 @@
+{# presentation
+   label: PRESENTATION_PRINT_ZINE
+   category: card
+   icon: book
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set limits = {title: 35, subtitle: 35, text: {none: 560, landscape: 160, square: 160, portrait: 160}} %}
+{% set cover = params.cover|default(_t('PRESENTATION_PRINT_ZINE_COVER')) %}
+<div class="yw-print yw-print--landscape yw-print--zine">
+  {{ print.start(_t('PRESENTATION_PRINT_ZINE_HINT'), limits, params) }}
+  {% for chunk in items|batch(6, false, false) %}
+    {% set zineNumber = loop.index %}
+    {% set zineCount = loop.length %}
+    {% set pages = {1: 'cover', 2: chunk[0], 3: chunk[1], 4: chunk[2], 5: chunk[3], 6: chunk[4], 7: chunk[5], 8: 'back'} %}
+    <div class="yw-print__sheet yw-zine">
+      {% for number in [5, 4, 3, 2, 6, 7, 8, 1] %}
+        {% set page = pages[number] %}
+        <section class="yw-zine__page{{ loop.index0 < 4 ? ' yw-zine__page--flipped' : '' }}">
+          {% if page == 'cover' %}
+            <div class="yw-zine__cover">
+              <h2 class="yw-zine__cover-title">{{ cover }}</h2>
+              {% if zineCount > 1 %}<p class="yw-zine__cover-number">{{ zineNumber }} / {{ zineCount }}</p>{% endif %}
+            </div>
+          {% elseif page == 'back' %}
+            <div class="yw-zine__back">
+              <p>{{ _t('PRESENTATION_PRINT_ZINE_BACK') }}</p>
+              {% if params.qrcode|default('1') != '0' %}<img class="yw-print__qr" src="{{ qrCode(url({}), 'print') }}" alt="{{ url({}) }}" />{% endif %}
+            </div>
+          {% elseif page %}
+            <article class="yw-zine__entry"{{ print.accent(page) }}>
+              {{ print.block(page, params, limits, {qr: false, note: false, tag: 'h3'}) }}
+            </article>
+          {% endif %}
+          {% if number > 1 and number < 8 %}<span class="yw-zine__folio">{{ number }}</span>{% endif %}
+        </section>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

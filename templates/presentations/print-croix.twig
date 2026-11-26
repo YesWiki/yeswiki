@@ -1,0 +1,57 @@
+{# presentation
+   label: PRESENTATION_PRINT_CROIX
+   category: card
+   icon: box
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set limits = {title: 60, subtitle: 55, text: {none: 320, landscape: 320, square: 320, portrait: 320}} %}
+{% set regions = {tl: [10, 10], tr: [149.1, 10], bl: [10, 105], br: [149.1, 105]} %}
+{% set pieces = [
+  {
+    name: 'A',
+    outline: 'M10 10 H287 V200 H10 Z M147.9 57.5 H149.1 V152.5 H147.9 Z',
+    panels: [
+      {pos: 'bl', entry: 1, kind: 'image'},
+      {pos: 'br', entry: 0, kind: 'text'},
+      {pos: 'tl', entry: 2, kind: 'text'},
+      {pos: 'tr', entry: 3, kind: 'image'},
+    ],
+  },
+  {
+    name: 'B',
+    outline: 'M10 10 H147.9 V57.5 H149.1 V10 H287 V200 H149.1 V152.5 H147.9 V200 H10 Z',
+    panels: [
+      {pos: 'bl', entry: 0, kind: 'image'},
+      {pos: 'br', entry: 3, kind: 'text'},
+      {pos: 'tl', entry: 1, kind: 'text'},
+      {pos: 'tr', entry: 2, kind: 'image'},
+    ],
+  },
+] %}
+<div class="yw-print yw-print--landscape yw-print--croix">
+  {{ print.start(_t('PRESENTATION_PRINT_CROIX_HINT'), limits, params) }}
+  {% for chunk in items|batch(4, false, false) %}
+    {% for piece in pieces %}
+      <div class="yw-print__sheet yw-croix">
+        <svg class="yw-print__net" viewBox="0 0 297 210" aria-hidden="true">
+          <path class="yw-print__cut" d="{{ piece.outline }}" />
+          <path class="yw-print__fold" d="M10 105 H287" />
+        </svg>
+        <span class="yw-print__label">{{ _t('PRESENTATION_PRINT_PIECE') }} {{ piece.name }}</span>
+        {% for panel in piece.panels %}
+          {% set item = chunk[panel.entry] %}
+          {% set at = regions[panel.pos] %}
+          <section class="yw-print__panel yw-croix__panel yw-croix__panel--{{ panel.kind }}{{ panel.pos starts with 't' ? ' yw-print__panel--flipped' : '' }}"{{ print.place(at[0], at[1], 137.9, 95, 297, 210, item) }}>
+            {% if item and panel.kind == 'image' %}
+              {% if item.image %}<img class="yw-print__image is-{{ image_shape(item.image) }}" src="{{ image_at(item.image, 1600, 0) }}" alt="" />{% else %}<h2 class="yw-print__title">{{ item.title|shorten(params.maxtitle|default(limits.title)) }}</h2>{% endif %}
+            {% elseif item %}
+              {{ print.block(item, params, limits, {image: false}) }}
+            {% endif %}
+          </section>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

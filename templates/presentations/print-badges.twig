@@ -1,0 +1,26 @@
+{# presentation
+   label: PRESENTATION_PRINT_BADGES
+   category: card
+   icon: id
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set limits = {title: 20, subtitle: 20} %}
+<div class="yw-print yw-print--badges">
+  {{ print.start(_t('PRESENTATION_PRINT_BADGES_HINT'), limits, params) }}
+  {% for sheet in items|batch(10) %}
+    <div class="yw-print__sheet yw-badges">
+      {% for item in sheet %}
+        <article class="yw-badge{{ item.image ? ' has-image' : '' }}"{{ print.accent(item) }}>
+          {{ print.image(item, 300) }}
+          <div class="yw-badge__body">
+            <p class="yw-badge__name">{% if item.icon %}{{ item.icon|raw }} {% endif %}{{ item.title|shorten(params.maxtitle|default(limits.title)) }}</p>
+            {% if item.subtitle %}<p class="yw-badge__role">{{ item.subtitle|shorten(params.maxsubtitle|default(limits.subtitle)) }}</p>{% endif %}
+            {% if item.footer %}<span class="yw-print__footnote">{{ item.footer }}</span>{% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

@@ -1,0 +1,40 @@
+{# presentation
+   label: PRESENTATION_PRINT_CARDS
+   category: card
+   icon: bookmark
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set limits = {title: 35, subtitle: 40, text: {none: 560, landscape: 560, square: 560, portrait: 560}} %}
+{% set withVerso = params.verso|default('1') != '0' %}
+<div class="yw-print yw-print--cartes">
+  {{ print.start(_t('PRESENTATION_PRINT_CARDS_HINT'), limits, params) }}
+  {% for chunk in items|batch(9, false, false) %}
+    <div class="yw-print__sheet yw-cards">
+      {% for item in chunk %}
+        {% if item %}
+          <article class="yw-card yw-card--front"{{ print.accent(item) }}>
+            {{ print.block(item, params, limits, {qr: false, text: false, fields: false, note: false, tag: 'h3'}) }}
+          </article>
+        {% else %}
+          <div class="yw-card yw-card--empty"></div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% if withVerso %}
+      <div class="yw-print__sheet yw-cards yw-cards--verso">
+        {% for slot in 0..8 %}
+          {% set item = chunk[(slot // 3) * 3 + 2 - slot % 3] %}
+          {% if item %}
+            <article class="yw-card yw-card--back"{{ print.accent(item) }}>
+              {{ print.block(item, params, limits, {image: false, meta: false, note: false, tag: 'h3'}) }}
+            </article>
+          {% else %}
+            <div class="yw-card yw-card--empty"></div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

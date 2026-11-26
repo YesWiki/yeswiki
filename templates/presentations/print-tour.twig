@@ -1,0 +1,23 @@
+{# presentation
+   label: PRESENTATION_PRINT_TOUR
+   category: card
+   icon: box
+#}
+{% import "@core/presentations/_print.twig" as print %}
+{% set slotsUp = 'M10 10 H59.4 V105 H60.6 V10 H236.4 V105 H237.6 V10 H287 V200 H10 Z' %}
+{% set slotsDown = 'M10 10 H287 V200 H237.6 V105 H236.4 V200 H60.6 V105 H59.4 V200 H10 Z' %}
+{% set limits = {title: 60, subtitle: 60, text: {none: 1210, landscape: 300, square: 830, portrait: 810}} %}
+<div class="yw-print yw-print--landscape yw-print--tour">
+  {{ print.start(_t('PRESENTATION_PRINT_TOUR_HINT'), limits, params) }}
+  {% for chunk in items|batch(4, false, false) %}
+    {% for item in chunk %}
+      {% include "@core/presentations/_print-wall.twig" with {
+        item: item,
+        outline: loop.index0 is even ? slotsUp : slotsDown,
+        label: _t('PRESENTATION_PRINT_PANEL') ~ ' ' ~ loop.index ~ ' / 4 · ' ~ _t(loop.index0 is even ? 'PRESENTATION_PRINT_SLOTS_UP' : 'PRESENTATION_PRINT_SLOTS_DOWN'),
+      } %}
+    {% endfor %}
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>
