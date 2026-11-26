@@ -17,7 +17,14 @@ export default {
       description: `${_t('BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL')} ${_t('BAZ_FORM_EDIT_TABS_FOR_ENTRY')}`,
     },
   },
-  disabledAttributes: ['required', 'default', 'name', 'label'],
+  disabledAttributes: [
+    'required',
+    'default',
+    'name',
+    'label',
+    'width',
+    'new_row',
+  ],
   editorHint: _t('BAZ_FORM_TABS_HINT', {
     br: '<BR>',
     'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),

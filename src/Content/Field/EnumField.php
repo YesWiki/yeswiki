@@ -132,6 +132,14 @@ abstract class EnumField extends BazarField
         return StringUtilService::withoutDiacritics($text);
     }
 
+    /** The card or pill look a radio or checkbox list asks for, empty for the plain list. */
+    protected static function choiceVariant(mixed $displayMethod): string
+    {
+        $variant = trim((string)$displayMethod);
+
+        return in_array($variant, ['cards', 'pills'], true) ? $variant : '';
+    }
+
     /** A linked form named by a URL is no longer resolvable (ticket 34). */
     protected function remoteLinkedFormNotice(): ?string
     {

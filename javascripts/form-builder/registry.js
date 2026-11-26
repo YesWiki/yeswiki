@@ -2,6 +2,9 @@ import calc from './fields/calc.js'
 import * as commons from './fields/commons/attributes.js'
 import champsMail from './fields/champs_mail.js'
 import checkboxGroup from './fields/checkbox-group.js'
+import columnchange from './fields/columnchange.js'
+import columns from './fields/columns.js'
+import columnsend from './fields/columnsend.js'
 import conditionschecking from './fields/conditionschecking.js'
 import custom from './fields/custom.js'
 import date from './fields/date.js'
@@ -42,6 +45,9 @@ const registry = {
   reactions,
   tabs,
   tabchange,
+  columns,
+  columnchange,
+  columnsend,
   conditionschecking,
   inscriptionliste,
   openinghours,

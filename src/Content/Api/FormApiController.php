@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\FormManager;
@@ -50,6 +51,44 @@ class FormApiController extends YesWikiController
                         . $this->renderFieldPreview($fieldObject)
                         . '</div>' . "\n";
                 }
+            } finally {
+                ob_end_clean();
+            }
+        });
+
+        return new Response($html . $assets->toOutOfBandHtml(), 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+    }
+
+    #[Route('/api/forms/preview-form', methods: ['POST'], options: ['acl' => ['@admins']])]
+    public function previewWholeForm(Request $request): Response
+    {
+        $template = json_decode((string)$request->request->get('template', ''), true);
+        if (!is_array($template)) {
+            return new Response('<div class="yw-alert yw-alert--danger">' . htmlspecialchars(_t('FORM_BUILDER_INVALID_JSON')) . '</div>', 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+        }
+        $width = (string)$request->request->get('entry_form_width', '');
+        $form = [
+            'id' => 'preview',
+            'label' => (string)$request->request->get('label', ''),
+            'template' => $template,
+            'prepared' => $this->getService(FormManager::class)->prepareData(['template' => $template]),
+            'entry_form_width' => in_array($width, ['narrow', 'wide'], true) ? $width : null,
+        ];
+
+        $html = '';
+        $assets = $this->getService(AssetRegistry::class)->capture(function () use ($form, &$html): void {
+            ob_start();
+            try {
+                $html = $this->render('@core/entries/form.twig', [
+                    'form' => $form,
+                    'formAction' => '#',
+                    'renderedInputs' => $this->getService(EntryController::class)->getRenderedInputs($form),
+                    'passwordForEditing' => '',
+                    'incomingUrl' => '',
+                    'cancelUrl' => '',
+                    'error' => '',
+                    'preview' => true,
+                ]);
             } finally {
                 ob_end_clean();
             }

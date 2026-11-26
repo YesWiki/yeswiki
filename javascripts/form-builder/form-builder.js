@@ -1,6 +1,7 @@
 import registry, { paletteEntries } from './registry.js'
 import { parseFields, resolveWikiType, serializeFields } from './converter.js'
 import { refreshDesignerData } from './fields/commons/attributes.js'
+import { COLUMN_LAYOUTS, COLUMN_MARKERS } from './fields/columns.js'
 import { editorFor } from '../editor-handles.js'
 import { fillFieldMenu, twigAccess, twigInsertions } from '../field-picker.js'
 
@@ -83,6 +84,17 @@ function selectedField() {
   return fields.find((field) => field.id === selectedId) || null
 }
 
+const GRID_WIDTHS = {
+  12: { short: '1/1', label: () => _t('FORM_BUILDER_WIDTH_12') },
+  6: { short: '1/2', label: () => _t('FORM_BUILDER_WIDTH_6') },
+  4: { short: '1/3', label: () => _t('FORM_BUILDER_WIDTH_4') },
+  8: { short: '2/3', label: () => _t('FORM_BUILDER_WIDTH_8') },
+  3: { short: '1/4', label: () => _t('FORM_BUILDER_WIDTH_3') },
+  9: { short: '3/4', label: () => _t('FORM_BUILDER_WIDTH_9') },
+}
+
+const QUICK_WIDTHS = ['12', '6', '4', '8']
+
 function baseAttributes() {
   return {
     label: { label: _t('FORM_BUILDER_LABEL_LABEL'), value: '' },
@@ -90,6 +102,19 @@ function baseAttributes() {
     default: { label: _t('FORM_BUILDER_DEFAULT_LABEL'), value: '' },
     required: {
       label: _t('FORM_BUILDER_REQUIRED_LABEL'),
+      options: { '': _t('NO'), 1: _t('YES') },
+    },
+    width: {
+      label: _t('FORM_BUILDER_WIDTH_LABEL'),
+      options: Object.fromEntries(
+        Object.entries(GRID_WIDTHS).map(([width, { label }]) => [
+          width === '12' ? '' : width,
+          label(),
+        ]),
+      ),
+    },
+    new_row: {
+      label: _t('FORM_BUILDER_NEW_ROW_LABEL'),
       options: { '': _t('NO'), 1: _t('YES') },
     },
   }
@@ -353,14 +378,22 @@ function starterTemplate(inMarkdown) {
       ]),
     ].join('\n')
   }
+  const useGrid =
+    document.getElementById('entry-template-grid')?.checked === true
+  const rootClass = useGrid
+    ? 'BAZ_fiche_custom yw-entry-grid'
+    : 'BAZ_fiche_custom'
   return [
     comment,
-    '<div class="BAZ_fiche_custom">',
-    ...named.map((field, index) =>
-      index === 0
-        ? `  <h1 class="BAZ_fiche_titre">${value(field)}</h1>`
-        : `  <div class="BAZ_texte yw-field-${field.data.name}">${value(field)}</div>`,
-    ),
+    `<div class="${rootClass}">`,
+    ...named.map((field, index) => {
+      const colClasses = useGrid
+        ? ` yw-col-${field.data.width || 12}${field.data.new_row === '1' ? ' yw-new-row' : ''}`
+        : ''
+      return index === 0
+        ? `  <h1 class="BAZ_fiche_titre${colClasses}">${value(field)}</h1>`
+        : `  <div class="BAZ_texte yw-field-${field.data.name}${colClasses}">${value(field)}</div>`
+    }),
     '</div>',
     '',
   ].join('\n')
@@ -525,20 +558,8 @@ function showRail(open) {
 }
 
 function addFromPalette(type, index = fields.length) {
-  const config = registry[type]
-  const added = []
-  if (config.set) {
-    config.set.fields.forEach((preset) => {
-      const { type: presetType, ...presetData } = preset
-      added.push(makeField(presetType, presetData))
-    })
-  } else {
-    added.push(makeField(type))
-  }
-  const companions = (config.companions || [])
-    .filter(({ name }) => !fields.some((field) => field.data.name === name))
-    .map(({ type: companionType, ...data }) => makeField(companionType, data))
-  fields.splice(index, 0, ...companions, ...added)
+  const { added, all } = buildPaletteFields(type)
+  fields.splice(index, 0, ...all)
   syncToTextarea()
   renderCanvas()
   selectField(added[0].id)
@@ -600,7 +621,27 @@ function hasVisiblePreview(holder) {
   )
 }
 
-const drawnOnServer = (field) => field.type !== 'labelhtml'
+const drawnOnServer = (field) =>
+  field.type !== 'labelhtml' && !COLUMN_MARKERS.includes(field.type)
+
+function columnSpansFor(field) {
+  return (COLUMN_LAYOUTS[field?.data?.layout] || COLUMN_LAYOUTS['6-6']).spans
+}
+
+function clientPreview(field) {
+  if (field.type === 'columns') {
+    const layout = field.data.layout || '6-6'
+    const label = COLUMN_LAYOUTS[layout]?.label() || layout
+    return `<span class="yw-fb__structure-badge">${esc(label)}</span>`
+  }
+  if (field.type === 'columnchange') {
+    return `<span class="yw-fb__structure-badge">${esc(_t('BAZ_FORM_EDIT_COLUMNCHANGE'))}</span>`
+  }
+  if (field.type === 'columnsend') {
+    return `<span class="yw-fb__structure-badge">${esc(_t('BAZ_FORM_EDIT_COLUMNSEND'))}</span>`
+  }
+  return codePreview(field)
+}
 
 /** A custom HTML field's code as typed, since its raw markup can unbalance the canvas. */
 function codePreview(field) {
@@ -621,7 +662,7 @@ function codePreview(field) {
 
 function paintPreview(holder, field) {
   if (!drawnOnServer(field)) {
-    holder.innerHTML = codePreview(field)
+    holder.innerHTML = clientPreview(field)
     holder.classList.remove('yw-fb__card-preview--pending')
     return
   }
@@ -703,23 +744,298 @@ async function runPreviews() {
   })
 }
 
+function buildPaletteFields(type) {
+  const config = registry[type]
+  const added = []
+  if (config.set) {
+    config.set.fields.forEach((preset) => {
+      const { type: presetType, ...presetData } = preset
+      added.push(makeField(presetType, presetData))
+    })
+  } else {
+    added.push(makeField(type))
+  }
+  const companions = (config.companions || [])
+    .filter(({ name }) => !fields.some((field) => field.data.name === name))
+    .map(({ type: companionType, ...data }) => makeField(companionType, data))
+  return { added, companions, all: [...companions, ...added] }
+}
+
+function createSortGroupOptions(allowColumns = true) {
+  return {
+    name: 'fb',
+    put: allowColumns
+      ? true
+      : (_to, _from, dragEl) =>
+          !dragEl.classList.contains('yw-fb__columns-group') &&
+          dragEl.getAttribute('data-fb-type') !== 'columns',
+  }
+}
+
+function handleSortableAdd(event) {
+  const type = event.item.getAttribute('data-fb-type')
+  if (!type) {
+    syncFieldsFromDom()
+    syncToTextarea()
+    return
+  }
+  if (!(type in registry)) {
+    event.item.remove()
+    return
+  }
+  const { added, all } = buildPaletteFields(type)
+  if (type === 'columns') {
+    const colField = all.find((f) => f.type === 'columns')
+    const groupEl = el(
+      `<div class="yw-fb__columns-group" data-fb-id="${colField.id}"><div class="yw-fb__columns-grid"><div class="yw-fb__col-zone"></div><div class="yw-fb__col-zone"></div></div></div>`,
+    )
+    event.item.replaceWith(groupEl)
+    fields.push(...all)
+  } else {
+    const frag = document.createDocumentFragment()
+    all.forEach((f) => {
+      fields.push(f)
+      frag.append(el(`<div class="yw-fb__card" data-fb-id="${f.id}"></div>`))
+    })
+    event.item.replaceWith(frag)
+  }
+  syncFieldsFromDom()
+  syncToTextarea()
+  renderCanvas()
+  selectField(added[0].id)
+}
+
 function initCanvasSort() {
   if (!window.Sortable) return
   window.Sortable.create(canvasEl, {
-    group: 'fb',
+    group: createSortGroupOptions(true),
     handle: '.yw-fb__card-drag',
     animation: 150,
-    onAdd(event) {
-      const type = event.item.getAttribute('data-fb-type')
-      event.item.remove()
-      addFromPalette(type, event.newIndex)
-    },
-    onUpdate(event) {
-      const [moved] = fields.splice(event.oldIndex, 1)
-      fields.splice(event.newIndex, 0, moved)
+    onAdd: handleSortableAdd,
+    onEnd() {
+      syncFieldsFromDom()
       syncToTextarea()
     },
   })
+}
+
+function initColumnZoneSort(zone) {
+  if (!window.Sortable) return
+  window.Sortable.create(zone, {
+    group: createSortGroupOptions(false),
+    handle: '.yw-fb__card-drag',
+    animation: 150,
+    onAdd: handleSortableAdd,
+    onEnd() {
+      syncFieldsFromDom()
+      syncToTextarea()
+    },
+  })
+}
+
+/** Rebuilds the flat field list from the canvas and its column zones, keeping the markers balanced. */
+function syncFieldsFromDom() {
+  const byId = new Map(fields.map((field) => [field.id, field]))
+  const groupMarkers = new Map()
+  let activeMarkers = null
+  fields.forEach((field) => {
+    if (field.type === 'columns') {
+      activeMarkers = { changes: [], end: null }
+      groupMarkers.set(field.id, activeMarkers)
+    } else if (activeMarkers && field.type === 'columnchange') {
+      activeMarkers.changes.push(field)
+    } else if (activeMarkers && field.type === 'columnsend') {
+      activeMarkers.end = field
+      activeMarkers = null
+    }
+  })
+
+  const rebuilt = []
+  Array.from(canvasEl.children).forEach((child) => {
+    if (child.classList.contains('yw-fb__card')) {
+      const item = byId.get(child.getAttribute('data-fb-id'))
+      if (item) rebuilt.push(item)
+      return
+    }
+    if (child.classList.contains('yw-fb__columns-group')) {
+      const colId = child.getAttribute('data-fb-id')
+      const colField = byId.get(colId)
+      if (!colField) return
+      rebuilt.push(colField)
+      const markers = groupMarkers.get(colId) || { changes: [], end: null }
+      const zones = Array.from(
+        child.querySelectorAll(
+          ':scope > .yw-fb__columns-grid > .yw-fb__col-zone',
+        ),
+      )
+      zones.forEach((zone, zoneIndex) => {
+        if (zoneIndex > 0) {
+          rebuilt.push(markers.changes.shift() || makeField('columnchange'))
+        }
+        Array.from(zone.children).forEach((card) => {
+          const inner = byId.get(card.getAttribute('data-fb-id'))
+          if (inner) rebuilt.push(inner)
+        })
+      })
+      rebuilt.push(markers.end || makeField('columnsend'))
+    }
+  })
+  fields = rebuilt
+}
+
+/** The columns block opening at index start: its fields by column, its end marker and its last index. */
+function columnsBlockAt(start) {
+  const buckets = [[]]
+  let index = start + 1
+  while (
+    index < fields.length &&
+    !['columns', 'columnsend'].includes(fields[index].type)
+  ) {
+    if (fields[index].type === 'columnchange') buckets.push([])
+    else buckets[buckets.length - 1].push(fields[index])
+    index += 1
+  }
+  const endMarker = fields[index]?.type === 'columnsend' ? fields[index] : null
+  return { buckets, endMarker, end: endMarker ? index : index - 1 }
+}
+
+function findColumnsSlice(columnsId) {
+  const start = fields.findIndex((field) => field.id === columnsId)
+  if (start === -1) return null
+  return { start, ...columnsBlockAt(start) }
+}
+
+function resizeColumnsGroup(columnsField, nextLayout) {
+  const slice = findColumnsSlice(columnsField.id)
+  if (!slice) return
+  if (nextLayout === '6-6' || !nextLayout) delete columnsField.data.layout
+  else columnsField.data.layout = nextLayout
+
+  const targetCount = columnSpansFor(columnsField).length
+  const cols = slice.buckets
+  while (cols.length < targetCount) cols.push([])
+  while (cols.length > targetCount) {
+    const extra = cols.pop()
+    cols[cols.length - 1].push(...extra)
+  }
+
+  const replacement = [columnsField]
+  cols.forEach((colItems, colIndex) => {
+    if (colIndex > 0) replacement.push(makeField('columnchange'))
+    replacement.push(...colItems)
+  })
+  replacement.push(slice.endMarker || makeField('columnsend'))
+
+  fields.splice(slice.start, slice.end - slice.start + 1, ...replacement)
+  syncToTextarea()
+  renderCanvas()
+}
+
+function removeColumnsGroup(columnsId) {
+  const slice = findColumnsSlice(columnsId)
+  if (!slice) return
+  const kept = slice.buckets.flat()
+  if (selectedId === columnsId) closeSettings()
+  fields.splice(slice.start, slice.end - slice.start + 1, ...kept)
+  syncToTextarea()
+  renderCanvas()
+}
+
+function duplicateColumnsGroup(columnsId) {
+  const slice = findColumnsSlice(columnsId)
+  if (!slice) return
+  const copies = []
+  for (let i = slice.start; i <= slice.end; i += 1) {
+    const item = fields[i]
+    if (isLocked(item)) continue
+    const copy = {
+      id: newId(),
+      type: item.type,
+      data: { ...item.data, handle: newHandle() },
+    }
+    if (copy.data.name && !attributeDefs(configFor(copy.type)).name?.options) {
+      copy.data.name = uniqueName(copy.data.name)
+    }
+    copies.push(copy)
+  }
+  fields.splice(slice.end + 1, 0, ...copies)
+  syncToTextarea()
+  renderCanvas()
+  selectField(copies[0].id)
+}
+
+function renderColumnsGroup(columnsField, columnBuckets) {
+  const config = configFor('columns')
+  const icon = (config.field || config.set || {}).icon || ''
+  const layout = COLUMN_LAYOUTS[columnsField.data.layout]
+    ? columnsField.data.layout
+    : '6-6'
+  const layoutButtons = `<span class="yw-fb__card-widths" role="group" aria-label="${esc(_t('BAZ_FORM_EDIT_COLUMNS_LAYOUT_LABEL'))}">${Object.entries(
+    COLUMN_LAYOUTS,
+  )
+    .filter(([, { short }]) => short)
+    .map(
+      ([value, { short }]) =>
+        `<button type="button" class="yw-fb__card-width${layout === value ? ' is-active' : ''}" data-fb-col-layout-set="${value}" title="${esc(COLUMN_LAYOUTS[value].label())}">${short}</button>`,
+    )
+    .join('')}</span>`
+
+  const groupEl =
+    el(`<div class="yw-fb__columns-group${columnsField.id === selectedId ? ' yw-fb__card--selected' : ''}" data-fb-id="${columnsField.id}" data-fb-layout="${layout}">
+    <div class="yw-fb__columns-header">
+      <span class="yw-fb__card-drag" title="⇕">⠿</span>
+      <span class="yw-fb__card-icon">${icon}</span>
+      <span class="yw-fb__card-title">${esc((config.field || {}).label || 'columns')}</span>
+      <span class="yw-fb__card-actions">
+        ${layoutButtons}
+        <button type="button" class="yw-fb__card-action" data-fb-action="duplicate" title="${_t('FORM_BUILDER_DUPLICATE')}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg></button>
+        <button type="button" class="yw-fb__card-action" data-fb-action="delete" title="${_t('FORM_BUILDER_DELETE')}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg></button>
+      </span>
+    </div>
+    <div class="yw-fb__columns-grid yw-fb__columns-grid--${layout}"></div>
+  </div>`)
+
+  const gridEl = groupEl.querySelector('.yw-fb__columns-grid')
+  columnBuckets.forEach((bucket, colIdx) => {
+    const zone = el(
+      `<div class="yw-fb__col-zone" data-fb-col-index="${colIdx}" data-empty-label="${esc(_t('FORM_BUILDER_COLUMN_EMPTY'))}"></div>`,
+    )
+    bucket.forEach((innerField) => {
+      zone.append(renderCard(innerField))
+    })
+    initColumnZoneSort(zone)
+    gridEl.append(zone)
+  })
+
+  groupEl
+    .querySelector('.yw-fb__columns-header')
+    .addEventListener('click', (event) => {
+      const layoutBtn = event.target.closest('[data-fb-col-layout-set]')
+      if (layoutBtn) {
+        event.stopPropagation()
+        const nextLayout = layoutBtn.getAttribute('data-fb-col-layout-set')
+        resizeColumnsGroup(columnsField, nextLayout)
+        if (selectedId === columnsField.id) {
+          const select = settingsEl.querySelector('[data-fb-input="layout"]')
+          if (select) select.value = nextLayout
+        }
+        return
+      }
+      const action = event.target
+        .closest('[data-fb-action]')
+        ?.getAttribute('data-fb-action')
+      if (action === 'delete') {
+        removeColumnsGroup(columnsField.id)
+        return
+      }
+      if (action === 'duplicate') {
+        duplicateColumnsGroup(columnsField.id)
+        return
+      }
+      selectField(columnsField.id)
+    })
+
+  return groupEl
 }
 
 function renderCanvas() {
@@ -731,10 +1047,27 @@ function renderCanvas() {
       ),
     )
   }
-  fields.forEach((field) => {
+
+  let i = 0
+  while (i < fields.length) {
+    const field = fields[i]
+    if (field.type === 'columns') {
+      const { buckets, end } = columnsBlockAt(i)
+      while (buckets.length < columnSpansFor(field).length) buckets.push([])
+      canvasEl.append(renderColumnsGroup(field, buckets))
+      buckets.flat().forEach((inner) => paintCached(inner))
+      i = end + 1
+      continue
+    }
+    if (field.type === 'columnchange' || field.type === 'columnsend') {
+      i += 1
+      continue
+    }
     canvasEl.append(renderCard(field))
     paintCached(field)
-  })
+    i += 1
+  }
+
   forgetStalePreviews()
   const missing = fields
     .filter(
@@ -755,13 +1088,28 @@ function defaultCardTitle(field, config) {
   return (config.field || config.set || {}).label || field.type
 }
 
+function fieldGridWidth(field, config) {
+  if ((config.disabledAttributes || []).includes('width')) return '12'
+  const raw = String(field.data.width || '12')
+  return raw in GRID_WIDTHS ? raw : '12'
+}
+
 function renderCard(field) {
   const config = configFor(field.type)
   const icon = (config.field || config.set || {}).icon || ''
   const showLabel = !(config.disabledAttributes || []).includes('label')
+  const supportsWidth = !(config.disabledAttributes || []).includes('width')
+  const width = fieldGridWidth(field, config)
+  const newRow = supportsWidth && field.data.new_row === '1'
   const locked = isLocked(field)
+  const widthButtons = supportsWidth
+    ? `<span class="yw-fb__card-widths" role="group" aria-label="${esc(_t('FORM_BUILDER_WIDTH_LABEL'))}">${QUICK_WIDTHS.map(
+        (value) =>
+          `<button type="button" class="yw-fb__card-width${width === value ? ' is-active' : ''}" data-fb-width-set="${value}" title="${esc(GRID_WIDTHS[value].label())}">${GRID_WIDTHS[value].short}</button>`,
+      ).join('')}</span>`
+    : ''
   const card =
-    el(`<div class="yw-fb__card${field.id === selectedId ? ' yw-fb__card--selected' : ''}${locked ? ' yw-fb__card--locked' : ''}" data-fb-id="${field.id}">
+    el(`<div class="yw-fb__card${field.id === selectedId ? ' yw-fb__card--selected' : ''}${locked ? ' yw-fb__card--locked' : ''}${!supportsWidth ? ' yw-fb__card--full' : ''}${newRow ? ' yw-fb__card--new-row' : ''}" data-fb-id="${field.id}" data-fb-width="${width}">
     <div class="yw-fb__card-header">
       <span class="yw-fb__card-drag" title="⇕">⠿</span>
       <span class="yw-fb__card-icon">${icon}</span>
@@ -770,6 +1118,7 @@ function renderCard(field) {
       ${field.data.required === '1' ? '<span class="yw-fb__card-required">*</span>' : ''}
       ${locked ? `<span class="yw-fb__card-locked" title="${esc(_t('FORM_BUILDER_LOCKED_HINT'))}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#lock"/></svg>${esc(_t('FORM_BUILDER_LOCKED'))}</span>` : ''}
       <span class="yw-fb__card-actions">
+        ${widthButtons}
         ${locked ? '' : `<button type="button" class="yw-fb__card-action" data-fb-action="duplicate" title="${_t('FORM_BUILDER_DUPLICATE')}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg></button>`}
         ${locked ? '' : `<button type="button" class="yw-fb__card-action" data-fb-action="delete" title="${_t('FORM_BUILDER_DELETE')}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg></button>`}
       </span>
@@ -780,6 +1129,20 @@ function renderCard(field) {
   </div>`)
 
   card.addEventListener('click', (event) => {
+    const widthBtn = event.target.closest('[data-fb-width-set]')
+    if (widthBtn) {
+      event.stopPropagation()
+      const nextWidth = widthBtn.getAttribute('data-fb-width-set')
+      if (nextWidth === '12') delete field.data.width
+      else field.data.width = nextWidth
+      syncToTextarea()
+      refreshCard(field)
+      if (selectedId === field.id) {
+        const select = settingsEl.querySelector('[data-fb-input="width"]')
+        if (select) select.value = nextWidth === '12' ? '' : nextWidth
+      }
+      return
+    }
     const action = event.target
       .closest('[data-fb-action]')
       ?.getAttribute('data-fb-action')
@@ -814,7 +1177,9 @@ function renderCard(field) {
 }
 
 function refreshCard(field) {
-  const existing = canvasEl.querySelector(`[data-fb-id="${field.id}"]`)
+  const existing = canvasEl.querySelector(
+    `.yw-fb__card[data-fb-id="${field.id}"]`,
+  )
   if (!existing) return
   existing.replaceWith(renderCard(field))
   paintCached(field)
@@ -829,12 +1194,14 @@ function paintCached(field) {
 
 function selectField(id) {
   selectedId = id
-  canvasEl.querySelectorAll('.yw-fb__card').forEach((card) => {
-    card.classList.toggle(
-      'yw-fb__card--selected',
-      card.getAttribute('data-fb-id') === id,
-    )
-  })
+  canvasEl
+    .querySelectorAll('.yw-fb__card, .yw-fb__columns-group')
+    .forEach((card) => {
+      card.classList.toggle(
+        'yw-fb__card--selected',
+        card.getAttribute('data-fb-id') === id,
+      )
+    })
   renderSettings()
   paletteEl.classList.add('hide')
   settingsEl.classList.remove('hide')
@@ -929,7 +1296,9 @@ function renderSettings() {
   if (!field) return
   const config = configFor(field.type)
   const defs = attributeDefs(config)
-  const advanced = config.advancedAttributes || []
+  const advanced = [
+    ...new Set([...(config.advancedAttributes || []), 'new_row']),
+  ]
 
   settingsEl.innerHTML = ''
   railTitleEl.textContent =
@@ -955,7 +1324,8 @@ function renderSettings() {
       <label class="yw-form-label">${esc(def.label ?? name)}</label>
     </div>`)
     row.append(controlFor(name, def, field.data[name] ?? def.value ?? ''))
-    const wrote = sourceWording[`${field.data.name || field.data.handle}.${name}`]
+    const wrote =
+      sourceWording[`${field.data.name || field.data.handle}.${name}`]
     if (wrote)
       row.append(
         el(
@@ -1000,11 +1370,15 @@ function renderSettings() {
 
   const commit = (name, value) => {
     const serialized = joinCsv(value)
+    if (field.type === 'columns' && name === 'layout') {
+      resizeColumnsGroup(field, serialized)
+      return
+    }
     if (serialized === '') delete field.data[name]
     else field.data[name] = serialized
     syncToTextarea()
     refreshCard(field)
-    schedulePreviews([field.id])
+    if (name !== 'width' && name !== 'new_row') schedulePreviews([field.id])
   }
 
   const api = {
@@ -1107,7 +1481,54 @@ function renderSettings() {
   config.editorSetup?.(api)
 }
 
+/** Renders the whole entry form on the server, from the builder's current fields, into the preview tab. */
+async function renderFormPreview() {
+  const pane = document.getElementById('yw-fb-form-preview')
+  if (!pane) return
+  pane.classList.add('yw-fb__form-preview--pending')
+  try {
+    await htmx.ajax('POST', wiki.url('?api/forms/preview-form'), {
+      source: pane,
+      target: pane,
+      swap: 'innerHTML',
+      values: {
+        template: textarea.value,
+        label: textarea.form?.elements.namedItem('label')?.value || '',
+        entry_form_width:
+          document.getElementById('entry-form-width')?.value || '',
+      },
+    })
+  } catch (error) {
+    console.error('form designer: form preview request failed', error)
+    pane.innerHTML = `<div class="yw-alert yw-alert--danger">${esc(_t('FORM_BUILDER_PREVIEW_FAILED'))}</div>`
+  }
+  pane.classList.remove('yw-fb__form-preview--pending')
+}
+
 function bindTabsAndSubmit() {
+  document
+    .getElementById('yw-fb-form-preview')
+    ?.addEventListener('submit', (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+    })
+  document.querySelectorAll('a[href="#formpreview"]').forEach((link) => {
+    link.addEventListener('click', () => {
+      if (document.getElementById('code')?.classList.contains('active')) {
+        if (loadFromTextarea()) {
+          clearError()
+          closeSettings()
+          renderCanvas()
+        } else {
+          showError(`${_t('FORM_BUILDER_INVALID_JSON')}`)
+        }
+      } else {
+        syncToTextarea()
+      }
+      railEl.hidden = true
+      renderFormPreview()
+    })
+  })
   document.querySelectorAll('a[href="#formbuilder"]').forEach((link) => {
     link.addEventListener('click', () => {
       if (
@@ -1136,6 +1557,7 @@ function bindTabsAndSubmit() {
   textarea.form?.addEventListener('submit', () => {
     const designerPane = document.getElementById('formbuilder')
     if (designerPane?.classList.contains('active')) syncToTextarea()
+    document.getElementById('yw-fb-form-preview')?.replaceChildren()
   })
 }
 

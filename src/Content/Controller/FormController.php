@@ -328,6 +328,9 @@ class FormController extends YesWikiController
     private function normalizeFormPropertiesPost(array $data): array
     {
         $data['entry_permit_activate_comments'] = !empty($data['entry_permit_activate_comments']);
+        $data['entry_template_grid'] = !empty($data['entry_template_grid']) ? '1' : '0';
+        $formWidth = trim((string)($data['entry_form_width'] ?? ''));
+        $data['entry_form_width'] = in_array($formWidth, ['narrow', 'wide'], true) ? $formWidth : null;
         unset($data['entry_template'], $data['entry_template_format']);
 
         $metadatas = array_filter(array_map(function ($value) {

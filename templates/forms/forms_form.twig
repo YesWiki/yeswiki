@@ -62,6 +62,11 @@
             {{ _t('BAZ_FORM_WIKI_CODE') }}
           </a>
         </li>
+        <li role="presentation">
+          <a href="#formpreview" aria-controls="formpreview" role="tab" data-toggle="tab">
+            {{ _t('BAZ_FORM_PREVIEW') }}
+          </a>
+        </li>
       </ul>
 
       <button type="button" class="yw-btn yw-fb__rail-open" data-yw-fb-open>
@@ -94,6 +99,10 @@
               ? form.template|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES'))
               : ('[{"type": "texte", "name": "bf_titre", "label": "' ~ _t('BAZ_TITREANNONCE') ~ '", "sub_type": "text", "required": "1"}]') -}}
         </textarea>
+      </div>
+      <div role="tabpanel" class="yw-tabs__pane" id="formpreview">
+        <p class="yw-form-hint">{{ _t('BAZ_FORM_PREVIEW_HINT') }}</p>
+        <div class="yw-fb__form-preview" id="yw-fb-form-preview" aria-live="polite"></div>
       </div>
     </div>
   </div>
@@ -204,6 +213,24 @@
               {% endfor %}
             </select>
           </div>
+        </div>
+
+        <div class="yw-form-group">
+          <label class="yw-form-label" for="entry-form-width">{{ _t('FORM_EDIT_FORM_WIDTH_LABEL') }}</label>
+          <select class="yw-input" id="entry-form-width" name="entry_form_width">
+            <option value=""{% if (form.entry_form_width ?? '') == '' %} selected{% endif %}>{{ _t('FORM_EDIT_FORM_WIDTH_STANDARD') }}</option>
+            <option value="narrow"{% if (form.entry_form_width ?? '') == 'narrow' %} selected{% endif %}>{{ _t('FORM_EDIT_FORM_WIDTH_NARROW') }}</option>
+            <option value="wide"{% if (form.entry_form_width ?? '') == 'wide' %} selected{% endif %}>{{ _t('FORM_EDIT_FORM_WIDTH_WIDE') }}</option>
+          </select>
+          <p class="yw-form-hint">{{ _t('FORM_EDIT_FORM_WIDTH_HINT') }}</p>
+        </div>
+
+        <div class="yw-form-group">
+          <label for="entry-template-grid">
+            <input type="checkbox" id="entry-template-grid" name="entry_template_grid" value="1"{% if (form.entry_template_grid ?? false) in ['1', 1, true] %} checked{% endif %}>
+            {{ _t('FORM_EDIT_ENTRY_TEMPLATE_GRID_LABEL') }}
+          </label>
+          <p class="yw-form-hint">{{ _t('FORM_EDIT_ENTRY_TEMPLATE_GRID_HINT') }}</p>
         </div>
 
         {% if canEditTemplate %}

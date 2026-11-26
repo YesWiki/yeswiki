@@ -61,7 +61,14 @@ export default {
       options: { '': _t('NORMAL_F'), 'btn-xs': _t('SMALL_F') },
     },
   },
-  disabledAttributes: ['required', 'default', 'name', 'label'],
+  disabledAttributes: [
+    'required',
+    'default',
+    'name',
+    'label',
+    'width',
+    'new_row',
+  ],
   editorHint: _t('BAZ_FORM_TABS_HINT', {
     br: '<BR>',
     'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),

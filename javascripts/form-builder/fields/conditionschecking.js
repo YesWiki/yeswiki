@@ -35,6 +35,13 @@ export default {
       description: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_HINT'),
     },
   },
-  disabledAttributes: ['required', 'default', 'name', 'label'],
+  disabledAttributes: [
+    'required',
+    'default',
+    'name',
+    'label',
+    'width',
+    'new_row',
+  ],
   editorHint: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_HINT', { br: '<BR>' }),
 }

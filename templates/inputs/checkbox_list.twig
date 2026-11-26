@@ -1,7 +1,7 @@
 {% extends "@core/inputs/checkbox.twig" %}
 
 {% block list_options %}
-	<div class="list-bazar-entries{{ displayFilter ? ' list-bazar-entries--scroll' : '' }} group-checkbox-{{ field.propertyName }}{{ field.required ? ' chk_required' : ''}}">
+	<div class="list-bazar-entries{{ displayFilter ? ' list-bazar-entries--scroll' : '' }} group-checkbox-{{ field.propertyName }}{{ displayVariant|default('') ? ' yw-choice--' ~ displayVariant : '' }}{{ field.required ? ' chk_required' : ''}}">
 		{% for key, option in options %}
 			<div class="yeswiki-checkbox checkbox">
 				{{ block('item_option') }}

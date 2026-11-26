@@ -10,7 +10,7 @@
 {{ include_javascript('javascripts/unsaved-changes.js', false, true) }}
 {{ include_javascript('javascripts/entry-form-upload.js', false, true) }}
 
-<form action="{{ formAction }}" method="post" name="bazar-form-{{ form.id }}" id="bazar-form-{{ form.id }}" class="bazar-form yw-entry-form" enctype="multipart/form-data" hx-boost="false" novalidate data-yw-unsaved-guard>
+<form action="{{ formAction }}" method="post" name="bazar-form-{{ form.id }}" id="bazar-form-{{ form.id }}" class="bazar-form yw-entry-form yw-entry-width--{{ form.entry_form_width|default('standard') }}" enctype="multipart/form-data" hx-boost="false" novalidate{% if not (preview ?? false) %} data-yw-unsaved-guard{% endif %}>
   {% if editingTranslation ?? false and renderedInputs|filter(input => input|trim)|length == 0 %}
     <div class="yw-alert yw-alert--info">{{ _t('TRANSLATE_EDIT_NOTHING') }}</div>
   {% endif %}
@@ -19,7 +19,7 @@
   {% endfor %}
   {{ botGuardFields|default('')|raw }}
   <div class="form-actions yw-form-group">
-    <div class="col-sm-9 col-sm-offset-3">
+    <div class="yw-entry-form__actions">
       <button type="submit" name="valider" value="1" class="yw-btn yw-btn--primary">{{ _t('BAZ_SAVE') }}</button>
       {% if entryId %}
         <a class="yw-btn yw-btn--sm yw-btn--quiet" href="{{ cancelUrl }}">{{ _t('BAZ_ANNULER') }}</a>

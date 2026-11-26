@@ -51,10 +51,10 @@ class LabelField extends BazarField
         if ($this->useWikiSyntax) {
             $content = str_replace('<br/>', "\n", $this->formText ?? '');
 
-            return $this->getService(MarkdownFormatterService::class)->format($content);
+            return $this->wrapForGrid($this->getService(MarkdownFormatterService::class)->format($content));
         }
 
-        return $this->formText;
+        return $this->wrapForGrid($this->formText);
     }
 
     protected function renderStatic($entry)
@@ -62,10 +62,24 @@ class LabelField extends BazarField
         if ($this->useWikiSyntax) {
             $content = str_replace('<br/>', "\n", $this->viewText ?? '');
 
-            return $this->getService(MarkdownFormatterService::class)->format($content);
+            return $this->wrapForGrid($this->getService(MarkdownFormatterService::class)->format($content));
         }
 
-        return $this->viewText;
+        return $this->wrapForGrid($this->viewText);
+    }
+
+    /** Puts a balanced HTML block in a grid cell when it asks for a width or a new row. */
+    private function wrapForGrid(?string $html): ?string
+    {
+        if ($html === null || trim($html) === '' || ($this->width === 12 && !$this->newRow)) {
+            return $html;
+        }
+        if (preg_match_all('#<div\b#i', $html) !== preg_match_all('#</div\b#i', $html)) {
+            return $html;
+        }
+        $classes = 'yw-form-labelhtml yw-col-' . $this->width . ($this->newRow ? ' yw-new-row' : '');
+
+        return '<div class="' . $classes . '">' . $html . '</div>';
     }
 
     public function getFormText(): ?string

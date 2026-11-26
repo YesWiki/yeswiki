@@ -81,6 +81,8 @@ class TemplateFieldCatalog
                 'key' => $key,
                 'stored' => $stored,
                 'html' => $field instanceof TextareaField,
+                'width' => $field->getWidth(),
+                'newRow' => $field->isNewRow(),
             ];
         }
 

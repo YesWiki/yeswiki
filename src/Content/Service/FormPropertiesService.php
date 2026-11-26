@@ -42,8 +42,9 @@ class FormPropertiesService
     /** Every optional form property: entry_title_template is required. */
     public const OPTIONAL_PROPERTIES = [
         'entry_read_access', 'entry_write_access', 'entry_comment_access',
-        'entry_permit_activate_comments', 'entry_metadatas', 'entry_creates_user',
-        'entry_bookmarklet', 'max_entries', 'max_entries_message', 'max_entries_count_message',
+        'entry_permit_activate_comments', 'entry_metadatas', 'entry_form_width',
+        'entry_template_grid', 'entry_creates_user', 'entry_bookmarklet',
+        'max_entries', 'max_entries_message', 'max_entries_count_message',
         AccountGroups::FORM_PROPERTY,
     ];
 

@@ -50,6 +50,7 @@ abstract class RadioField extends EnumField
                     'options' => $options,
                     'value' => $this->getValue($entry),
                     'displayFilterLimit' => $this->displayFilterLimit,
+                    'displayVariant' => self::choiceVariant($this->displayMethod),
                 ]);
         }
     }

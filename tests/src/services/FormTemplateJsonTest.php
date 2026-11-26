@@ -26,7 +26,7 @@ class FormTemplateJsonTest extends YesWikiTestCase
         $this->assertSame(
             [1 => 'name', 2 => 'label', 3 => 'size', 4 => 'max_chars', 5 => 'default',
                 6 => 'pattern', 7 => 'sub_type', 8 => 'required', 9 => 'searchable',
-                10 => 'hint', 11 => 'read_access', 12 => 'write_access', 13 => 'decimals', 15 => 'placeholder', 40 => 'handle'],
+                10 => 'hint', 11 => 'read_access', 12 => 'write_access', 13 => 'decimals', 15 => 'placeholder', 40 => 'handle', 41 => 'width', 42 => 'new_row'],
             $fieldFactory->getAttributeIndexToKeyMap('texte')
         );
 

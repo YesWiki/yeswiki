@@ -21,6 +21,8 @@ export default {
         label: _t('BAZ_FORM_EDIT_FILLING_MODE_LABEL'),
         options: {
           ' ': _t('BAZ_FORM_EDIT_FILLING_MODE_NORMAL'),
+          cards: _t('BAZ_FORM_EDIT_FILLING_MODE_CARDS'),
+          pills: _t('BAZ_FORM_EDIT_FILLING_MODE_PILLS'),
           tags: _t('BAZ_FORM_EDIT_FILLING_MODE_TAGS'),
           dragndrop: _t('BAZ_FORM_EDIT_FILLING_MODE_DRAG_AND_DROP'),
         },

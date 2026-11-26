@@ -3,7 +3,7 @@
 {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
 {{ include_javascript('javascripts/fields/map-field-map-entry.js', false, true) }}
 <div
-  class="map-entry no-dblclick"
+  class="map-entry no-dblclick yw-col-{{ field.width|default(12) }}{{ field.newRow|default(false) ? ' yw-new-row' : '' }}"
   data-map-field="{{ mapFieldData|json_encode|e('html_attr') }}"
 ></div>
 

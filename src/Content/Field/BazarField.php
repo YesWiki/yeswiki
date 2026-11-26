@@ -36,9 +36,13 @@ abstract class BazarField implements \JsonSerializable
     /** @var string */
     protected $writeAccess;
 
+    protected int $width = 12;
+    protected bool $newRow = false;
+
     /** @var string|null the entry key this field reads and writes, null for fields that store nothing */
     protected $propertyName;
 
+    public const ALLOWED_WIDTHS = [3, 4, 6, 8, 9, 12];
     public const PROPERTY_NAME_PATTERN = '/^[\p{L}\p{N}_-]+$/u';
     protected const FIELD_TYPE = 0;
     protected const FIELD_NAME = 1;
@@ -52,6 +56,8 @@ abstract class BazarField implements \JsonSerializable
     protected const FIELD_READ_ACCESS = 11;
     protected const FIELD_WRITE_ACCESS = 12;
     protected const FIELD_HANDLE = 40;
+    protected const FIELD_WIDTH = 41;
+    protected const FIELD_NEW_ROW = 42;
 
     protected ?string $formId = null;
 
@@ -73,6 +79,9 @@ abstract class BazarField implements \JsonSerializable
         $this->hint = $values[self::FIELD_HINT];
         $this->readAccess = str_replace(',', "\n", $values[self::FIELD_READ_ACCESS]);
         $this->writeAccess = str_replace(',', "\n", $values[self::FIELD_WRITE_ACCESS]);
+        $rawWidth = (int)($values[self::FIELD_WIDTH] ?? 12);
+        $this->width = in_array($rawWidth, self::ALLOWED_WIDTHS, true) ? $rawWidth : 12;
+        $this->newRow = !empty($values[self::FIELD_NEW_ROW]);
 
         $this->propertyName = $values[self::FIELD_NAME];
     }
@@ -458,6 +467,16 @@ abstract class BazarField implements \JsonSerializable
         return $this->writeAccess;
     }
 
+    public function getWidth(): int
+    {
+        return $this->width;
+    }
+
+    public function isNewRow(): bool
+    {
+        return $this->newRow;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -476,6 +495,8 @@ abstract class BazarField implements \JsonSerializable
             'helper' => $this->getHint(),
             'read_acl' => $this->getReadAccess(),
             'write_acl' => $this->getWriteAccess(),
+            'width' => $this->getWidth(),
+            'newRow' => $this->isNewRow(),
         ];
     }
 

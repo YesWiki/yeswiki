@@ -7,5 +7,5 @@ export default {
   },
   defaultIdentifier: 'bf_cache',
   attributes: {},
-  disabledAttributes: ['required'],
+  disabledAttributes: ['required', 'width', 'new_row'],
 }

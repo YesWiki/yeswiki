@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use YesWiki\Content\Field\BazarField;
+use YesWiki\Content\Field\ColumnsMarkerField;
 use YesWiki\Content\Field\ConditionsCheckingField;
 use YesWiki\Content\Field\LabelField;
 use YesWiki\Content\Field\TabChangeField;
@@ -56,7 +57,7 @@ class ConditionsChecker
                     'holds' => $field->evaluate($entry, $fieldsByPropertyName),
                     'clean' => empty($field->getOptions()['noclean']),
                 ];
-            } elseif ($field instanceof TabsField || $field instanceof TabChangeField) {
+            } elseif ($field instanceof TabsField || $field instanceof TabChangeField || $field instanceof ColumnsMarkerField) {
                 continue;
             } elseif ($field instanceof LabelField) {
                 $depth = $this->followDivs($field->getFormText(), $depth, $stack);

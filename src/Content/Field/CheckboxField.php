@@ -126,6 +126,7 @@ abstract class CheckboxField extends EnumField
                     'displaySelectAllLimit' => $displaySelectAllLimit,
                     'displayFilterLimit' => $displayFilterLimit,
                     'oldValue' => $this->sanitizeValues($this->getValue($entry), 'string'),
+                    'displayVariant' => self::choiceVariant($this->displayMethod),
                 ]);
         }
     }

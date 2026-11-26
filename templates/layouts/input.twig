@@ -1,4 +1,4 @@
-<div class="yw-form-group input-{{ field.type }} {% block groupClass %}{% endblock %}">
+<div class="yw-form-group input-{{ field.type }} yw-col-{{ field.width|default(12) }}{{ field.newRow|default(false) ? ' yw-new-row' : '' }} {% block groupClass %}{% endblock %}">
     <label class="yw-form-label">
 
         {%- block label -%}

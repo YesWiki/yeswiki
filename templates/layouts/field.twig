@@ -1,4 +1,4 @@
-<div class="BAZ_rubrique field-{{ field.type}}" data-id="{{ field.propertyName }}">
+<div class="BAZ_rubrique field-{{ field.type}} yw-col-{{ field.width|default(12) }}{{ field.newRow|default(false) ? ' yw-new-row' : '' }}" data-id="{{ field.propertyName }}">
     {% block label_container %}
 
         {% if field.label is not empty %}

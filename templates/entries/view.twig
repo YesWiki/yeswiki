@@ -1,6 +1,6 @@
 
 {{ include_css('styles/yw-entries.css') }}
-<div class="BAZ_cadre_fiche id{{ form.id }}">
+<div class="BAZ_cadre_fiche id{{ form.id }}{% if (form.entry_template_grid ?? false) in ['1', 1, true] %} yw-entry-grid yw-entry-width--{{ form.entry_form_width|default('standard') }}{% endif %}">
   {{ renderedEntry|raw }}
 
   {% if showFooter and canShow %}

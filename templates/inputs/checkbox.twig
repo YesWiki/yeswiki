@@ -20,7 +20,7 @@
 	{% endif %}
 
 	{% block list_options %}
-		<div class="bazar-checkbox-cols group-checkbox-{{ field.propertyName }} {{ field.required ? 'chk_required' : ''}}">
+		<div class="bazar-checkbox-cols group-checkbox-{{ field.propertyName }}{{ displayVariant|default('') ? ' yw-choice--' ~ displayVariant : '' }} {{ field.required ? 'chk_required' : ''}}">
 			{% for key, option in options %}
 				<div class="checkbox">
 					{% block item_option %}

@@ -9,6 +9,7 @@ use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\TagAlreadyUsedException;
 use YesWiki\Content\Field\BazarField;
+use YesWiki\Content\Field\ColumnsBalancer;
 use YesWiki\Content\Field\ConditionsCheckingField;
 use YesWiki\Content\Field\LinkedEntryField;
 use YesWiki\Content\Service\ConditionsChecker;
@@ -181,6 +182,7 @@ class EntryController extends YesWikiController
             if (is_null($renderedEntry)) {
                 if (!empty($pLocalForm)) {
                     $states = $this->getService(ConditionsChecker::class)->states($pLocalForm, $entry);
+                    $columns = new ColumnsBalancer();
                     foreach (array_values($pLocalForm['prepared']) as $index => $field) {
                         if ($field instanceof BazarField) {
                             if ($field instanceof ConditionsCheckingField || !($states[$index]['visible'] ?? true)) {
@@ -188,10 +190,14 @@ class EntryController extends YesWikiController
                             }
 
                             if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
-                                $renderedEntry .= $field->renderStaticIfPermitted($entry, $userNameForRendering);
+                                $renderedEntry .= $columns->render(
+                                    $field,
+                                    static fn (BazarField $f): string => (string)$f->renderStaticIfPermitted($entry, $userNameForRendering)
+                                );
                             }
                         }
                     }
+                    $renderedEntry .= $columns->finish();
                 } else {
                     $renderedEntry = $this->render(
                         '@core/alert-message.twig',
@@ -543,9 +549,10 @@ class EntryController extends YesWikiController
      *
      * @return list<string> one rendered input per field, plus the form's own extra inputs
      */
-    private function getRenderedInputs($form, $entry = null, bool $translatableOnly = false)
+    public function getRenderedInputs($form, $entry = null, bool $translatableOnly = false)
     {
         $renderedFields = [];
+        $columns = new ColumnsBalancer();
         foreach ($form['prepared'] as $field) {
             if (!$field instanceof BazarField) {
                 continue;
@@ -553,7 +560,17 @@ class EntryController extends YesWikiController
             if ($translatableOnly && !$field->translatesValue()) {
                 continue;
             }
-            $renderedFields[] = $field->renderInputIfPermitted($entry);
+            $chunk = $columns->render(
+                $field,
+                static fn (BazarField $f): string => (string)$f->renderInputIfPermitted($entry)
+            );
+            if ($chunk !== '') {
+                $renderedFields[] = $chunk;
+            }
+        }
+        $closing = $columns->finish();
+        if ($closing !== '') {
+            $renderedFields[] = $closing;
         }
 
         if ($translatableOnly) {

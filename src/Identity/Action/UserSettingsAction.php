@@ -5,6 +5,7 @@ namespace YesWiki\Identity\Action;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Field\BazarField;
+use YesWiki\Content\Field\ColumnsBalancer;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
@@ -256,14 +257,18 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         $managed = $this->getService(UserOperationsService::class)->managedKeys($user);
 
         return (string)$this->asAccountPage($user, function () use ($entry, $managed) {
+            $columns = new ColumnsBalancer();
             $rendered = '';
             foreach ($this->profileFields() as $field) {
-                $rendered .= in_array($field->getPropertyName(), $managed, true)
-                    ? (string)$field->renderStaticIfPermitted($entry)
-                    : (string)$field->renderInputIfPermitted($entry);
+                $rendered .= $columns->render(
+                    $field,
+                    static fn (BazarField $f): string => in_array($f->getPropertyName(), $managed, true)
+                        ? (string)$f->renderStaticIfPermitted($entry)
+                        : (string)$f->renderInputIfPermitted($entry)
+                );
             }
 
-            return $rendered;
+            return $rendered . $columns->finish();
         });
     }
 

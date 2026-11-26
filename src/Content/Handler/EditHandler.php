@@ -9,6 +9,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Field\BazarField;
+use YesWiki\Content\Field\ColumnsBalancer;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
@@ -285,10 +286,17 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             'form_id' => $body['form_id'] ?? ($form['id'] ?? null),
         ]);
 
-        return array_values(array_filter(array_map(
-            fn (BazarField $field) => (string)$field->renderInputIfPermitted($entry),
+        $columns = new ColumnsBalancer();
+        $rendered = array_map(
+            fn (BazarField $field) => $columns->render(
+                $field,
+                static fn (BazarField $f): string => (string)$f->renderInputIfPermitted($entry)
+            ),
             $fields
-        )));
+        );
+        $rendered[] = $columns->finish();
+
+        return array_values(array_filter($rendered));
     }
 
     /**

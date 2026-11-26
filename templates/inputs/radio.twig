@@ -3,11 +3,10 @@
 {% block input %}
   {% set displayFilter = (displayFilterLimit and options|length > displayFilterLimit) %}
   {% if displayFilter %}
-    <input type="text" class="pull-left filter-entries yw-input" style="margin: 10px 0;" 
+    <input type="text" class="filter-entries yw-input yw-filter-entries"
           value='' placeholder="{{ _t('BAZAR_FILTER') }}">
-    <div class="clearfix"></div>
   {% endif %}
-  <div class="bazar-radio-rows bazar-radio{{ field.required ? ' radio_required' : ''}}{{ displayFilter ? ' list-bazar-entries--scroll' : '' }}">
+  <div class="bazar-radio-rows bazar-radio{{ displayVariant|default('') ? ' yw-choice--' ~ displayVariant : '' }}{{ field.required ? ' radio_required' : ''}}{{ displayFilter ? ' list-bazar-entries--scroll' : '' }}">
     {% for key, option in options %}
         {% block radioInput %}
           <div class="radio">
