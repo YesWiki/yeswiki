@@ -129,19 +129,29 @@ final class QueuePassObserver implements EventSubscriberInterface
         ]);
     }
 
+    /** Writes how a message ended; the Worker acknowledges it only after this returns, so a history that cannot be written must not throw. */
     private function finished(Envelope $envelope, string $status, ?string $error): void
     {
         $message = $envelope->getMessage();
+        $type = $message::class;
 
-        $this->recorder->messageFinished(
-            (int)$envelope->last(TransportMessageIdStamp::class)?->getId(),
-            $message::class,
-            $message instanceof ScheduledTask ? $message->taskId() : null,
-            $status,
-            $this->mode,
-            $this->startedAt,
-            $error
-        );
+        try {
+            $this->recorder->messageFinished(
+                (int)$envelope->last(TransportMessageIdStamp::class)?->getId(),
+                $type,
+                $message instanceof ScheduledTask ? $message->taskId() : null,
+                $status,
+                $this->mode,
+                $this->startedAt,
+                $error
+            );
+        } catch (\Throwable $unwritten) {
+            $this->journal->error("{$type} ended ({$status}) but its history row could not be written: {$unwritten->getMessage()}", [
+                'action' => 'queue.history_unwritten',
+                'target' => $type,
+                'exception' => $unwritten,
+            ]);
+        }
     }
 
     private function now(): float

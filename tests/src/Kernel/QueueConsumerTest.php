@@ -941,6 +941,24 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertNotNull($pass['finishedAt'], 'the pass row is not left open');
     }
 
+    /** A history row that cannot be written (a deadlock, a lost table) does not leave a handled message claimed, to be reaped later as killed. */
+    public function testAHistoryThatCannotBeWrittenDoesNotLeaveTheMessageClaimed(): void
+    {
+        $this->send(2);
+        $this->behaviour = function (): void {
+            $this->db->query('DROP TABLE IF EXISTS ' . $this->db->quoteIdentifier($this->schema->historyTable()));
+        };
+
+        $report = $this->consumer->drain(QueueConsumerMode::Request, new QueuePassLimits(PHP_INT_MAX));
+
+        $this->assertSame(['m0', 'm1'], $this->handled);
+        $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
+        $this->assertSame(0, $this->statistics->pendingCount());
+        $this->assertSame([], $this->statistics->failed());
+        $this->assertSame([], $this->statistics->expiredClaims());
+        $this->assertStringContainsString('"action":"queue.history_unwritten"', $this->journaled());
+    }
+
     /** A pass lock that cannot even be created (here: `cache` is a file) is an error of the pass, journaled; nothing is taken. */
     public function testALockThatCannotBeCreatedIsAnError(): void
     {

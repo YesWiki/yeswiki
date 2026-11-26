@@ -29,6 +29,8 @@ class QueueRecorder
 
     private const TARGET_LENGTH = 191;
 
+    private const DEADLOCK_ATTEMPTS = 3;
+
     public function __construct(
         private readonly DbService $db,
         private readonly QueueSchema $schema,
@@ -45,7 +47,7 @@ class QueueRecorder
         $now = $this->format($this->now());
         $memory = $limits?->memoryCeilingBytes;
 
-        $this->insert($now, $mode->value, QueueHistoryEntry::PASS, '', [
+        return $this->insert($now, $mode->value, QueueHistoryEntry::PASS, '', [
             'handled' => 0,
             'peak_memory' => 0,
             'memory_limit' => $memory === null || $memory === PHP_INT_MAX ? 0 : $memory,
@@ -53,8 +55,6 @@ class QueueRecorder
             'before_response' => $beforeResponse ? 1 : 0,
             'holder' => $holder,
         ]);
-
-        return $this->db->lastInsertId();
     }
 
     /** A blocking consumer is still alive: what it did so far, without closing its row. */
@@ -93,10 +93,10 @@ class QueueRecorder
         $kept = "SELECT {$quote('id')} FROM ({$lastOfEachTask} UNION {$lastPassOfEachMode}) kept";
         $limit = $this->now()->modify("-{$days} days");
 
-        return $this->db->query(
+        return $this->db->transactional(fn (): int => $this->db->query(
             "DELETE FROM {$table} WHERE {$quote('last_at')} < ? AND {$quote('id')} NOT IN ({$kept})",
             [$this->format($limit), ...QueueHistoryEntry::TASK_ACTIONS, QueueHistoryEntry::PASS]
-        )->rowCount();
+        )->rowCount(), self::DEADLOCK_ATTEMPTS);
     }
 
     /** One handling attempt of a message, ended now; $startedAt is a Unix timestamp from the same clock. */
@@ -169,18 +169,26 @@ class QueueRecorder
         $this->insert($this->format($this->now()), '', $action, mb_substr($taskId, 0, self::TARGET_LENGTH), $context);
     }
 
-    /** @param array<string, int|string|null> $context */
-    private function insert(string $at, string $actor, string $action, string $target, array $context): void
+    /**
+     * Writes one row and answers its id, replaying it when the engine undid it to break a deadlock.
+     *
+     * @param array<string, int|string|null> $context
+     */
+    private function insert(string $at, string $actor, string $action, string $target, array $context): int
     {
         $columns = implode(', ', array_map(
             $this->db->quoteIdentifier(...),
             ['at', 'last_at', 'actor', 'action', 'target', 'context']
         ));
 
-        $this->db->query(
-            "INSERT INTO {$this->schema->historyTable()} ({$columns}) VALUES (?, ?, ?, ?, ?, ?)",
-            [$at, $at, $actor, $action, $target, self::encode($context)]
-        );
+        return $this->db->transactional(function () use ($columns, $at, $actor, $action, $target, $context): int {
+            $this->db->query(
+                "INSERT INTO {$this->schema->historyTable()} ({$columns}) VALUES (?, ?, ?, ?, ?, ?)",
+                [$at, $at, $actor, $action, $target, self::encode($context)]
+            );
+
+            return $this->db->lastInsertId();
+        }, self::DEADLOCK_ATTEMPTS);
     }
 
     /** Moves an open pass's row to now (`last_at`): what it did so far, and why it stopped when it did. */
