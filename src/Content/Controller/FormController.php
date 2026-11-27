@@ -760,8 +760,10 @@ class FormController extends YesWikiController
         /** @var array<string, BazarField> $byName */
         $byName = [];
         foreach ($form['prepared'] ?? [] as $field) {
-            if ($field instanceof BazarField && $field->getPropertyName()) {
-                $byName[$field->getPropertyName()] = $field;
+            if ($field instanceof BazarField) {
+                foreach (array_filter([$field->getName(), $field->getPropertyName()]) as $name) {
+                    $byName[$name] = $field;
+                }
             }
         }
 
@@ -790,15 +792,16 @@ class FormController extends YesWikiController
                 return false;
             }
 
-            if (isset($claimed[$fieldName])) {
+            $claimKey = $field->getPropertyName() ?: $fieldName;
+            if (isset($claimed[$claimKey])) {
                 Flash::error(_t('BAZ_FORM_ROLE_FIELD_TWICE', [
                     'field' => $fieldName,
-                    'roles' => $claimed[$fieldName] . ', ' . $role,
+                    'roles' => $claimed[$claimKey] . ', ' . $role,
                 ]));
 
                 return false;
             }
-            $claimed[$fieldName] = $role;
+            $claimed[$claimKey] = $role;
         }
 
         return true;
